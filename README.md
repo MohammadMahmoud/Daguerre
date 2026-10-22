@@ -6,9 +6,9 @@
 
 **Screenshots, plated in silver.** Capture, annotate and export screenshots in Chrome without anything leaving your browser.
 
-[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
+[![CI](https://github.com/MohammadMahmoud/Daguerre/actions/workflows/ci.yml/badge.svg)](https://github.com/MohammadMahmoud/Daguerre/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2FOWNER.github.io%2FREPO%2Fcoverage%2Fbadge.json&style=flat-square&logo=vitest&logoColor=white)](https://OWNER.github.io/REPO/coverage/)
-[![Release](https://img.shields.io/github/v/release/OWNER/REPO?style=flat-square&color=0b0b0c&logo=github)](https://github.com/OWNER/REPO/releases/latest)
+[![Release](https://img.shields.io/github/v/release/MohammadMahmoud/Daguerre?style=flat-square&color=0b0b0c&logo=github)](https://github.com/MohammadMahmoud/Daguerre/releases/latest)
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-0b0b0c?style=flat-square&logo=googlechrome&logoColor=white)
 ![Chrome 120+](https://img.shields.io/badge/Chrome-120%2B-0b0b0c?style=flat-square&logo=googlechrome&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-0b0b0c?style=flat-square&logo=typescript&logoColor=white)
@@ -118,7 +118,7 @@ To ship a version, bump `version` in `package.json` and `public/manifest.json`, 
 git tag v1.0.0 && git push origin v1.0.0
 ```
 
-One-time setup: in **Settings → Pages**, set **Source** to **GitHub Actions**. Then replace `OWNER/REPO` in this README with your repository.
+One-time setup: in **Settings → Pages**, set **Source** to **GitHub Actions**. Then replace `MohammadMahmoud/Daguerre` in this README with your repository.
 
 ## 🛡️ Permissions
 
