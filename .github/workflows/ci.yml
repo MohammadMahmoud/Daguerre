@@ -31,7 +31,7 @@ jobs:
         run: pnpm coverage
       - name: Coverage badge and job summary
         run: pnpm coverage:badge
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: coverage/
@@ -61,7 +61,7 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           mv daguerre.zip "daguerre-$version.zip"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: daguerre-${{ steps.meta.outputs.version }}-${{ steps.meta.outputs.sha }}
           path: |
