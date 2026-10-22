@@ -1,0 +1,62 @@
+{
+  "manifest_version": 3,
+  "name": "Daguerre — Screenshot Studio",
+  "short_name": "Daguerre",
+  "version": "1.0.0",
+  "description": "Capture visible area, full page, a selection or all tabs. Annotate, copy text (OCR), export to PNG, JPEG, PDF or print.",
+  "minimum_chrome_version": "120",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "Daguerre",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "unlimitedStorage",
+    "contextMenus",
+    "clipboardWrite"
+  ],
+  "optional_host_permissions": ["<all_urls>"],
+  "web_accessible_resources": [
+    {
+      "resources": ["clipboard.html"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  },
+  "commands": {
+    "capture-visible": {
+      "suggested_key": { "default": "Alt+Shift+V" },
+      "description": "Capture visible area"
+    },
+    "capture-full": {
+      "suggested_key": { "default": "Alt+Shift+F" },
+      "description": "Capture entire page"
+    },
+    "capture-selection": {
+      "suggested_key": { "default": "Alt+Shift+S" },
+      "description": "Capture selected area"
+    },
+    "copy-selection": {
+      "suggested_key": { "default": "Alt+Shift+C" },
+      "description": "Copy selected area to clipboard without opening the editor"
+    }
+  }
+}

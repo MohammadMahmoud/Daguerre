@@ -1,0 +1,1640 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Daguerre: screenshot studio for Chrome</title>
+    <meta
+      name="description"
+      content="Capture any page, mark it up and export it in seconds. Full-page and scrolling capture, an editor, on-device text recognition and searchable PDFs. Nothing leaves your browser."
+    />
+    <meta
+      property="og:title"
+      content="Daguerre: screenshots, plated in silver"
+    />
+    <meta
+      property="og:description"
+      content="Capture, annotate and export screenshots in Chrome. Everything stays on your device."
+    />
+    <meta property="og:image" content="promo-small-440x280.png" />
+    <meta name="theme-color" content="#09090a" />
+    <link rel="icon" href="icon.png" />
+    <style>
+      :root {
+        --bg: #09090a;
+        --panel: #111113;
+        --panel-2: #18181b;
+        --line: #232327;
+        --line-2: #34343b;
+        --text: #f2f2f3;
+        --muted: #9d9da6;
+        --silver: linear-gradient(
+          180deg,
+          #ffffff 0%,
+          #d9dce1 45%,
+          #9ea2aa 100%
+        );
+        --sheen:
+          inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 1px 2px rgba(0, 0, 0, 0.4);
+        --font:
+          ui-sans-serif, -apple-system, BlinkMacSystemFont,
+          'Segoe UI Variable Text', 'Segoe UI', Roboto, sans-serif;
+        --serif:
+          'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua',
+          Georgia, serif;
+        --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+        --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 16px/1.6 var(--font);
+        -webkit-font-smoothing: antialiased;
+      }
+      a {
+        color: inherit;
+      }
+      img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+      }
+      :focus-visible {
+        outline: 2px solid #e6e8ec;
+        outline-offset: 3px;
+        border-radius: 6px;
+      }
+      .wrap {
+        width: min(1160px, 100% - 48px);
+        margin-inline: auto;
+      }
+      .silver-text {
+        background: var(--silver);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .eyebrow {
+        font: 600 12px/1 var(--mono);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+      }
+      h2 {
+        font: 400 clamp(32px, 4.4vw, 52px)/1.08 var(--serif);
+      }
+      h3 {
+        font-size: 18px;
+        font-weight: 650;
+      }
+      p {
+        margin: 0;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        height: 46px;
+        padding: 0 22px;
+        border-radius: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid var(--line-2);
+        background: var(--panel-2);
+        color: var(--text);
+        cursor: pointer;
+        font-size: 15px;
+        transition:
+          transform 0.2s var(--ease),
+          filter 0.2s;
+      }
+      .btn:hover {
+        transform: translateY(-1px);
+      }
+      .btn.primary {
+        background: var(--silver);
+        color: #0b0b0c;
+        border-color: transparent;
+        box-shadow: var(--sheen);
+      }
+      .btn.primary:hover {
+        filter: brightness(1.06);
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--line-2);
+        background: rgba(255, 255, 255, 0.03);
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .pill b {
+        color: var(--text);
+        font-weight: 600;
+      }
+      section {
+        padding: 110px 0;
+      }
+      .section-head {
+        display: grid;
+        gap: 14px;
+        max-width: 640px;
+        margin-bottom: 44px;
+      }
+
+      /* Nav */
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        backdrop-filter: blur(16px);
+        background: rgba(9, 9, 10, 0.72);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      nav .wrap {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        height: 68px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 650;
+        text-decoration: none;
+        letter-spacing: -0.01em;
+      }
+      .brand img {
+        width: 30px;
+        height: 30px;
+      }
+      nav .links {
+        display: flex;
+        gap: 24px;
+        margin-left: auto;
+        font-size: 14px;
+      }
+      nav .links a {
+        color: var(--muted);
+        text-decoration: none;
+      }
+      nav .links a:hover {
+        color: var(--text);
+      }
+      nav .btn {
+        height: 38px;
+        padding: 0 16px;
+        font-size: 14px;
+      }
+
+      /* Hero */
+      .hero {
+        position: relative;
+        padding: 96px 0 40px;
+        overflow: hidden;
+      }
+      .hero::before {
+        content: '';
+        position: absolute;
+        inset: -30% -10% auto;
+        height: 700px;
+        background: radial-gradient(
+          50% 50% at 50% 50%,
+          rgba(220, 225, 235, 0.13),
+          transparent 70%
+        );
+        pointer-events: none;
+      }
+      .hero-copy {
+        position: relative;
+        display: grid;
+        justify-items: center;
+        text-align: center;
+        gap: 22px;
+      }
+      .hero h1 {
+        font: 400 clamp(48px, 8vw, 96px)/0.98 var(--serif);
+        letter-spacing: -0.035em;
+        max-width: 12ch;
+      }
+      .hero .lead {
+        max-width: 600px;
+        font-size: 19px;
+        color: var(--muted);
+      }
+      .hero .ctas {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .hero .pills {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .frame {
+        margin: 64px auto 0;
+        width: min(1040px, 100%);
+        perspective: 1600px;
+      }
+      .window {
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--line-2);
+        background: var(--panel);
+        box-shadow:
+          0 50px 120px rgba(0, 0, 0, 0.6),
+          0 0 0 1px rgba(255, 255, 255, 0.04);
+        transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+        transition: transform 0.6s var(--ease);
+      }
+      .chrome-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 38px;
+        padding: 0 14px;
+        background: #151518;
+        border-bottom: 1px solid var(--line);
+      }
+      .chrome-bar i {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: #2c2c31;
+      }
+      .chrome-bar span {
+        margin-left: 14px;
+        flex: 1;
+        max-width: 420px;
+        height: 22px;
+        border-radius: 7px;
+        background: #0e0e10;
+        font: 12px/22px var(--mono);
+        color: var(--muted);
+        padding-left: 12px;
+      }
+      .story {
+        margin-top: 40px;
+        text-align: center;
+        font: italic 15px/1.6 var(--serif);
+        color: var(--muted);
+      }
+
+      /* Capture modes */
+      .modes {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 40px;
+        align-items: start;
+      }
+      .tablist {
+        display: grid;
+        gap: 10px;
+      }
+      .tab {
+        text-align: left;
+        display: grid;
+        gap: 4px;
+        padding: 18px 20px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        color: var(--text);
+        cursor: pointer;
+        font: inherit;
+        transition:
+          border-color 0.2s,
+          background 0.2s;
+      }
+      .tab span {
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .tab[aria-selected='true'] {
+        border-color: #6b6e76;
+        background: var(--panel-2);
+        box-shadow: inset 3px 0 0 #e6e8ec;
+      }
+      .demo {
+        position: relative;
+        aspect-ratio: 16 / 10;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--line-2);
+        background: #0d0d0f;
+      }
+      .demo .chrome-bar {
+        position: relative;
+        z-index: 3;
+      }
+      .tabs-strip {
+        display: none;
+        gap: 4px;
+        position: absolute;
+        top: 6px;
+        left: 90px;
+        z-index: 4;
+      }
+      .tabs-strip b {
+        width: 92px;
+        height: 26px;
+        border-radius: 8px 8px 0 0;
+        background: #1d1d21;
+        font: 500 11px/26px var(--font);
+        color: var(--muted);
+        padding-left: 10px;
+      }
+      .viewport {
+        position: absolute;
+        inset: 38px 0 0;
+        overflow: hidden;
+      }
+      .page {
+        position: absolute;
+        inset: 0 0 auto;
+        padding: 22px 28px;
+        display: grid;
+        gap: 14px;
+        transition: transform 2.4s var(--ease);
+        background: #f4f5f8;
+        color: #1d2433;
+      }
+      .page .bar {
+        height: 12px;
+        border-radius: 6px;
+        background: #d9dde6;
+      }
+      .page .row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+      .page .card {
+        height: 70px;
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(20, 30, 60, 0.08);
+      }
+      .page .hero-block {
+        height: 120px;
+        border-radius: 12px;
+        background: linear-gradient(120deg, #5b8cff, #2453d4);
+      }
+      .shutter {
+        position: absolute;
+        inset: 38px 0 0;
+        background: #fff;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 5;
+      }
+      .viewfinder {
+        position: absolute;
+        inset: 52px 14px 14px;
+        z-index: 4;
+        opacity: 0;
+        pointer-events: none;
+        border: 2px solid transparent;
+        border-image: linear-gradient(#fff, #fff) 1;
+        mask: conic-gradient(at 26px 26px, transparent 75%, #000 0) 0 0 /
+          calc(100% - 26px) calc(100% - 26px);
+      }
+      .marquee {
+        position: absolute;
+        z-index: 4;
+        left: 18%;
+        top: 22%;
+        width: 0;
+        height: 0;
+        outline: 2px dashed #e6e8ec;
+        box-shadow: 0 0 0 100vmax rgba(8, 9, 12, 0.45);
+        opacity: 0;
+      }
+      .hud {
+        position: absolute;
+        z-index: 6;
+        right: 16px;
+        bottom: 16px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: rgba(17, 17, 19, 0.92);
+        border: 1px solid var(--line-2);
+        font: 600 12px var(--mono);
+        color: var(--text);
+        display: grid;
+        gap: 8px;
+        min-width: 210px;
+        opacity: 0;
+        transform: translateY(8px);
+        transition: 0.3s var(--ease);
+      }
+      .hud .track {
+        height: 4px;
+        border-radius: 4px;
+        background: #2a2a30;
+        overflow: hidden;
+      }
+      .hud .track i {
+        display: block;
+        height: 100%;
+        width: 0;
+        background: var(--silver);
+      }
+      .demo[data-mode='visible'] .shutter {
+        animation: shutter 1.6s 0.5s var(--ease) both;
+      }
+      .demo[data-mode='visible'] .viewfinder {
+        animation: finder 1.6s 0.2s var(--ease) both;
+      }
+      .demo[data-mode='full'] .page {
+        transform: translateY(calc(-100% + 100cqh));
+        transition-delay: 0.3s;
+      }
+      .demo[data-mode='full'] .hud,
+      .demo[data-mode='tabs'] .hud {
+        opacity: 1;
+        transform: none;
+      }
+      .demo[data-mode='full'] .hud .track i {
+        animation: fill 2.4s 0.3s linear both;
+      }
+      .demo[data-mode='selection'] .marquee {
+        animation: marquee 2.6s 0.3s var(--ease) both;
+      }
+      .demo[data-mode='selection'] .page {
+        transform: translateY(-28%);
+        transition-delay: 1.6s;
+        transition-duration: 1.2s;
+      }
+      .demo[data-mode='tabs'] .tabs-strip {
+        display: flex;
+      }
+      .demo[data-mode='tabs'] .tabs-strip b {
+        animation: tabcycle 3.2s steps(1) both;
+      }
+      .demo[data-mode='tabs'] .tabs-strip b:nth-child(2) {
+        animation-delay: 0.8s;
+      }
+      .demo[data-mode='tabs'] .tabs-strip b:nth-child(3) {
+        animation-delay: 1.6s;
+      }
+      .demo[data-mode='tabs'] .tabs-strip b:nth-child(4) {
+        animation-delay: 2.4s;
+      }
+      .demo[data-mode='tabs'] .hud .track i {
+        animation: fill 3.2s linear both;
+      }
+      .viewport {
+        container-type: size;
+      }
+      @keyframes shutter {
+        0%,
+        40% {
+          opacity: 0;
+        }
+        46% {
+          opacity: 0.85;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+      @keyframes finder {
+        0% {
+          opacity: 0;
+          transform: scale(1.04);
+        }
+        25%,
+        70% {
+          opacity: 1;
+          transform: none;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+      @keyframes fill {
+        to {
+          width: 100%;
+        }
+      }
+      @keyframes marquee {
+        0% {
+          opacity: 1;
+          width: 0;
+          height: 0;
+        }
+        55% {
+          width: 52%;
+          height: 60%;
+        }
+        100% {
+          opacity: 1;
+          width: 52%;
+          height: 72%;
+        }
+      }
+      @keyframes tabcycle {
+        0% {
+          background: #e6e8ec;
+          color: #0b0b0c;
+        }
+        25%,
+        100% {
+          background: #1d1d21;
+          color: var(--muted);
+        }
+      }
+
+      /* Editor playground */
+      .playground {
+        display: grid;
+        gap: 16px;
+      }
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        padding: 10px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+      }
+      .tool {
+        height: 38px;
+        padding: 0 14px;
+        border-radius: 10px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--muted);
+        font: 500 14px var(--font);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .tool:hover {
+        color: var(--text);
+        background: var(--panel-2);
+      }
+      .tool[aria-pressed='true'] {
+        color: #0b0b0c;
+        background: var(--silver);
+        box-shadow: var(--sheen);
+      }
+      .toolbar .sep {
+        width: 1px;
+        height: 24px;
+        background: var(--line-2);
+        margin: 0 4px;
+      }
+      .swatch {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: 2px solid var(--panel);
+        box-shadow: 0 0 0 1px var(--line-2);
+        cursor: pointer;
+        padding: 0;
+      }
+      .swatch[aria-pressed='true'] {
+        box-shadow: 0 0 0 2px #e6e8ec;
+      }
+      .toolbar .spacer {
+        flex: 1;
+      }
+      .canvas-shell {
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--line-2);
+        background: #0d0d0f;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+      }
+      #board {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        touch-action: none;
+        cursor: crosshair;
+      }
+      .hint {
+        font-size: 14px;
+      }
+
+      /* OCR */
+      .ocr {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .receipt {
+        position: relative;
+        overflow: hidden;
+        border-radius: 16px;
+        padding: 30px 32px;
+        background: #fbfaf6;
+        color: #222;
+        font: 15px/1.8 var(--mono);
+        user-select: none;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      }
+      .receipt strong {
+        font: 700 20px/1.4 var(--serif);
+        display: block;
+        margin-bottom: 6px;
+      }
+      .scanline {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: -20%;
+        height: 18%;
+        background: linear-gradient(
+          transparent,
+          rgba(80, 130, 255, 0.28),
+          transparent
+        );
+        opacity: 0;
+      }
+      .receipt.scanning .scanline {
+        animation: scan 1.4s var(--ease) both;
+      }
+      @keyframes scan {
+        0% {
+          top: -20%;
+          opacity: 1;
+        }
+        100% {
+          top: 100%;
+          opacity: 1;
+        }
+      }
+      .output {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 14px;
+        padding: 24px;
+        border-radius: 16px;
+        border: 1px solid var(--line-2);
+        background: var(--panel);
+      }
+      .output pre {
+        margin: 0;
+        min-height: 190px;
+        white-space: pre-wrap;
+        font: 14px/1.7 var(--mono);
+        color: var(--text);
+      }
+      .caret::after {
+        content: '\258F';
+        animation: blink 1s steps(1) infinite;
+        color: var(--muted);
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+
+      /* Formats and privacy */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+      }
+      .chip {
+        padding: 20px;
+        border-radius: 16px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        display: grid;
+        gap: 8px;
+        transition:
+          transform 0.25s var(--ease),
+          border-color 0.25s;
+      }
+      .chip:hover {
+        transform: translateY(-3px);
+        border-color: #4a4c53;
+      }
+      .chip .tag {
+        font: 600 12px var(--mono);
+        color: var(--muted);
+      }
+      .chip p {
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .privacy {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+      }
+      .privacy .chip {
+        padding: 28px;
+      }
+      .big {
+        font: 400 44px/1 var(--serif);
+      }
+      kbd {
+        font: 600 12px/1 var(--mono);
+        padding: 5px 8px;
+        border-radius: 6px;
+        background: var(--panel-2);
+        border: 1px solid var(--line-2);
+        border-bottom-width: 2px;
+      }
+      .keys {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px 28px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .keys div {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+
+      /* CTA and footer */
+      .final {
+        text-align: center;
+        display: grid;
+        justify-items: center;
+        gap: 22px;
+        padding: 120px 0;
+        border-top: 1px solid var(--line);
+        background: radial-gradient(
+          60% 80% at 50% 0%,
+          rgba(220, 225, 235, 0.08),
+          transparent 70%
+        );
+      }
+      footer {
+        border-top: 1px solid var(--line);
+        padding: 32px 0;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      footer .wrap {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      footer nav {
+        all: unset;
+        display: flex;
+        gap: 20px;
+        margin-left: auto;
+      }
+      footer a {
+        text-decoration: none;
+      }
+      footer a:hover {
+        color: var(--text);
+      }
+
+      .reveal {
+        opacity: 0;
+        transform: translateY(18px);
+        transition:
+          opacity 0.8s var(--ease),
+          transform 0.8s var(--ease);
+      }
+      .reveal.in {
+        opacity: 1;
+        transform: none;
+      }
+
+      @media (max-width: 900px) {
+        nav .links {
+          display: none;
+        }
+        .modes,
+        .ocr {
+          grid-template-columns: 1fr;
+        }
+        .grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .privacy {
+          grid-template-columns: 1fr;
+        }
+        section {
+          padding: 80px 0;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation: none !important;
+          transition: none !important;
+        }
+        .reveal {
+          opacity: 1;
+          transform: none;
+        }
+        .window {
+          transform: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav aria-label="Main">
+      <div class="wrap">
+        <a class="brand" href="#top"><img src="icon.png" alt="" />Daguerre</a>
+        <div class="links">
+          <a href="#capture">Capture</a>
+          <a href="#editor">Editor</a>
+          <a href="#ocr">Copy Text</a>
+          <a href="#privacy">Privacy</a>
+        </div>
+        <a class="btn primary" data-install href="#">Add to Chrome</a>
+      </div>
+    </nav>
+
+    <header class="hero" id="top">
+      <div class="wrap">
+        <div class="hero-copy">
+          <p class="eyebrow">Screenshot studio for Chrome</p>
+          <h1>
+            Screenshots, <span class="silver-text">plated in silver.</span>
+          </h1>
+          <p class="lead">
+            Capture any page, mark it up and export it in seconds: full pages,
+            scrolling selections, searchable PDFs. Nothing ever leaves your
+            browser.
+          </p>
+          <div class="ctas">
+            <a class="btn primary" data-install href="#"
+              >Add to Chrome, it's free</a
+            >
+            <a class="btn" href="#editor">Try the editor</a>
+          </div>
+          <div class="pills" aria-label="Highlights">
+            <span class="pill"><b>4</b> capture modes</span>
+            <span class="pill"><b>On-device</b> text recognition</span>
+            <span class="pill"><b>0</b> trackers</span>
+            <span class="pill">Manifest V3</span>
+          </div>
+        </div>
+        <div class="frame">
+          <div class="window" id="tilt">
+            <div class="chrome-bar" aria-hidden="true">
+              <i></i><i></i><i></i><span>Daguerre editor</span>
+            </div>
+            <img
+              src="hero.png"
+              srcset="screenshots/1-annotate.png 1280w, hero.png 2560w"
+              sizes="(max-width: 1088px) calc(100vw - 48px), 1040px"
+              width="1280"
+              height="800"
+              alt="The Daguerre editor: a revenue card framed and labelled, customer names pixelated, and the best month highlighted"
+            />
+          </div>
+        </div>
+        <p class="story">
+          Named after Louis Daguerre, whose 1839 daguerreotype fixed the first
+          practical photographs on silver-plated copper.
+        </p>
+      </div>
+    </header>
+
+    <section id="capture">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">Capture</p>
+          <h2>
+            Four ways to <span class="silver-text">freeze the moment.</span>
+          </h2>
+          <p class="muted">Pick a mode to see it in action.</p>
+        </div>
+        <div class="modes">
+          <div
+            class="tablist"
+            role="tablist"
+            aria-label="Capture modes"
+            aria-orientation="vertical"
+          >
+            <button
+              class="tab"
+              role="tab"
+              id="tab-visible"
+              aria-controls="demo"
+              aria-selected="true"
+              data-mode="visible"
+            >
+              Visible area <span>Exactly what's on screen, in one click.</span>
+            </button>
+            <button
+              class="tab"
+              role="tab"
+              id="tab-full"
+              aria-controls="demo"
+              aria-selected="false"
+              tabindex="-1"
+              data-mode="full"
+            >
+              Entire page
+              <span
+                >Scrolls and stitches, without repeating sticky headers.</span
+              >
+            </button>
+            <button
+              class="tab"
+              role="tab"
+              id="tab-selection"
+              aria-controls="demo"
+              aria-selected="false"
+              tabindex="-1"
+              data-mode="selection"
+            >
+              Select area
+              <span>Drag to the edge and the page scrolls with you.</span>
+            </button>
+            <button
+              class="tab"
+              role="tab"
+              id="tab-tabs"
+              aria-controls="demo"
+              aria-selected="false"
+              tabindex="-1"
+              data-mode="tabs"
+            >
+              All tabs <span>Every tab in the window, saved to history.</span>
+            </button>
+          </div>
+          <div
+            class="demo reveal"
+            id="demo"
+            role="tabpanel"
+            aria-labelledby="tab-visible"
+            data-mode="visible"
+          >
+            <div class="chrome-bar" aria-hidden="true">
+              <i></i><i></i><i></i><span>northwind.app/report</span>
+            </div>
+            <div class="tabs-strip" aria-hidden="true">
+              <b>Report</b><b>Docs</b><b>Pricing</b><b>Inbox</b>
+            </div>
+            <div class="viewport" aria-hidden="true">
+              <div class="page">
+                <div class="bar" style="width: 40%"></div>
+                <div class="hero-block"></div>
+                <div class="row">
+                  <div class="card"></div>
+                  <div class="card"></div>
+                  <div class="card"></div>
+                </div>
+                <div class="bar"></div>
+                <div class="bar" style="width: 80%"></div>
+                <div class="bar" style="width: 65%"></div>
+                <div class="row">
+                  <div class="card"></div>
+                  <div class="card"></div>
+                  <div class="card"></div>
+                </div>
+                <div
+                  class="hero-block"
+                  style="background: linear-gradient(120deg, #22c55e, #15935b)"
+                ></div>
+                <div class="bar"></div>
+                <div class="bar" style="width: 70%"></div>
+                <div class="row">
+                  <div class="card"></div>
+                  <div class="card"></div>
+                  <div class="card"></div>
+                </div>
+                <div class="bar" style="width: 50%"></div>
+                <div class="row">
+                  <div class="card"></div>
+                  <div class="card"></div>
+                  <div class="card"></div>
+                </div>
+              </div>
+            </div>
+            <div class="shutter"></div>
+            <div class="viewfinder"></div>
+            <div class="marquee"></div>
+            <div class="hud" role="status">
+              <span id="hud-text">Capturing…</span>
+              <div class="track"><i></i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="editor">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">Editor</p>
+          <h2>
+            Mark it up. <span class="silver-text">Hide what matters.</span>
+          </h2>
+          <p class="muted">
+            This is a working miniature of the real editor: pick a tool and draw
+            on the screenshot below. Pixelate the email and card number before
+            you share.
+          </p>
+        </div>
+        <div class="playground reveal">
+          <div class="toolbar" role="toolbar" aria-label="Demo tools">
+            <button class="tool" aria-pressed="true" data-tool="arrow">
+              ↗ Arrow
+            </button>
+            <button class="tool" aria-pressed="false" data-tool="rect">
+              ▢ Box
+            </button>
+            <button class="tool" aria-pressed="false" data-tool="highlight">
+              ▬ Highlight
+            </button>
+            <button class="tool" aria-pressed="false" data-tool="blur">
+              ▦ Pixelate
+            </button>
+            <button class="tool" aria-pressed="false" data-tool="step">
+              ① Step
+            </button>
+            <span class="sep" aria-hidden="true"></span>
+            <button
+              class="swatch"
+              aria-label="Red"
+              aria-pressed="true"
+              data-color="#ff4d4f"
+              style="background: #ff4d4f"
+            ></button>
+            <button
+              class="swatch"
+              aria-label="Amber"
+              aria-pressed="false"
+              data-color="#ffb547"
+              style="background: #ffb547"
+            ></button>
+            <button
+              class="swatch"
+              aria-label="Blue"
+              aria-pressed="false"
+              data-color="#3b82f6"
+              style="background: #3b82f6"
+            ></button>
+            <span class="spacer"></span>
+            <button class="tool" id="undo">Undo</button>
+            <button class="tool" id="clear">Clear</button>
+            <button class="tool" id="save">Download PNG</button>
+          </div>
+          <div class="canvas-shell">
+            <canvas
+              id="board"
+              role="img"
+              aria-label="Demo screenshot you can draw on"
+            ></canvas>
+          </div>
+          <p class="hint muted">
+            Tip: the real editor adds crop with handles, text, ellipses, a pen,
+            undo history, zoom, and exports to PNG, JPEG, WebP and PDF.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="ocr">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">Copy Text</p>
+          <h2>Pixels in, <span class="silver-text">words out.</span></h2>
+          <p class="muted">
+            Daguerre reads the text in any screenshot right on your device, then
+            copies it or turns your export into a searchable PDF. This demo
+            simulates the scan.
+          </p>
+        </div>
+        <div class="ocr reveal">
+          <div
+            class="receipt"
+            id="receipt"
+            aria-label="Sample screenshot of an invoice"
+          >
+            <div class="scanline"></div>
+            <strong>Invoice #2026-104</strong>
+            Northwind Analytics Ltd.<br />
+            Annual plan · 12 seats ..... $4,250.00<br />
+            Priority support ........... $ 480.00<br />
+            VAT 19% .................... $ 898.70<br />
+            <br />
+            TOTAL DUE .................. $5,628.70<br />
+            Due by November 15, 2026
+          </div>
+          <div class="output">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+              "
+            >
+              <h3>Recognized text</h3>
+              <button class="btn primary" id="scan" style="height: 40px">
+                Copy Text
+              </button>
+            </div>
+            <pre id="ocr-out" aria-live="polite" class="muted">
+Press Copy Text to read the invoice.</pre
+            >
+            <p class="muted" style="font-size: 13px" id="ocr-note">
+              English · Offline · Selectable in searchable PDFs
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="export">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">Export</p>
+          <h2>
+            Every format, <span class="silver-text">one click away.</span>
+          </h2>
+        </div>
+        <div class="grid reveal">
+          <div class="chip">
+            <span class="tag">PNG</span>
+            <h3>Full quality</h3>
+            <p>Lossless, pixel for pixel.</p>
+          </div>
+          <div class="chip">
+            <span class="tag">JPEG · WebP</span>
+            <h3>Compressed</h3>
+            <p>Quality slider, half size, live file-size estimates.</p>
+          </div>
+          <div class="chip">
+            <span class="tag">PDF</span>
+            <h3>Searchable PDF</h3>
+            <p>A4 pages with an invisible, selectable text layer.</p>
+          </div>
+          <div class="chip">
+            <span class="tag">⌘C · ⌘P</span>
+            <h3>Clipboard and print</h3>
+            <p>Copy the image or its text, or print it.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="privacy">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">Privacy</p>
+          <h2>
+            Your screenshots <span class="silver-text">never leave.</span>
+          </h2>
+          <p class="muted">
+            No accounts, no servers, no analytics. History lives in your browser
+            and disappears when you clear it or uninstall.
+          </p>
+        </div>
+        <div class="privacy reveal">
+          <div class="chip">
+            <span class="big silver-text">0</span>
+            <h3>Servers</h3>
+            <p>
+              Captures, edits and recognized text stay in IndexedDB on your
+              device.
+            </p>
+          </div>
+          <div class="chip">
+            <span class="big silver-text">0</span>
+            <h3>Trackers</h3>
+            <p>
+              No analytics or advertising, and no remote code: everything ships
+              inside the extension.
+            </p>
+          </div>
+          <div class="chip">
+            <span class="big silver-text">1</span>
+            <h3>Optional permission</h3>
+            <p>
+              Access to all sites is requested only if you use All tabs.
+              <a href="privacy.html">Read the privacy policy</a>.
+            </p>
+          </div>
+        </div>
+        <div
+          class="keys reveal"
+          style="margin-top: 48px"
+          aria-label="Keyboard shortcuts"
+        >
+          <div><kbd>Alt</kbd><kbd>Shift</kbd><kbd>V</kbd> visible area</div>
+          <div><kbd>Alt</kbd><kbd>Shift</kbd><kbd>F</kbd> entire page</div>
+          <div><kbd>Alt</kbd><kbd>Shift</kbd><kbd>S</kbd> select area</div>
+          <div><kbd>⇧</kbd><kbd>⌘</kbd><kbd>C</kbd> copy text</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="final">
+      <img src="icon.png" width="72" height="72" alt="" />
+      <h2>
+        Make your next screenshot <span class="silver-text">a keeper.</span>
+      </h2>
+      <a class="btn primary" data-install href="#">Add to Chrome</a>
+    </div>
+
+    <footer>
+      <div class="wrap">
+        <span>© 2026 Daguerre</span>
+        <nav aria-label="Footer">
+          <a href="privacy.html">Privacy</a>
+          <a data-repo href="#">Source on GitHub</a>
+          <a href="coverage/">Test coverage</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script>
+      // Set these once the listing and repository exist.
+      const STORE_URL = 'https://chromewebstore.google.com/';
+      const REPO_URL = 'https://github.com/';
+      document
+        .querySelectorAll('[data-install]')
+        .forEach((a) => (a.href = STORE_URL));
+      document
+        .querySelectorAll('[data-repo]')
+        .forEach((a) => (a.href = REPO_URL));
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Reveal on scroll.
+      const io = new IntersectionObserver(
+        (entries) =>
+          entries.forEach(
+            (e) => e.isIntersecting && e.target.classList.add('in'),
+          ),
+        { threshold: 0.15 },
+      );
+      document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+      // Hero tilts gently while hovered and rests flat (a permanent 3D tilt resamples the screenshot and softens it).
+      const tilt = document.getElementById('tilt');
+      if (!reduce) {
+        tilt.addEventListener('pointermove', (e) => {
+          const r = tilt.getBoundingClientRect();
+          tilt.style.setProperty(
+            '--ry',
+            `${((e.clientX - r.left) / r.width - 0.5) * 4}deg`,
+          );
+          tilt.style.setProperty(
+            '--rx',
+            `${(0.5 - (e.clientY - r.top) / r.height) * 3}deg`,
+          );
+        });
+        tilt.addEventListener('pointerleave', () => {
+          tilt.style.removeProperty('--rx');
+          tilt.style.removeProperty('--ry');
+        });
+      }
+
+      // Capture mode tabs (arrow keys move between tabs).
+      const demo = document.getElementById('demo');
+      const hud = document.getElementById('hud-text');
+      const tabs = [...document.querySelectorAll('[role="tab"]')];
+      const hudText = {
+        visible: '',
+        full: 'Capturing section 4 of 4',
+        selection: '',
+        tabs: 'Tab 4 of 4 · Inbox',
+      };
+      let modeTimer;
+      function select(tab, focus) {
+        tabs.forEach((t) => {
+          const on = t === tab;
+          t.setAttribute('aria-selected', on);
+          t.tabIndex = on ? 0 : -1;
+        });
+        if (focus) tab.focus();
+        demo.setAttribute('aria-labelledby', tab.id);
+        demo.dataset.mode = '';
+        void demo.offsetWidth; // restart CSS animations
+        demo.dataset.mode = tab.dataset.mode;
+        hud.textContent = hudText[tab.dataset.mode];
+      }
+      tabs.forEach((t, i) => {
+        t.addEventListener('click', () => {
+          clearInterval(modeTimer);
+          select(t);
+        });
+        t.addEventListener('keydown', (e) => {
+          const step = {
+            ArrowDown: 1,
+            ArrowRight: 1,
+            ArrowUp: -1,
+            ArrowLeft: -1,
+          }[e.key];
+          if (!step) return;
+          e.preventDefault();
+          clearInterval(modeTimer);
+          select(tabs[(i + step + tabs.length) % tabs.length], true);
+        });
+      });
+      let auto = 0;
+      if (!reduce)
+        modeTimer = setInterval(
+          () => select(tabs[(auto = (auto + 1) % tabs.length)]),
+          4200,
+        );
+
+      // Editor playground.
+      const board = document.getElementById('board');
+      const ctx = board.getContext('2d');
+      const W = 1280,
+        H = 720;
+      const base = document.createElement('canvas');
+      base.width = W;
+      base.height = H;
+      drawPage(base.getContext('2d'));
+      let tool = 'arrow',
+        color = '#ff4d4f',
+        shapes = [],
+        draft = null,
+        steps = 0;
+
+      function drawPage(g) {
+        g.fillStyle = '#f3f5f9';
+        g.fillRect(0, 0, W, H);
+        g.fillStyle = '#fff';
+        g.fillRect(0, 0, W, 64);
+        g.fillStyle = '#2453d4';
+        g.font = '700 24px system-ui, sans-serif';
+        g.fillText('Northwind', 40, 41);
+        g.fillStyle = '#6b7385';
+        g.font = '500 16px system-ui, sans-serif';
+        ['Overview', 'Customers', 'Billing', 'Settings'].forEach((t, i) =>
+          g.fillText(t, 760 + i * 120, 40),
+        );
+        g.fillStyle = '#1d2433';
+        g.font = '700 34px system-ui, sans-serif';
+        g.fillText('Account settings', 40, 126);
+        const card = (x, y, w, h) => {
+          g.fillStyle = '#fff';
+          g.beginPath();
+          g.roundRect(x, y, w, h, 16);
+          g.fill();
+        };
+        card(40, 160, 580, 250);
+        card(660, 160, 580, 250);
+        card(40, 440, 1200, 240);
+        g.fillStyle = '#6b7385';
+        g.font = '600 14px system-ui, sans-serif';
+        g.fillText('EMAIL', 70, 210);
+        g.fillText('PAYMENT METHOD', 690, 210);
+        g.fillText('MONTHLY USAGE', 70, 490);
+        g.fillStyle = '#1d2433';
+        g.font = '500 26px system-ui, sans-serif';
+        g.fillText('jane.doe@northwind.app', 70, 250);
+        g.fillText('Visa •••• 4242  ·  12/28', 690, 250);
+        g.font = '400 18px system-ui, sans-serif';
+        g.fillStyle = '#5b6475';
+        g.fillText('Password last changed 3 days ago', 70, 300);
+        g.fillText('Next invoice: $4,250 on Nov 1', 690, 300);
+        g.fillStyle = '#2453d4';
+        g.beginPath();
+        g.roundRect(70, 330, 180, 48, 10);
+        g.fill();
+        g.fillStyle = '#fff';
+        g.font = '600 17px system-ui, sans-serif';
+        g.fillText('Change email', 104, 360);
+        [48, 62, 55, 70, 84, 77, 92, 88, 96, 72, 81, 99].forEach((h, i) => {
+          const grad = g.createLinearGradient(0, 520, 0, 660);
+          grad.addColorStop(0, '#5b8cff');
+          grad.addColorStop(1, '#2453d4');
+          g.fillStyle = grad;
+          g.beginPath();
+          g.roundRect(70 + i * 95, 650 - h * 1.3, 64, h * 1.3, 8);
+          g.fill();
+        });
+      }
+
+      function resize() {
+        const dpr = devicePixelRatio || 1;
+        const w = board.clientWidth;
+        board.width = Math.round(w * dpr);
+        board.height = Math.round(w * (H / W) * dpr);
+        render();
+      }
+      function shape(g, s) {
+        g.save();
+        g.strokeStyle = g.fillStyle = s.color;
+        g.lineWidth = 6;
+        g.lineCap = g.lineJoin = 'round';
+        const [x1, y1, x2, y2] = s.pts;
+        const x = Math.min(x1, x2),
+          y = Math.min(y1, y2),
+          w = Math.abs(x2 - x1),
+          h = Math.abs(y2 - y1);
+        if (s.kind === 'rect') {
+          g.beginPath();
+          g.roundRect(x, y, w, h, 8);
+          g.stroke();
+        }
+        if (s.kind === 'highlight') {
+          g.globalAlpha = 0.4;
+          g.globalCompositeOperation = 'multiply';
+          g.fillRect(x, y, w, h);
+        }
+        if (s.kind === 'blur' && w > 2 && h > 2) {
+          const b = 14,
+            tw = Math.ceil(w / b),
+            th = Math.ceil(h / b);
+          const t = document.createElement('canvas');
+          t.width = tw;
+          t.height = th;
+          t.getContext('2d').drawImage(base, x, y, w, h, 0, 0, tw, th);
+          g.imageSmoothingEnabled = false;
+          g.drawImage(t, 0, 0, tw, th, x, y, w, h);
+        }
+        if (s.kind === 'arrow') {
+          const a = Math.atan2(y2 - y1, x2 - x1),
+            head = 26;
+          g.beginPath();
+          g.moveTo(x1, y1);
+          g.lineTo(
+            x2 - Math.cos(a) * head * 0.7,
+            y2 - Math.sin(a) * head * 0.7,
+          );
+          g.stroke();
+          g.beginPath();
+          g.moveTo(x2, y2);
+          g.lineTo(
+            x2 - head * Math.cos(a - 0.42),
+            y2 - head * Math.sin(a - 0.42),
+          );
+          g.lineTo(
+            x2 - head * Math.cos(a + 0.42),
+            y2 - head * Math.sin(a + 0.42),
+          );
+          g.closePath();
+          g.fill();
+        }
+        if (s.kind === 'step') {
+          g.shadowColor = 'rgba(0,0,0,.3)';
+          g.shadowBlur = 8;
+          g.beginPath();
+          g.arc(x1, y1, 22, 0, Math.PI * 2);
+          g.fill();
+          g.shadowColor = 'transparent';
+          g.lineWidth = 3;
+          g.strokeStyle = '#fff';
+          g.stroke();
+          g.fillStyle = '#fff';
+          g.font = '700 22px system-ui, sans-serif';
+          g.textAlign = 'center';
+          g.textBaseline = 'middle';
+          g.fillText(s.n, x1, y1 + 1);
+        }
+        g.restore();
+      }
+      function render() {
+        const k = board.width / W;
+        ctx.setTransform(k, 0, 0, k, 0, 0);
+        ctx.drawImage(base, 0, 0);
+        [...shapes, draft].filter(Boolean).forEach((s) => shape(ctx, s));
+      }
+      const point = (e) => {
+        const r = board.getBoundingClientRect();
+        return [
+          ((e.clientX - r.left) / r.width) * W,
+          ((e.clientY - r.top) / r.height) * H,
+        ];
+      };
+      board.addEventListener('pointerdown', (e) => {
+        const [x, y] = point(e);
+        if (tool === 'step') {
+          shapes.push({ kind: 'step', color, pts: [x, y], n: ++steps });
+          return render();
+        }
+        board.setPointerCapture(e.pointerId);
+        draft = { kind: tool, color, pts: [x, y, x, y] };
+      });
+      board.addEventListener('pointermove', (e) => {
+        if (!draft) return;
+        draft.pts = [draft.pts[0], draft.pts[1], ...point(e)];
+        render();
+      });
+      board.addEventListener('pointerup', () => {
+        const [x1, y1, x2, y2] = draft?.pts ?? [];
+        if (draft && Math.hypot(x2 - x1, y2 - y1) > 6) shapes.push(draft);
+        draft = null;
+        render();
+      });
+      const pressGroup = (sel, el) =>
+        document
+          .querySelectorAll(sel)
+          .forEach((b) => b.setAttribute('aria-pressed', b === el));
+      document.querySelectorAll('[data-tool]').forEach((b) =>
+        b.addEventListener('click', () => {
+          tool = b.dataset.tool;
+          pressGroup('[data-tool]', b);
+        }),
+      );
+      document.querySelectorAll('[data-color]').forEach((b) =>
+        b.addEventListener('click', () => {
+          color = b.dataset.color;
+          pressGroup('[data-color]', b);
+        }),
+      );
+      document.getElementById('undo').addEventListener('click', () => {
+        if (shapes.pop()?.kind === 'step') steps--;
+        render();
+      });
+      document.getElementById('clear').addEventListener('click', () => {
+        shapes = [];
+        steps = 0;
+        render();
+      });
+      document.getElementById('save').addEventListener('click', () => {
+        const out = document.createElement('canvas');
+        out.width = W;
+        out.height = H;
+        const g = out.getContext('2d');
+        g.drawImage(base, 0, 0);
+        shapes.forEach((s) => shape(g, s));
+        out.toBlob((blob) => {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'Daguerre demo.png';
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+        });
+      });
+      new ResizeObserver(resize).observe(board);
+      shapes = [
+        { kind: 'rect', color: '#ff4d4f', pts: [660, 160, 1240, 410] },
+        { kind: 'step', color: '#ff4d4f', pts: [660, 160], n: 1 },
+        { kind: 'arrow', color: '#3b82f6', pts: [420, 420, 300, 372] },
+      ];
+      steps = 1;
+
+      // Simulated OCR.
+      const receipt = document.getElementById('receipt');
+      const out = document.getElementById('ocr-out');
+      const note = document.getElementById('ocr-note');
+      const text = receipt.innerText.trim();
+      let typing;
+      document.getElementById('scan').addEventListener('click', async () => {
+        clearInterval(typing);
+        receipt.classList.remove('scanning');
+        void receipt.offsetWidth;
+        receipt.classList.add('scanning');
+        out.classList.remove('muted');
+        out.classList.add('caret');
+        out.textContent = '';
+        await new Promise((r) => setTimeout(r, reduce ? 0 : 900));
+        let i = 0;
+        typing = setInterval(() => {
+          i = reduce ? text.length : i + 4;
+          out.textContent = text.slice(0, i);
+          if (i < text.length) return;
+          clearInterval(typing);
+          out.classList.remove('caret');
+          navigator.clipboard?.writeText(text).then(
+            () =>
+              (note.textContent = `Copied ${text.split(/\s+/).length} words to your clipboard.`),
+            () =>
+              (note.textContent =
+                'Text recognized (clipboard access was blocked by the browser).'),
+          );
+        }, 16);
+      });
+    </script>
+  </body>
+</html>
