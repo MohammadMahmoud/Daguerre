@@ -23,7 +23,7 @@ jobs:
       extension: ${{ steps.which.outputs.extension }}
       desktop: ${{ steps.which.outputs.desktop }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       # Tags build only their product; manual runs build both; otherwise scripts/changed.mjs decides.
@@ -55,7 +55,7 @@ jobs:
     name: Typecheck and unit tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -81,7 +81,7 @@ jobs:
     if: needs.changes.outputs.extension == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -112,7 +112,7 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-24.04]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Linux system libraries (webview, tray, screen capture)
         if: runner.os == 'Linux'
         run: |
@@ -161,7 +161,7 @@ jobs:
             args: --bundles appimage,deb,rpm
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Linux system libraries (webview, tray, screen capture)
         if: runner.os == 'Linux'
         run: |
@@ -280,7 +280,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/download-artifact@v4
         with:
           name: coverage-report
