@@ -57,6 +57,7 @@ fn wanted_shortcuts(shortcuts: HashMap<String, String>) -> Vec<(String, String)>
 }
 
 /// The Dock icon shows while the main window or an editor is on screen.
+#[cfg(any(target_os = "macos", test))]
 fn dock_visible<'a>(windows: impl IntoIterator<Item = (&'a str, bool)>) -> bool {
     windows
         .into_iter()
