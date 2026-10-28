@@ -43,19 +43,39 @@
   },
   "commands": {
     "capture-visible": {
-      "suggested_key": { "default": "Alt+Shift+V" },
+      "suggested_key": {
+        "default": "Alt+Shift+V",
+        "windows": "Alt+Shift+V",
+        "linux": "Alt+Shift+V",
+        "mac": "Option+Shift+V"
+      },
       "description": "Capture visible area"
     },
     "capture-full": {
-      "suggested_key": { "default": "Alt+Shift+F" },
+      "suggested_key": {
+        "default": "Alt+Shift+F",
+        "windows": "Alt+Shift+F",
+        "linux": "Alt+Shift+F",
+        "mac": "Option+Shift+F"
+      },
       "description": "Capture entire page"
     },
     "capture-selection": {
-      "suggested_key": { "default": "Alt+Shift+S" },
+      "suggested_key": {
+        "default": "Alt+Shift+S",
+        "windows": "Alt+Shift+S",
+        "linux": "Alt+Shift+S",
+        "mac": "Option+Shift+S"
+      },
       "description": "Capture selected area"
     },
     "copy-selection": {
-      "suggested_key": { "default": "Alt+Shift+C" },
+      "suggested_key": {
+        "default": "Alt+Shift+C",
+        "windows": "Alt+Shift+C",
+        "linux": "Alt+Shift+C",
+        "mac": "Option+Shift+C"
+      },
       "description": "Copy selected area to clipboard without opening the editor"
     }
   }

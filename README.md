@@ -66,6 +66,8 @@ Choose **Copy selected area** in the popup, or press **Alt+Shift+C**, to select 
 | Save / print                    | <kbd>⌘</kbd> <kbd>S</kbd> / <kbd>⌘</kbd> <kbd>P</kbd>                                                                                                                                                                                          |
 | Apply crop                      | <kbd>Enter</kbd>                                                                                                                                                                                                                               |
 
+Capture shortcuts default to **Alt+Shift** on Windows and Linux, and **Option+Shift** on macOS, with the letters shown above. Existing custom assignments are preserved; browser, OS, or other extension shortcuts may prevent a default from registering.
+
 Change the capture shortcuts at `chrome://extensions/shortcuts`.
 
 ## 🚀 Getting started
