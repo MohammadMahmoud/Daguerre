@@ -1,0 +1,16 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "editor",
+  "description": "Editor windows: copy, save, print, and go back to History.",
+  "windows": ["editor-*"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-close",
+    "core:window:allow-destroy",
+    "allow-copy-png",
+    "allow-copy-text",
+    "allow-save-file",
+    "allow-print",
+    "allow-show-main"
+  ]
+}

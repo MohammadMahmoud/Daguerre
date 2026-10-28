@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-    listShots,
-    type CaptureMode,
-    type Progress,
-    type Shot,
+  listShots,
+  type CaptureMode,
+  type Progress,
+  type Shot,
 } from './lib/db';
 import './styles.css';
 import { Icon, Logo, type IconName } from './ui';
@@ -58,10 +58,10 @@ export function Popup() {
   const [shortcuts, setShortcuts] = useState<Record<string, string>>({});
   const [progress, setProgress] = useState<Progress | null>(null);
   const errorRef = useRef<string>(undefined);
-  const recent = shots.slice(0, 3);
+  const recent = useMemo(() => shots.slice(0, 3), [shots]);
   const thumbs = useMemo(
     () => new Map(recent.map((s) => [s.id, URL.createObjectURL(s.thumb)])),
-    [shots],
+    [recent],
   );
 
   useEffect(() => {

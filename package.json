@@ -1,8 +1,7 @@
 {
   "name": "daguerre",
   "private": true,
-  "version": "1.0.0",
-  "description": "Daguerre: a Chrome extension to capture, annotate and export screenshots. Everything stays on your device.",
+  "description": "Daguerre: a Chrome extension and desktop app to capture, annotate and export screenshots. Everything stays on your device.",
   "type": "module",
   "packageManager": "pnpm@11.1.3",
   "engines": {
@@ -17,15 +16,32 @@
     "coverage:badge": "node scripts/coverage-badge.mjs",
     "release-notes": "node scripts/release-notes.mjs",
     "icons": "node scripts/icons.mjs",
-    "package": "pnpm build && pnpm coverage && rm -f daguerre.zip && cd dist && zip -qrX ../daguerre.zip . -x '.*'"
+    "package": "pnpm build && pnpm coverage && rm -f daguerre.zip && cd dist && zip -qrX ../daguerre.zip . -x '.*'",
+    "desktop:dev": "vite build --mode desktop && tauri dev",
+    "desktop:build": "tsc --noEmit && id=$(security find-identity -v -p codesigning 2>/dev/null | sed -n 's/.*\"\\(.*\\)\"/\\1/p' | head -n 1); APPLE_SIGNING_IDENTITY=\"${APPLE_SIGNING_IDENTITY:-${id:--}}\" tauri build",
+    "lint": "eslint --max-warnings 0 .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,mjs,cjs}": [
+      "eslint --max-warnings 0 --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml,html,css}": "prettier --write"
   },
   "dependencies": {
+    "@tauri-apps/api": "^2.12.4",
+    "@tauri-apps/plugin-autostart": "^2.7.0",
     "@tesseract.js-data/eng": "^1.0.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@tauri-apps/cli": "^2.12.4",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
     "@types/chrome": "^0.3.6",
@@ -34,9 +50,16 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
     "@vitest/coverage-v8": "^5.0.5",
+    "eslint": "^10.13.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "fake-indexeddb": "^6.2.6",
+    "globals": "^17.13.0",
+    "husky": "^9.1.7",
     "jsdom": "^26.1.0",
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.9.10",
     "typescript": "^7.0.2",
+    "typescript-eslint": "^8.72.1",
     "vite": "^8.3.5",
     "vitest": "^5.0.5",
     "vitest-canvas-mock": "^1.2.0"

@@ -1,4 +1,10 @@
-import { useCallback, useRef, useState, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import type { CaptureMode } from './lib/db';
 
 // Static, trusted SVG markup (24×24, stroked).
@@ -46,6 +52,12 @@ const ICONS = {
     '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>',
   image:
     '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/>',
+  window:
+    '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M6.5 6.5h.01M9.5 6.5h.01"/>',
+  settings:
+    '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  close: '<path d="M6 6l12 12M18 6 6 18"/>',
+  alert: '<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5h.01"/>',
 } as const;
 
 export type IconName = keyof typeof ICONS;
@@ -67,44 +79,63 @@ export function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
   );
 }
 
-export function Logo({ size = 28 }: { size?: number }) {
+export function Logo({
+  size = 28,
+  mono = false,
+}: {
+  size?: number;
+  mono?: boolean;
+}) {
   return (
     <svg
       width={size}
       height={size}
       viewBox='0 0 28 28'
       aria-hidden='true'
-      className='logo'
+      className={mono ? 'logo logo-mono' : 'logo'}
     >
-      <defs>
-        <linearGradient id='sc-onyx' x1='0' y1='0' x2='0' y2='1'>
-          <stop offset='0' stopColor='#2a2a2f' />
-          <stop offset='1' stopColor='#050506' />
-        </linearGradient>
-        <linearGradient id='sc-silver' x1='0' y1='0' x2='1' y2='1'>
-          <stop offset='0' stopColor='#ffffff' />
-          <stop offset='0.5' stopColor='#c9ccd2' />
-          <stop offset='1' stopColor='#8e929a' />
-        </linearGradient>
-      </defs>
-      <rect
-        x='0.5'
-        y='0.5'
-        width='27'
-        height='27'
-        rx='7.5'
-        fill='url(#sc-onyx)'
-        stroke='rgba(255,255,255,.16)'
-      />
+      {!mono && (
+        <>
+          <defs>
+            <linearGradient id='sc-onyx' x1='0' y1='0' x2='0' y2='1'>
+              <stop offset='0' stopColor='#2a2a2f' />
+              <stop offset='1' stopColor='#050506' />
+            </linearGradient>
+            <linearGradient id='sc-silver' x1='0' y1='0' x2='1' y2='1'>
+              <stop offset='0' stopColor='#ffffff' />
+              <stop offset='0.5' stopColor='#c9ccd2' />
+              <stop offset='1' stopColor='#8e929a' />
+            </linearGradient>
+          </defs>
+          <rect
+            x='0.5'
+            y='0.5'
+            width='27'
+            height='27'
+            rx='7.5'
+            fill='url(#sc-onyx)'
+            stroke='rgba(255,255,255,.16)'
+          />
+        </>
+      )}
       <path
-        d='M8 11.5V8h3.5M16.5 8H20v3.5M20 16.5V20h-3.5M11.5 20H8v-3.5'
-        stroke='url(#sc-silver)'
-        strokeWidth='2.2'
+        d={
+          mono
+            ? 'M5 10V5h5M18 5h5v5M23 18v5h-5M10 23H5v-5'
+            : 'M8 11.5V8h3.5M16.5 8H20v3.5M20 16.5V20h-3.5M11.5 20H8v-3.5'
+        }
+        stroke={mono ? '#ffffff' : 'url(#sc-silver)'}
+        strokeWidth={mono ? '2.5' : '2.2'}
         fill='none'
         strokeLinecap='round'
         strokeLinejoin='round'
       />
-      <circle cx='14' cy='14' r='2' fill='url(#sc-silver)' />
+      <circle
+        cx='14'
+        cy='14'
+        r={mono ? '2.4' : '2'}
+        fill={mono ? '#ffffff' : 'url(#sc-silver)'}
+      />
     </svg>
   );
 }
@@ -114,6 +145,8 @@ export const MODE_LABEL: Record<CaptureMode, string> = {
   full: 'Full page',
   selection: 'Selection',
   tabs: 'Tab',
+  screen: 'Screen',
+  window: 'Window',
 };
 
 export function useToast() {
@@ -136,6 +169,71 @@ export function Toast({ message }: { message: ReactNode }) {
       data-show={message ? '' : undefined}
     >
       {message}
+    </div>
+  );
+}
+
+/** Modal confirmation; keeps keyboard focus inside and cancels on Escape or a backdrop click. */
+export function ConfirmDialog({
+  title,
+  children,
+  confirmLabel,
+  onConfirm,
+  onCancel,
+}: {
+  title: string;
+  children: ReactNode;
+  confirmLabel: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const dialog = useRef<HTMLDivElement>(null);
+  const cancel = useRef(onCancel);
+  cancel.current = onCancel;
+  useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null;
+    dialog.current?.querySelector('button')?.focus();
+    // Capture phase, so page shortcuts underneath don't fire while the dialog is open.
+    const onKey = (e: KeyboardEvent) => {
+      e.stopPropagation();
+      if (e.key === 'Escape') return cancel.current();
+      if (e.key !== 'Tab') return;
+      e.preventDefault();
+      const buttons = [...dialog.current!.querySelectorAll('button')];
+      const i = buttons.indexOf(document.activeElement as HTMLButtonElement);
+      const step = e.shiftKey ? -1 : 1;
+      buttons[(i + step + buttons.length) % buttons.length].focus();
+    };
+    addEventListener('keydown', onKey, true);
+    return () => {
+      removeEventListener('keydown', onKey, true);
+      previous?.focus();
+    };
+  }, []);
+  return (
+    <div
+      className='dialog-backdrop'
+      onClick={(e) => e.target === e.currentTarget && onCancel()}
+    >
+      <div
+        ref={dialog}
+        className='dialog'
+        role='alertdialog'
+        aria-modal='true'
+        aria-labelledby='dialog-title'
+        aria-describedby='dialog-body'
+      >
+        <h2 id='dialog-title'>{title}</h2>
+        <p id='dialog-body'>{children}</p>
+        <div className='dialog-actions'>
+          <button className='btn ghost' onClick={onCancel}>
+            Cancel
+          </button>
+          <button className='btn danger' onClick={onConfirm}>
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

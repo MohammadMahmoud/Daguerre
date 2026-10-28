@@ -1,19 +1,19 @@
 import {
-    act,
-    fireEvent,
-    render,
-    screen,
-    waitFor,
-    within,
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
 } from '@testing-library/react';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { History } from '../../src/history';
 import {
-    addShot,
-    clearShots,
-    getShot,
-    listShots,
-    putShots,
+  addShot,
+  clearShots,
+  getShot,
+  listShots,
+  putShots,
 } from '../../src/lib/db';
 import { imageBlob } from '../setup';
 
@@ -121,20 +121,44 @@ test('deletes one screenshot from its card', async () => {
   );
 });
 
-test('clear all asks for confirmation', async () => {
+test('clear all asks for confirmation in a dialog', async () => {
   await seed();
-  const confirm = vi
-    .spyOn(window, 'confirm')
-    .mockReturnValueOnce(false)
-    .mockReturnValueOnce(true);
   render(<History />);
   await screen.findByText('Today');
   fireEvent.click(screen.getByRole('button', { name: /Clear all/ }));
-  await waitFor(() => expect(confirm).toHaveBeenCalledOnce());
+  const dialog = screen.getByRole('alertdialog', {
+    name: 'Delete all 3 screenshots?',
+  });
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+  expect(screen.queryByRole('alertdialog')).toBeNull();
   expect(screen.getAllByRole('article')).toHaveLength(3);
   fireEvent.click(screen.getByRole('button', { name: /Clear all/ }));
+  fireEvent.click(screen.getByRole('button', { name: 'Delete all' }));
   expect(await screen.findByText('No screenshots yet')).toBeTruthy();
   expect(await listShots()).toEqual([]);
+});
+
+test('embedded, it hides its logo and hands screenshots to onOpen', async () => {
+  const { today } = await seed();
+  const onOpen = vi.fn();
+  const { container } = render(<History embedded onOpen={onOpen} />);
+  await screen.findByText('Today');
+  expect(container.querySelector('.history.embedded')).not.toBeNull();
+  expect(container.querySelector('.history-title svg')).toBeNull();
+  const link = screen.getByRole('link', { name: 'Edit Pricing page' });
+  const click = new MouseEvent('click', { bubbles: true, cancelable: true });
+  link.dispatchEvent(click);
+  expect(click.defaultPrevented).toBe(true);
+  fireEvent.click(within(card('Pricing page')).getByTitle('Pricing page'));
+  expect(onOpen.mock.calls).toEqual([[today], [today]]);
+});
+
+test('reloads when the window regains focus', async () => {
+  render(<History />);
+  expect(await screen.findByText('No screenshots yet')).toBeTruthy();
+  await seed();
+  act(() => void dispatchEvent(new Event('focus')));
+  expect(await screen.findByText('Today')).toBeTruthy();
 });
 
 test('copies and downloads from a card', async () => {

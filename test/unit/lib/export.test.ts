@@ -1,14 +1,14 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import {
-    buildPdf,
-    canvasToBlob,
-    canvasToPdf,
-    copyPng,
-    copyText,
-    downloadBlob,
-    fileName,
-    formatBytes,
-    hostOf,
+  buildPdf,
+  canvasToBlob,
+  canvasToPdf,
+  copyPng,
+  copyText,
+  downloadBlob,
+  fileName,
+  formatBytes,
+  hostOf,
 } from '../../../src/lib/export';
 import { imageBlob } from '../../setup';
 

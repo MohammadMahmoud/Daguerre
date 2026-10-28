@@ -3,7 +3,8 @@ name: CI
 on:
   push:
     branches: [main]
-    tags: ['v*']
+    # Each product is released on its own: ext-v1.2.0 or desktop-v1.1.0.
+    tags: ['ext-v*', 'desktop-v*']
   pull_request:
   workflow_dispatch:
 
@@ -15,6 +16,41 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  changes:
+    name: What changed
+    runs-on: ubuntu-latest
+    outputs:
+      extension: ${{ steps.which.outputs.extension }}
+      desktop: ${{ steps.which.outputs.desktop }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Tags build only their product; manual runs build both; otherwise scripts/changed.mjs decides.
+      - id: which
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          case "$GITHUB_REF" in
+            refs/tags/ext-v*) printf 'extension=true\ndesktop=false\n' >> "$GITHUB_OUTPUT" ;;
+            refs/tags/desktop-v*) printf 'extension=false\ndesktop=true\n' >> "$GITHUB_OUTPUT" ;;
+            *)
+              if [ "$EVENT" = pull_request ]; then node scripts/changed.mjs "origin/$BASE_REF"
+              elif [ "$EVENT" = push ]; then node scripts/changed.mjs "$BEFORE"
+              else printf 'extension=true\ndesktop=true\n' >> "$GITHUB_OUTPUT"; fi ;;
+          esac
+      - name: Release notes (fails early if the tag doesn't match the product version)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: node scripts/release-notes.mjs "$([[ $GITHUB_REF_NAME == ext-v* ]] && echo extension || echo desktop)"
+      - if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: release-notes.md
+          if-no-files-found: error
+
   test:
     name: Typecheck and unit tests
     runs-on: ubuntu-latest
@@ -27,6 +63,8 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm format:check
       - name: Unit tests with coverage (fails below 80%)
         run: pnpm coverage
       - name: Coverage badge and job summary
@@ -39,10 +77,9 @@ jobs:
 
   package:
     name: Build extension package
-    needs: test
+    needs: [changes, test]
+    if: needs.changes.outputs.extension == 'true'
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.meta.outputs.version }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -51,27 +88,133 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Release notes for this version (checks versions match)
-        run: pnpm release-notes
       - name: Build, test and zip
         run: pnpm package
       - id: meta
         run: |
-          version=$(node -p "require('./package.json').version")
+          version=$(node -p "require('./public/manifest.json').version")
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
-          mv daguerre.zip "daguerre-$version.zip"
+          mv daguerre.zip "daguerre-extension-$version.zip"
       - uses: actions/upload-artifact@v4
         with:
-          name: daguerre-${{ steps.meta.outputs.version }}-${{ steps.meta.outputs.sha }}
-          path: |
-            daguerre-*.zip
-            release-notes.md
+          name: daguerre-extension-${{ steps.meta.outputs.version }}-${{ steps.meta.outputs.sha }}
+          path: daguerre-extension-*.zip
           if-no-files-found: error
 
-  release:
-    name: GitHub release
-    if: startsWith(github.ref, 'refs/tags/v')
+  desktop-check:
+    name: Desktop checks (${{ matrix.os }})
+    needs: [changes, test]
+    if: needs.changes.outputs.desktop == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-22.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Linux system libraries (webview, tray, screen capture)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf \
+            pkg-config libclang-dev libxcb1-dev libxrandr-dev libdbus-1-dev libpipewire-0.3-dev libwayland-dev libegl-dev
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+      - run: pnpm install --frozen-lockfile
+      # The Rust build embeds the frontend, so it must exist before clippy and tests.
+      - run: pnpm vite build --mode desktop
+      - name: Format, lint and unit tests
+        working-directory: src-tauri
+        run: |
+          cargo fmt --check
+          cargo clippy --all-targets -- -D warnings
+          cargo test
+
+  desktop-build:
+    name: Installers (${{ matrix.name }})
+    # Pull requests only run the checks; installers build on main, tags and manual runs.
+    if: github.event_name != 'pull_request'
+    needs: desktop-check
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS
+            os: macos-latest
+            args: --target universal-apple-darwin --bundles dmg
+            targets: aarch64-apple-darwin,x86_64-apple-darwin
+          - name: Windows
+            os: windows-latest
+            args: --bundles nsis,msi
+          - name: Linux
+            os: ubuntu-22.04
+            args: --bundles appimage,deb,rpm
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Linux system libraries (webview, tray, screen capture)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf \
+            pkg-config libclang-dev libxcb1-dev libxrandr-dev libdbus-1-dev libpipewire-0.3-dev libwayland-dev libegl-dev
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.targets }}
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+          key: release
+      - run: pnpm install --frozen-lockfile
+      # Empty variables would make Tauri try to sign, so only set the ones that exist.
+      - name: macOS signing and notarization (when the secrets are set)
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          for name in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID; do
+            [ -n "${!name}" ] || continue
+            delimiter="EOF_$(openssl rand -hex 8)"
+            { echo "$name<<$delimiter"; echo "${!name}"; echo "$delimiter"; } >> "$GITHUB_ENV"
+          done
+      - name: Build installers
+        run: pnpm tauri build ${{ matrix.args }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: daguerre-desktop-${{ matrix.name }}
+          path: |
+            src-tauri/target/**/release/bundle/dmg/*.dmg
+            src-tauri/target/**/release/bundle/nsis/*.exe
+            src-tauri/target/**/release/bundle/msi/*.msi
+            src-tauri/target/**/release/bundle/appimage/*.AppImage
+            src-tauri/target/**/release/bundle/deb/*.deb
+            src-tauri/target/**/release/bundle/rpm/*.rpm
+          if-no-files-found: error
+
+  release-extension:
+    name: GitHub release (extension)
+    if: startsWith(github.ref, 'refs/tags/ext-v')
     needs: package
     runs-on: ubuntu-latest
     permissions:
@@ -79,12 +222,44 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          pattern: daguerre-*
+          pattern: daguerre-extension-*
           merge-multiple: true
+          path: out
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-notes
+      - name: Checksums
+        run: cd out && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
       - uses: softprops/action-gh-release@v2
         with:
           body_path: release-notes.md
-          files: daguerre-${{ needs.package.outputs.version }}.zip
+          files: out/*
+
+  release-desktop:
+    name: GitHub release (desktop)
+    if: startsWith(github.ref, 'refs/tags/desktop-v')
+    needs: desktop-build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: daguerre-desktop-*
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-notes
+      - name: Collect installers and checksums
+        run: |
+          mkdir out
+          find . -path ./out -prune -o -type f \( -name '*.dmg' -o -name '*.exe' \
+            -o -name '*.msi' -o -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' \) -exec mv {} out/ \;
+          cd out && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          body_path: release-notes.md
+          files: out/*
 
   pages:
     name: Showcase, privacy policy and coverage badge

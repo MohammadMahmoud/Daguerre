@@ -1,14 +1,14 @@
 import { describe, expect, test, vi } from 'vitest';
 import {
-    bounds,
-    constrain,
-    drawShape,
-    handleAt,
-    handlePoint,
-    hitTest,
-    normRect,
-    render,
-    resizeRect,
+  bounds,
+  constrain,
+  drawShape,
+  handleAt,
+  handlePoint,
+  hitTest,
+  normRect,
+  render,
+  resizeRect,
 } from '../../../src/editor/draw';
 import type { Shape } from '../../../src/lib/db';
 

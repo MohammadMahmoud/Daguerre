@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Daguerre",
+  "identifier": "de.mmjs.daguerre",
+  "build": {
+    "frontendDist": "../dist-desktop",
+    "beforeDevCommand": "pnpm vite build --mode desktop --watch",
+    "beforeBuildCommand": "pnpm vite build --mode desktop"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "home",
+        "url": "home.html",
+        "title": "Daguerre",
+        "width": 1040,
+        "height": 680,
+        "minWidth": 820,
+        "minHeight": 560,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "backgroundThrottling": "disabled",
+        "visible": false,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": {
+        "default-src": "'self'",
+        "script-src": "'self' 'wasm-unsafe-eval'",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' blob: data:",
+        "worker-src": "'self'",
+        "connect-src": "'self' ipc: http://ipc.localhost"
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app", "dmg", "nsis", "msi", "appimage", "deb", "rpm"],
+    "category": "Utility",
+    "shortDescription": "Capture, annotate and export screenshots.",
+    "longDescription": "Capture a selected area, a window or the whole screen. Annotate, copy text (OCR), and export to PNG, JPEG, WebP or PDF. Everything stays on your device.",
+    "copyright": "MIT License",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "macOS": {
+      "minimumSystemVersion": "13.0",
+      "signingIdentity": "-"
+    }
+  }
+}

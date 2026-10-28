@@ -1,3 +1,11 @@
+import {
+  CAPTURE_HINT,
+  CAPTURE_MODES,
+  NO_URL_LABEL,
+  SAVE_PNG_LABEL,
+  SEARCH_PLACEHOLDER,
+  SHORTCUT_HINTS,
+} from '@platform';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
@@ -16,15 +24,9 @@ import {
   hostOf,
 } from './lib/export';
 import './styles.css';
-import { Icon, Logo, MODE_LABEL, Toast, useToast } from './ui';
+import { ConfirmDialog, Icon, Logo, MODE_LABEL, Toast, useToast } from './ui';
 
-const FILTERS: (CaptureMode | 'all')[] = [
-  'all',
-  'visible',
-  'full',
-  'selection',
-  'tabs',
-];
+const FILTERS: (CaptureMode | 'all')[] = ['all', ...CAPTURE_MODES];
 
 function dayLabel(ts: number) {
   const d = new Date(ts);
@@ -40,12 +42,20 @@ function dayLabel(ts: number) {
   });
 }
 
-export function History() {
+/** `embedded` drops the page logo; `onOpen` opens screenshots instead of following editor links. */
+export function History({
+  embedded = false,
+  onOpen,
+}: {
+  embedded?: boolean;
+  onOpen?: (id: string) => void;
+} = {}) {
   const [shots, setShots] = useState<Shot[]>();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<CaptureMode | 'all'>('all');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [usage, setUsage] = useState<number>();
+  const [confirmClear, setConfirmClear] = useState(false);
   const [toast, showToast] = useToast();
 
   const load = useCallback(async () => {
@@ -57,8 +67,14 @@ export function History() {
     void load();
     const onVisible = () =>
       document.visibilityState === 'visible' && void load();
+    const onFocus = () => void load();
     document.addEventListener('visibilitychange', onVisible);
-    return () => document.removeEventListener('visibilitychange', onVisible);
+    // Desktop: the window stays visible while the editor (another window) changes shots.
+    addEventListener('focus', onFocus);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      removeEventListener('focus', onFocus);
+    };
   }, [load]);
 
   const thumbs = useMemo(
@@ -115,16 +131,19 @@ export function History() {
   }
 
   async function clearAll() {
-    if (
-      !confirm(
-        `Delete all ${shots!.length} screenshots? This cannot be undone.`,
-      )
-    )
-      return;
+    setConfirmClear(false);
     await clearShots();
     setSelected(new Set());
     await load();
   }
+
+  const openProps = (id: string) =>
+    onOpen && {
+      onClick: (e: { preventDefault(): void }) => {
+        e.preventDefault();
+        onOpen(id);
+      },
+    };
 
   async function copy(shot: Shot) {
     try {
@@ -142,10 +161,10 @@ export function History() {
   }
 
   return (
-    <div className='history'>
+    <div className={embedded ? 'history embedded' : 'history'}>
       <header className='history-head'>
         <div className='history-title'>
-          <Logo size={34} />
+          {!embedded && <Logo size={34} />}
           <div>
             <h1>History</h1>
             <p className='meta'>
@@ -160,7 +179,7 @@ export function History() {
           <Icon name='search' size={16} />
           <input
             type='search'
-            placeholder='Search by title or URL'
+            placeholder={SEARCH_PLACEHOLDER}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             aria-label='Search screenshots'
@@ -209,7 +228,10 @@ export function History() {
           ) : (
             shots &&
             shots.length > 0 && (
-              <button className='btn ghost' onClick={() => void clearAll()}>
+              <button
+                className='btn ghost'
+                onClick={() => setConfirmClear(true)}
+              >
                 <Icon name='trash' size={16} />
                 Clear all
               </button>
@@ -224,19 +246,15 @@ export function History() {
             <Logo size={56} />
             <h2>No screenshots yet</h2>
             <p>
-              Click the Daguerre icon in the toolbar, or use a shortcut.
-              Everything you capture is kept here, on this device only.
+              {CAPTURE_HINT} Everything you capture is kept here, on this device
+              only.
             </p>
             <ul className='shortcut-list'>
-              <li>
-                <kbd>Alt+Shift+V</kbd> Visible area
-              </li>
-              <li>
-                <kbd>Alt+Shift+F</kbd> Entire page
-              </li>
-              <li>
-                <kbd>Alt+Shift+S</kbd> Select area
-              </li>
+              {SHORTCUT_HINTS.map(([keys, label]) => (
+                <li key={keys}>
+                  <kbd>{keys}</kbd> {label}
+                </li>
+              ))}
             </ul>
           </div>
         )}
@@ -258,6 +276,7 @@ export function History() {
                     className='card-thumb'
                     href={`editor.html?id=${s.id}`}
                     aria-label={`Edit ${s.title}`}
+                    {...openProps(s.id)}
                   >
                     <img src={thumbs.get(s.id)} alt='' loading='lazy' />
                   </a>
@@ -280,9 +299,11 @@ export function History() {
                     </button>
                     <button
                       className='icon-btn sm'
-                      onClick={() => downloadBlob(s.blob, fileName(s, 'png'))}
-                      aria-label='Download PNG'
-                      title='Download PNG'
+                      onClick={() =>
+                        void downloadBlob(s.blob, fileName(s, 'png'))
+                      }
+                      aria-label={SAVE_PNG_LABEL}
+                      title={SAVE_PNG_LABEL}
                     >
                       <Icon name='download' size={16} />
                     </button>
@@ -300,13 +321,14 @@ export function History() {
                       className='card-title'
                       href={`editor.html?id=${s.id}`}
                       title={s.title}
+                      {...openProps(s.id)}
                     >
                       {s.title}
                     </a>
                     <div className='card-meta'>
                       <span className='pill'>{MODE_LABEL[s.mode]}</span>
                       <span className='truncate'>
-                        {hostOf(s.url) || 'Local page'}
+                        {hostOf(s.url) || NO_URL_LABEL}
                       </span>
                     </div>
                     <div className='card-meta mono'>
@@ -328,6 +350,16 @@ export function History() {
           </section>
         ))}
       </main>
+      {confirmClear && (
+        <ConfirmDialog
+          title={`Delete all ${shots!.length} screenshots?`}
+          confirmLabel='Delete all'
+          onConfirm={() => void clearAll()}
+          onCancel={() => setConfirmClear(false)}
+        >
+          This can't be undone.
+        </ConfirmDialog>
+      )}
       <Toast message={toast} />
     </div>
   );

@@ -1,12 +1,12 @@
 import { beforeEach, expect, test } from 'vitest';
 import {
-    addShot,
-    clearShots,
-    deleteShots,
-    getShot,
-    listShots,
-    makeThumb,
-    putShots,
+  addShot,
+  clearShots,
+  deleteShots,
+  getShot,
+  listShots,
+  makeThumb,
+  putShots,
 } from '../../../src/lib/db';
 import { imageBlob } from '../../setup';
 

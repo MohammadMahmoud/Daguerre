@@ -57,10 +57,10 @@ test('creates one local worker and reads tall canvases in bands', async () => {
     'eng',
     1,
     expect.objectContaining({
-      workerPath: 'chrome-extension://ext-id/ocr/worker.min.js',
-      corePath:
-        'chrome-extension://ext-id/ocr/tesseract-core-simd-lstm.wasm.js',
-      langPath: 'chrome-extension://ext-id/ocr',
+      workerPath: new URL('ocr/worker.min.js', location.href).href,
+      corePath: new URL('ocr/tesseract-core-simd-lstm.wasm.js', location.href)
+        .href,
+      langPath: new URL('ocr', location.href).href,
       workerBlobURL: false,
       cacheMethod: 'none',
     }),

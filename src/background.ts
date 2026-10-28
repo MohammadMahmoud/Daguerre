@@ -1,7 +1,7 @@
 import { addShot, type CaptureMode, type Progress } from './lib/db';
 
-const MODES: CaptureMode[] = ['visible', 'full', 'selection', 'tabs'];
-const MENU: Record<CaptureMode, string> = {
+const MODES = ['visible', 'full', 'selection', 'tabs'] as const;
+const MENU: Record<(typeof MODES)[number], string> = {
   visible: 'Capture visible area',
   full: 'Capture entire page',
   selection: 'Capture selected area',

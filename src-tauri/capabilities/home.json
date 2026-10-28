@@ -1,0 +1,26 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "home",
+  "description": "The main window: captures, History, Settings, shortcuts and tray commands.",
+  "windows": ["home"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-start-dragging",
+    "autostart:allow-enable",
+    "autostart:allow-disable",
+    "autostart:allow-is-enabled",
+    "allow-capture-screen",
+    "allow-take-capture",
+    "allow-select",
+    "allow-set-shortcuts",
+    "allow-take-pending",
+    "allow-copy-png",
+    "allow-save-file",
+    "allow-open-editor",
+    "allow-show-main",
+    "allow-hide-main",
+    "allow-platform",
+    "allow-screen-access",
+    "allow-set-tray-icon"
+  ]
+}

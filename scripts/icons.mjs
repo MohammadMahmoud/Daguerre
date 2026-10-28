@@ -1,5 +1,6 @@
-// Renders the extension icon into public/icons without any image dependencies.
+// Renders the extension and desktop tray icons without any image dependencies.
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import { deflateSync } from 'node:zlib';
 
 const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
@@ -20,6 +21,19 @@ const chunk = (type, data) => {
   out.writeUInt32BE(crc32(body), body.length + 4);
   return out;
 };
+
+function encodePng(size, rows) {
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(size, 0);
+  ihdr.writeUInt32BE(size, 4);
+  ihdr.set([8, 6, 0, 0, 0], 8);
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk('IHDR', ihdr),
+    chunk('IDAT', deflateSync(Buffer.concat(rows))),
+    chunk('IEND', Buffer.alloc(0)),
+  ]);
+}
 
 function insideRoundedRect(u, v, m, r) {
   const x = Math.max(m + r - u, 0, u - (1 - m - r));
@@ -53,7 +67,7 @@ function isInk(u, v) {
   return Math.hypot(u - 0.5, v - 0.5) < 0.075;
 }
 
-function render(size) {
+export function render(size) {
   const ss = 4;
   // Web Store: the 128px icon is 96px artwork plus 16px transparent padding per side.
   const pad = size === 128 ? 16 / 128 : 0;
@@ -88,19 +102,49 @@ function render(size) {
     }
     rows.push(Buffer.from(row.map(Math.round)));
   }
-  const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(size, 0);
-  ihdr.writeUInt32BE(size, 4);
-  ihdr.set([8, 6, 0, 0, 0], 8);
-  return Buffer.concat([
-    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-    chunk('IHDR', ihdr),
-    chunk('IDAT', deflateSync(Buffer.concat(rows))),
-    chunk('IEND', Buffer.alloc(0)),
-  ]);
+  return encodePng(size, rows);
 }
 
-const dir = new URL('../public/icons/', import.meta.url);
-mkdirSync(dir, { recursive: true });
-for (const size of [16, 32, 48, 128])
-  writeFileSync(new URL(`icon-${size}.png`, dir), render(size));
+/** White logo on a transparent background for the menu bar and system tray. */
+export function renderTray(size) {
+  const ss = 4;
+  // Fill the menu bar slot without the surrounding onyx tile.
+  const scale = 0.72;
+  const rows = [];
+  for (let y = 0; y < size; y++) {
+    const row = [0];
+    for (let x = 0; x < size; x++) {
+      let a = 0;
+      for (let sy = 0; sy < ss; sy++) {
+        for (let sx = 0; sx < ss; sx++) {
+          const u = ((x + (sx + 0.5) / ss) / size - 0.5) * scale + 0.5;
+          const v = ((y + (sy + 0.5) / ss) / size - 0.5) * scale + 0.5;
+          if (isInk(u, v)) a += 1;
+        }
+      }
+      const alpha = Math.round((a / (ss * ss)) * 255);
+      row.push(alpha ? 255 : 0, alpha ? 255 : 0, alpha ? 255 : 0, alpha);
+    }
+    rows.push(Buffer.from(row));
+  }
+  return encodePng(size, rows);
+}
+
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
+  const dir = new URL('../public/icons/', import.meta.url);
+  mkdirSync(dir, { recursive: true });
+  for (const size of [16, 32, 48, 128])
+    writeFileSync(new URL(`icon-${size}.png`, dir), render(size));
+  // Source for the desktop icons: `pnpm tauri icon src-tauri/app-icon.png`.
+  writeFileSync(
+    new URL('../src-tauri/app-icon.png', import.meta.url),
+    render(1024),
+  );
+  writeFileSync(
+    new URL('../src-tauri/icons/tray-white.png', import.meta.url),
+    renderTray(64),
+  );
+}

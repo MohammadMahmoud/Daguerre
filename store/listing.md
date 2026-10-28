@@ -1,6 +1,6 @@
 # Chrome Web Store submission
 
-Copy these values into the [Developer Dashboard](https://chrome.google.com/webstore/devconsole). Build the upload with `pnpm package` (creates `daguerre.zip`), or download the `daguerre-<version>` artifact from the CI run or GitHub release.
+Copy these values into the [Developer Dashboard](https://chrome.google.com/webstore/devconsole). Build the upload with `pnpm package` (creates `daguerre.zip`), or download the `daguerre-extension-<version>` artifact from the CI run or the `ext-v<version>` GitHub release.
 
 ## Store listing
 
@@ -69,7 +69,7 @@ Copy these values into the [Developer Dashboard](https://chrome.google.com/webst
 - [ ] Contact email added to `store/privacy.html`, and the policy live on GitHub Pages
 - [ ] "Daguerre" checked against existing store listings and trademarks
 - [ ] `pnpm package` run, and the zip loaded unpacked once in a clean Chrome profile to smoke-test
-- [ ] Bump `version` in `package.json` and `public/manifest.json`, and add a matching `CHANGELOG.md` section, for every update you upload
+- [ ] Bump `version` in `public/manifest.json`, and add a matching `## [Extension x.y.z]` section to `CHANGELOG.md`, for every update you upload
 
 ## Third-party software
 

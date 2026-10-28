@@ -1,6 +1,8 @@
 import type { Shot } from './db';
 import type { OcrWord } from './ocr';
 
+export { copyPng, copyText, downloadBlob, printPage } from '@platform';
+
 export function hostOf(url: string) {
   try {
     return new URL(url).hostname.replace(/^www\./, '');
@@ -23,15 +25,6 @@ export function fileName(shot: Pick<Shot, 'url' | 'createdAt'>, ext: string) {
   return `Daguerre ${host ? `${host} ` : ''}${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} at ${p(d.getHours())}.${p(d.getMinutes())}.${p(d.getSeconds())}.${ext}`;
 }
 
-export function downloadBlob(blob: Blob, name: string) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = name;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 10_000);
-}
-
 export function canvasToBlob(
   canvas: HTMLCanvasElement,
   type = 'image/png',
@@ -45,19 +38,6 @@ export function canvasToBlob(
       quality,
     ),
   );
-}
-
-/** Accepts a promise so the clipboard write keeps the user gesture while encoding. */
-export function copyPng(png: Blob | Promise<Blob>) {
-  return navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]);
-}
-
-export function copyText(text: Promise<string>) {
-  return navigator.clipboard.write([
-    new ClipboardItem({
-      'text/plain': text.then((t) => new Blob([t], { type: 'text/plain' })),
-    }),
-  ]);
 }
 
 export interface PdfImage {

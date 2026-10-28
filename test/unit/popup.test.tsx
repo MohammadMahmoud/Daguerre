@@ -1,9 +1,9 @@
 import {
-    act,
-    fireEvent,
-    render,
-    screen,
-    waitFor,
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
 } from '@testing-library/react';
 import { beforeEach, expect, test, vi } from 'vitest';
 import { addShot, clearShots } from '../../src/lib/db';

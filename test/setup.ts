@@ -133,6 +133,7 @@ window.print = () => undefined;
 
 beforeEach(() => {
   installChrome();
+  localStorage.clear();
   Object.defineProperty(navigator, 'clipboard', {
     configurable: true,
     value: {

@@ -1,3 +1,4 @@
+import { guardClose, leaveToHistory, SAVED_TOAST } from '@platform';
 import {
   useEffect,
   useMemo,
@@ -39,10 +40,18 @@ import {
   fileName,
   formatBytes,
   hostOf,
+  printPage,
 } from './lib/export';
 import { recognize } from './lib/ocr';
 import './styles.css';
-import { Icon, MODE_LABEL, Toast, useToast, type IconName } from './ui';
+import {
+  ConfirmDialog,
+  Icon,
+  MODE_LABEL,
+  Toast,
+  useToast,
+  type IconName,
+} from './ui';
 
 type Tool = 'select' | 'crop' | Shape['kind'];
 type Drag = {
@@ -119,13 +128,17 @@ export function Editor() {
   const [zoom, setZoom] = useState<number | 'fit'>('fit');
   const [stage, setStage] = useState({ w: 1000, h: 700 });
   const [exportOpen, setExportOpen] = useState(false);
-  const [quality, setQuality] = useState(0.8);
+  const [quality, setQuality] = useState(
+    () => Number(localStorage.getItem('quality')) || 0.8,
+  );
   const [halfSize, setHalfSize] = useState(false);
   const [estimates, setEstimates] = useState<
     Partial<Record<'png' | Compressed, number>>
   >({});
   const [busy, setBusy] = useState(false);
   const [printUrl, setPrintUrl] = useState<string>();
+  const [confirmClose, setConfirmClose] =
+    useState<(discard: boolean) => void>();
   const [toast, showToast] = useToast();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -174,9 +187,6 @@ export function Editor() {
       setShot(s);
       document.title = `${s.title} – Daguerre`;
     })().catch(() => setShot(null));
-    void chrome.storage.local
-      .get('quality')
-      .then((r) => r.quality && setQuality(Number(r.quality)));
   }, [id]);
 
   useEffect(() => {
@@ -195,6 +205,22 @@ export function Editor() {
     addEventListener('beforeunload', onBeforeUnload);
     return () => removeEventListener('beforeunload', onBeforeUnload);
   }, [dirty]);
+
+  const dirtyRef = useRef(dirty);
+  dirtyRef.current = dirty;
+  useEffect(
+    () =>
+      guardClose(
+        () => dirtyRef.current,
+        () => new Promise<boolean>((resolve) => setConfirmClose(() => resolve)),
+      ),
+    [],
+  );
+
+  function answerClose(discard: boolean) {
+    confirmClose?.(discard);
+    setConfirmClose(undefined);
+  }
 
   // Paint only the visible part: a full-size canvas of a tall capture exceeds GPU limits and is slow.
   useEffect(() => {
@@ -333,6 +359,8 @@ export function Editor() {
       setEstimates({ png: png.size, jpeg: jpeg.size, webp: webp.size });
     }, 150);
     return () => clearTimeout(timer);
+    // renderFinal is rebuilt every render; listing it would re-estimate (and re-render) forever.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exportOpen, img, doc, quality, halfSize]);
 
   useEffect(() => {
@@ -405,7 +433,11 @@ export function Editor() {
         <Icon name='image' size={40} />
         <h1>Screenshot not found</h1>
         <p>It may have been deleted from your history.</p>
-        <a className='btn primary' href='history.html'>
+        <a
+          className='btn primary'
+          href='history.html'
+          onClick={(e) => leaveToHistory() && e.preventDefault()}
+        >
           Open history
         </a>
       </div>
@@ -787,25 +819,44 @@ export function Editor() {
 
   function download(type: 'png' | Compressed) {
     setExportOpen(false);
-    return withBusy('Download started', async () => {
-      const blob =
-        type === 'png'
-          ? await canvasToBlob(renderFinal())
-          : await canvasToBlob(renderFinal(halfSize), `image/${type}`, quality);
-      downloadBlob(blob, fileName(shot!, type === 'jpeg' ? 'jpg' : type));
-    });
+    let saved: unknown;
+    // A cancelled save dialog (desktop) shows no toast.
+    return withBusy(
+      () => (saved === false ? '' : SAVED_TOAST),
+      async () => {
+        const blob =
+          type === 'png'
+            ? await canvasToBlob(renderFinal())
+            : await canvasToBlob(
+                renderFinal(halfSize),
+                `image/${type}`,
+                quality,
+              );
+        saved = await downloadBlob(
+          blob,
+          fileName(shot!, type === 'jpeg' ? 'jpg' : type),
+        );
+      },
+    );
   }
 
   function exportPdf(searchable = false) {
     setExportOpen(false);
-    return withBusy('PDF ready', async () => {
-      const canvas = renderFinal();
-      if (searchable) showToast('Reading text…', 60_000);
-      const words = searchable
-        ? (await recognize(canvas, ocrProgress)).words
-        : undefined;
-      downloadBlob(await canvasToPdf(canvas, words), fileName(shot!, 'pdf'));
-    });
+    let saved: unknown;
+    return withBusy(
+      () => (saved === false ? '' : 'PDF ready'),
+      async () => {
+        const canvas = renderFinal();
+        if (searchable) showToast('Reading text…', 60_000);
+        const words = searchable
+          ? (await recognize(canvas, ocrProgress)).words
+          : undefined;
+        saved = await downloadBlob(
+          await canvasToPdf(canvas, words),
+          fileName(shot!, 'pdf'),
+        );
+      },
+    );
   }
 
   async function print() {
@@ -824,7 +875,7 @@ export function Editor() {
 
   function changeQuality(q: number) {
     setQuality(q);
-    void chrome.storage.local.set({ quality: q });
+    localStorage.setItem('quality', String(q));
   }
 
   const cursor =
@@ -844,6 +895,7 @@ export function Editor() {
           <a
             className='icon-btn'
             href='history.html'
+            onClick={(e) => leaveToHistory() && e.preventDefault()}
             aria-label='Back to history'
             title='History'
           >
@@ -1163,11 +1215,21 @@ export function Editor() {
         </main>
       </div>
       <Toast message={toast} />
+      {confirmClose && (
+        <ConfirmDialog
+          title='Discard unsaved changes?'
+          confirmLabel='Discard'
+          onConfirm={() => answerClose(true)}
+          onCancel={() => answerClose(false)}
+        >
+          Your edits since the last save will be lost.
+        </ConfirmDialog>
+      )}
       {printUrl && (
         <img
           className='print-only'
           src={printUrl}
-          onLoad={() => window.print()}
+          onLoad={() => void printPage()}
           alt=''
         />
       )}

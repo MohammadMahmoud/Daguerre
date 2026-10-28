@@ -13,14 +13,16 @@ export interface OcrWord {
 const BAND = 4000;
 let worker: Promise<Tesseract.Worker> | undefined;
 let onProgress: ((p: number) => void) | undefined;
+// Pages sit at the root of the extension and the desktop app, next to ocr/.
+const asset = (path: string) => new URL(path, location.href).href;
 
 function getWorker() {
   worker ??= import('tesseract.js')
     .then(({ default: T }) =>
       T.createWorker('eng', T.OEM.LSTM_ONLY, {
-        workerPath: chrome.runtime.getURL('ocr/worker.min.js'),
-        corePath: chrome.runtime.getURL('ocr/tesseract-core-simd-lstm.wasm.js'),
-        langPath: chrome.runtime.getURL('ocr'),
+        workerPath: asset('ocr/worker.min.js'),
+        corePath: asset('ocr/tesseract-core-simd-lstm.wasm.js'),
+        langPath: asset('ocr'),
         // Extension CSP blocks blob: workers; the model is bundled, so skip the IndexedDB cache.
         workerBlobURL: false,
         cacheMethod: 'none',

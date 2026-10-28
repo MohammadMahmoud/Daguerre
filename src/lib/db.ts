@@ -1,4 +1,5 @@
-export type CaptureMode = 'visible' | 'full' | 'selection' | 'tabs';
+export type CaptureMode =
+  'visible' | 'full' | 'selection' | 'tabs' | 'screen' | 'window';
 
 /** Live capture state shared via chrome.storage.session. `value` is 0..1. */
 export interface Progress {

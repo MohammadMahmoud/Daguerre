@@ -1,15 +1,15 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { imageBlob } from '../../test/setup';
 import {
-    buildPdf,
-    canvasToBlob,
-    canvasToPdf,
-    copyPng,
-    copyText,
-    downloadBlob,
-    fileName,
-    formatBytes,
-    hostOf,
+  buildPdf,
+  canvasToBlob,
+  canvasToPdf,
+  copyPng,
+  copyText,
+  downloadBlob,
+  fileName,
+  formatBytes,
+  hostOf,
 } from './export';
 
 const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xd9]);

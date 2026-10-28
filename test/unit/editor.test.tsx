@@ -1,19 +1,19 @@
 import {
-    act,
-    fireEvent,
-    render,
-    screen,
-    waitFor,
-    within,
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { Editor } from '../../src/editor';
 import {
-    addShot,
-    clearShots,
-    getShot,
-    putShots,
-    type Edits,
+  addShot,
+  clearShots,
+  getShot,
+  putShots,
+  type Edits,
 } from '../../src/lib/db';
 import { recognize } from '../../src/lib/ocr';
 import { defaultBitmap, imageBlob } from '../setup';
@@ -229,7 +229,7 @@ describe('annotations', () => {
     const custom = screen.getByLabelText('Custom color');
     fireEvent.change(custom, { target: { value: '#123456' } });
     fireEvent.blur(custom);
-    let [rect] = (await savedEdits(id)).shapes;
+    const [rect] = (await savedEdits(id)).shapes;
     expect(rect.pts).toEqual([150, 120, 350, 270]);
     expect(rect.color).toBe('#123456');
     expect(rect.size).toBeGreaterThan(5);
@@ -380,7 +380,7 @@ describe('export', () => {
     fireEvent.change(within(menu).getByRole('slider'), {
       target: { value: '0.5' },
     });
-    expect((globalThis as any).chrome.storage.local.data.quality).toBe(0.5);
+    expect(localStorage.getItem('quality')).toBe('0.5');
     fireEvent.click(
       within(menu).getByRole('checkbox', {
         name: /Half resolution \(450 × 300\)/,

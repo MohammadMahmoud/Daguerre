@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-screen-access"
+description = "Enables the screen_access command without any pre-configured scope."
+commands.allow = ["screen_access"]
+
+[[permission]]
+identifier = "deny-screen-access"
+description = "Denies the screen_access command without any pre-configured scope."
+commands.deny = ["screen_access"]
