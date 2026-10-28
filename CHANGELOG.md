@@ -4,7 +4,7 @@ All notable changes to Daguerre are listed here. The format follows [Keep a Chan
 
 The Chrome extension and the desktop app are versioned and released separately: extension sections are headed `## [Extension x.y.z]` (version in `public/manifest.json`, tag `ext-vx.y.z`), desktop sections `## [Desktop x.y.z]` (version in `src-tauri/Cargo.toml`, tag `desktop-vx.y.z`). Each release publishes its own section as the release notes. A change to shared code (the editor, History, export) goes in both.
 
-## [Desktop Unreleased]
+## [Desktop 0.0.3] - 2026-10-28
 
 ### Added
 
