@@ -74,15 +74,22 @@ describe('release notes', () => {
   });
 
   test('the real repository is consistent', () => {
-    expect(readVersion('desktop')).toMatch(/^\d+\.\d+\.\d+$/);
+    const desktop = readVersion('desktop');
+    expect(desktop).toMatch(/^\d+\.\d+\.\d+$/);
+    const lockVersion = readFileSync('src-tauri/Cargo.lock', 'utf8').match(
+      /name = "daguerre"\nversion = "([^"]+)"/,
+    )?.[1];
+    expect(lockVersion).toBe(desktop);
+    const changelog = readFileSync('CHANGELOG.md', 'utf8');
+    if (!changelog.includes('## [Desktop Unreleased]')) {
+      expect(() => releaseNotes('desktop', desktop, changelog)).not.toThrow();
+    }
     const extension = readVersion('extension');
-    expect(() =>
-      releaseNotes(
-        'extension',
-        extension,
-        readFileSync('CHANGELOG.md', 'utf8'),
-      ),
-    ).not.toThrow();
+    expect(() => releaseNotes('extension', extension, changelog)).not.toThrow();
+    // xcap -> libspa 0.10 requires PipeWire >= 0.3.65 (Ubuntu 24.04+) and libwayshot links -lgbm.
+    const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
+    expect(ci).not.toContain('ubuntu-22.04');
+    expect(ci).toContain('libgbm-dev');
   });
 });
 

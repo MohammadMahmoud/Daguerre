@@ -65,3 +65,31 @@ test('the main window is never suspended while hidden', () => {
   const home = app.windows.find((w) => w.label === 'home');
   expect(home?.backgroundThrottling).toBe('disabled');
 });
+
+// Local builds on macOS compile #[cfg(target_os = "macos")] items, hiding dead-code warnings that
+// would fail `cargo clippy -- -D warnings` on Linux and Windows if a helper isn't gated too.
+test('every un-gated private Rust helper is used outside macOS-only and test blocks', () => {
+  for (const file of files('src-tauri/src').filter((f) => f.endsWith('.rs'))) {
+    const withoutTests = read(file).split('#[cfg(test)]')[0];
+    // Strip #[cfg(target_os = "macos")] items/blocks to simulate a Linux/Windows build.
+    const nonMac = withoutTests.replace(
+      /#\[cfg\(target_os = "macos"\)\]\s*(?:(?:#\[[^\]]*\]\s*)*(?:unsafe\s+|async\s+)?fn\s+\w+[^{]*\{[\s\S]*?\n\}|extern\s+"C"\s*\{[\s\S]*?\}|\{[\s\S]*?\}|[^;\n]+;)/g,
+      '',
+    );
+    const fns = [
+      ...nonMac.matchAll(
+        /(?:^|\n)((?:\s*#\[[^\]]+\]\s*)*)\s*(?:async\s+)?fn\s+(\w+)\s*[<(]/g,
+      ),
+    ];
+    for (const [decl, attrs, name] of fns) {
+      if (name === 'main') continue;
+      if (attrs.includes('#[tauri::command]') || attrs.includes('#[cfg('))
+        continue;
+      const body = nonMac.replace(decl, '');
+      expect(
+        new RegExp(`\\b${name}\\b`).test(body),
+        `${file}: fn ${name} is unused on non-macOS targets (gate it with #[cfg(any(target_os = "macos", test))])`,
+      ).toBe(true);
+    }
+  }
+});
