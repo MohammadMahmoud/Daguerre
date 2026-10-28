@@ -109,7 +109,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-22.04]
+        os: [macos-latest, windows-latest, ubuntu-24.04]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -157,7 +157,7 @@ jobs:
             os: windows-latest
             args: --bundles nsis,msi
           - name: Linux
-            os: ubuntu-22.04
+            os: ubuntu-24.04
             args: --bundles appimage,deb,rpm
     runs-on: ${{ matrix.os }}
     steps:
@@ -229,9 +229,13 @@ jobs:
         with:
           name: release-notes
       - name: Checksums
-        run: cd out && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
+        id: version
+        run: |
+          echo "version=${GITHUB_REF_NAME#ext-v}" >> "$GITHUB_OUTPUT"
+          cd out && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
       - uses: softprops/action-gh-release@v2
         with:
+          name: Daguerre ${{ steps.version.outputs.version }}
           body_path: release-notes.md
           files: out/*
 
@@ -251,13 +255,16 @@ jobs:
         with:
           name: release-notes
       - name: Collect installers and checksums
+        id: version
         run: |
+          echo "version=${GITHUB_REF_NAME#desktop-v}" >> "$GITHUB_OUTPUT"
           mkdir out
           find . -path ./out -prune -o -type f \( -name '*.dmg' -o -name '*.exe' \
             -o -name '*.msi' -o -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' \) -exec mv {} out/ \;
           cd out && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
       - uses: softprops/action-gh-release@v2
         with:
+          name: Daguerre ${{ steps.version.outputs.version }}
           body_path: release-notes.md
           files: out/*
 
