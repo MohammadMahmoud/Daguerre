@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Daguerre: screenshot studio for Chrome</title>
+    <title>Daguerre: screenshot studio for Chrome and desktop</title>
     <meta
       name="description"
-      content="Capture any page, mark it up and export it in seconds. Full-page and scrolling capture, an editor, on-device text recognition and searchable PDFs. Nothing leaves your browser."
+      content="Capture any page or app, mark it up and export it in seconds. Full-page and scrolling capture, an editor, on-device text recognition and searchable PDFs, in Chrome or on macOS, Windows and Linux. Nothing leaves your device."
     />
     <meta
       property="og:title"
@@ -14,7 +14,7 @@
     />
     <meta
       property="og:description"
-      content="Capture, annotate and export screenshots in Chrome. Everything stays on your device."
+      content="Capture, annotate and export screenshots in Chrome or on your desktop. Everything stays on your device."
     />
     <meta property="og:image" content="promo-small-440x280.png" />
     <meta name="theme-color" content="#09090a" />
@@ -244,7 +244,7 @@
         font-size: 19px;
         color: var(--muted);
       }
-      .hero .ctas {
+      .ctas {
         display: flex;
         gap: 12px;
         flex-wrap: wrap;
@@ -877,6 +877,7 @@
           <a href="#capture">Capture</a>
           <a href="#editor">Editor</a>
           <a href="#ocr">Copy Text</a>
+          <a href="#desktop">Desktop</a>
           <a href="#privacy">Privacy</a>
         </div>
         <a class="btn primary" data-install href="#">Add to Chrome</a>
@@ -886,25 +887,27 @@
     <header class="hero" id="top">
       <div class="wrap">
         <div class="hero-copy">
-          <p class="eyebrow">Screenshot studio for Chrome</p>
+          <p class="eyebrow">Screenshot studio for Chrome and desktop</p>
           <h1>
             Screenshots, <span class="silver-text">plated in silver.</span>
           </h1>
           <p class="lead">
-            Capture any page, mark it up and export it in seconds: full pages,
-            scrolling selections, searchable PDFs. Nothing ever leaves your
-            browser.
+            Capture any page or app, mark it up and export it in seconds: full
+            pages, scrolling selections, searchable PDFs. Nothing ever leaves
+            your device.
           </p>
           <div class="ctas">
             <a class="btn primary" data-install href="#"
               >Add to Chrome, it's free</a
             >
+            <a class="btn" href="#desktop">Get the desktop app</a>
             <a class="btn" href="#editor">Try the editor</a>
           </div>
           <div class="pills" aria-label="Highlights">
             <span class="pill"><b>4</b> capture modes</span>
             <span class="pill"><b>On-device</b> text recognition</span>
             <span class="pill"><b>0</b> trackers</span>
+            <span class="pill">macOS · Windows · Linux</span>
             <span class="pill">Manifest V3</span>
           </div>
         </div>
@@ -1211,6 +1214,117 @@ Press Copy Text to read the invoice.</pre>
       </div>
     </section>
 
+    <section id="desktop">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">Desktop app</p>
+          <h2>Any app, <span class="silver-text">any screen.</span></h2>
+          <p class="muted">
+            The same editor, History, Copy Text and export for macOS, Windows
+            and Linux. Capture an area, a window or a whole screen with global
+            shortcuts, and keep Daguerre in the menu bar or system tray.
+          </p>
+        </div>
+        <div class="modes">
+          <div
+            class="tablist"
+            role="tablist"
+            aria-label="Desktop app"
+            aria-orientation="vertical"
+          >
+            <button
+              class="tab"
+              role="tab"
+              id="tab-desktop-capture"
+              aria-controls="desktop-shot"
+              aria-selected="true"
+              data-src="desktop/1-capture.png"
+              data-alt="Desktop main window on the Capture page: select area, window and screen, copy selected area, a delay timer and recent captures"
+            >
+              Capture
+              <span>Select an area, a window or a screen, with a delay.</span>
+            </button>
+            <button
+              class="tab"
+              role="tab"
+              id="tab-desktop-editor"
+              aria-controls="desktop-shot"
+              aria-selected="false"
+              tabindex="-1"
+              data-src="desktop/2-editor.png"
+              data-alt="Desktop editor window with a dashboard capture: a highlighted revenue card, a callout, numbered steps and pixelated customer names"
+            >
+              Editor <span>Every screenshot opens in its own window.</span>
+            </button>
+            <button
+              class="tab"
+              role="tab"
+              id="tab-desktop-history"
+              aria-controls="desktop-shot"
+              aria-selected="false"
+              tabindex="-1"
+              data-src="desktop/3-history.png"
+              data-alt="Desktop History page with captures grouped by day and filters for selection, screen and window"
+            >
+              History <span>Search, filter and bulk delete, all local.</span>
+            </button>
+            <button
+              class="tab"
+              role="tab"
+              id="tab-desktop-settings"
+              aria-controls="desktop-shot"
+              aria-selected="false"
+              tabindex="-1"
+              data-src="desktop/4-settings.png"
+              data-alt="Desktop Settings page with editable global shortcuts, open at login and the Screen Recording permission"
+            >
+              Settings
+              <span>Your shortcuts, open at login and automatic updates.</span>
+            </button>
+          </div>
+          <div
+            class="window reveal"
+            id="desktop-shot"
+            role="tabpanel"
+            aria-labelledby="tab-desktop-capture"
+          >
+            <img
+              src="desktop/1-capture.png"
+              width="2560"
+              height="1600"
+              loading="lazy"
+              alt="Desktop main window on the Capture page: select area, window and screen, copy selected area, a delay timer and recent captures"
+            />
+          </div>
+        </div>
+        <div class="grid reveal" style="margin-top: 48px">
+          <div class="chip">
+            <span class="tag">.dmg</span>
+            <h3>macOS</h3>
+            <p>One universal app for Apple silicon and Intel.</p>
+          </div>
+          <div class="chip">
+            <span class="tag">.exe · .msi</span>
+            <h3>Windows</h3>
+            <p>Installer or MSI package, 64-bit.</p>
+          </div>
+          <div class="chip">
+            <span class="tag">AppImage · .deb · .rpm</span>
+            <h3>Linux</h3>
+            <p>X11 and Wayland, through your desktop's screenshot portal.</p>
+          </div>
+          <div class="chip">
+            <span class="tag">Signed</span>
+            <h3>Updates</h3>
+            <p>Check from Settings, or let Daguerre install them daily.</p>
+          </div>
+        </div>
+        <div class="ctas reveal" style="margin-top: 40px">
+          <a class="btn primary" data-download href="#">Download for desktop</a>
+        </div>
+      </div>
+    </section>
+
     <section id="privacy">
       <div class="wrap">
         <div class="section-head reveal">
@@ -1267,7 +1381,10 @@ Press Copy Text to read the invoice.</pre>
       <h2>
         Make your next screenshot <span class="silver-text">a keeper.</span>
       </h2>
-      <a class="btn primary" data-install href="#">Add to Chrome</a>
+      <div class="ctas">
+        <a class="btn primary" data-install href="#">Add to Chrome</a>
+        <a class="btn" data-download href="#">Download for desktop</a>
+      </div>
     </div>
 
     <footer>
@@ -1291,6 +1408,9 @@ Press Copy Text to read the invoice.</pre>
       document
         .querySelectorAll('[data-repo]')
         .forEach((a) => (a.href = REPO_URL));
+      document
+        .querySelectorAll('[data-download]')
+        .forEach((a) => (a.href = `${REPO_URL}/releases/latest`));
       const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       // Reveal on scroll.
@@ -1323,54 +1443,71 @@ Press Copy Text to read the invoice.</pre>
         });
       }
 
-      // Capture mode tabs (arrow keys move between tabs).
+      // Vertical tablists (arrow keys move between tabs) that cycle on their own until used.
+      function tablist(root, onSelect) {
+        const tabs = [...root.querySelectorAll('[role="tab"]')];
+        const panel = document.getElementById(
+          tabs[0].getAttribute('aria-controls'),
+        );
+        let timer;
+        function select(tab, focus) {
+          tabs.forEach((t) => {
+            const on = t === tab;
+            t.setAttribute('aria-selected', on);
+            t.tabIndex = on ? 0 : -1;
+          });
+          if (focus) tab.focus();
+          panel.setAttribute('aria-labelledby', tab.id);
+          onSelect(tab);
+        }
+        tabs.forEach((t, i) => {
+          t.addEventListener('click', () => {
+            clearInterval(timer);
+            select(t);
+          });
+          t.addEventListener('keydown', (e) => {
+            const step = {
+              ArrowDown: 1,
+              ArrowRight: 1,
+              ArrowUp: -1,
+              ArrowLeft: -1,
+            }[e.key];
+            if (!step) return;
+            e.preventDefault();
+            clearInterval(timer);
+            select(tabs[(i + step + tabs.length) % tabs.length], true);
+          });
+        });
+        let auto = 0;
+        if (!reduce)
+          timer = setInterval(
+            () => select(tabs[(auto = (auto + 1) % tabs.length)]),
+            4200,
+          );
+      }
+
+      // Capture modes.
       const demo = document.getElementById('demo');
       const hud = document.getElementById('hud-text');
-      const tabs = [...document.querySelectorAll('[role="tab"]')];
       const hudText = {
         visible: '',
         full: 'Capturing section 4 of 4',
         selection: '',
         tabs: 'Tab 4 of 4 · Inbox',
       };
-      let modeTimer;
-      function select(tab, focus) {
-        tabs.forEach((t) => {
-          const on = t === tab;
-          t.setAttribute('aria-selected', on);
-          t.tabIndex = on ? 0 : -1;
-        });
-        if (focus) tab.focus();
-        demo.setAttribute('aria-labelledby', tab.id);
+      tablist(document.querySelector('#capture .tablist'), (tab) => {
         demo.dataset.mode = '';
         void demo.offsetWidth; // restart CSS animations
         demo.dataset.mode = tab.dataset.mode;
         hud.textContent = hudText[tab.dataset.mode];
-      }
-      tabs.forEach((t, i) => {
-        t.addEventListener('click', () => {
-          clearInterval(modeTimer);
-          select(t);
-        });
-        t.addEventListener('keydown', (e) => {
-          const step = {
-            ArrowDown: 1,
-            ArrowRight: 1,
-            ArrowUp: -1,
-            ArrowLeft: -1,
-          }[e.key];
-          if (!step) return;
-          e.preventDefault();
-          clearInterval(modeTimer);
-          select(tabs[(i + step + tabs.length) % tabs.length], true);
-        });
       });
-      let auto = 0;
-      if (!reduce)
-        modeTimer = setInterval(
-          () => select(tabs[(auto = (auto + 1) % tabs.length)]),
-          4200,
-        );
+
+      // Desktop app screenshots.
+      const shot = document.querySelector('#desktop-shot img');
+      tablist(document.querySelector('#desktop .tablist'), (tab) => {
+        shot.src = tab.dataset.src;
+        shot.alt = tab.dataset.alt;
+      });
 
       // Editor playground.
       const board = document.getElementById('board');

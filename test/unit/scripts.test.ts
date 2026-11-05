@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 import { classify } from '../../scripts/changed.mjs';
 import { readVersion, releaseNotes } from '../../scripts/release-notes.mjs';
+import { updaterManifest } from '../../scripts/updater-manifest.mjs';
 
 const CHANGELOG = `# Changelog
 
@@ -130,5 +131,47 @@ describe('changed products', () => {
         'eslint.config.js',
       ]),
     ).toEqual({ extension: false, desktop: false });
+  });
+});
+
+describe('updater manifest', () => {
+  test('maps signed installers to updater targets and skips unsigned ones', () => {
+    const manifest = updaterManifest({
+      version: '1.1.0',
+      files: [
+        'Daguerre.app.tar.gz',
+        'Daguerre.app.tar.gz.sig',
+        'Daguerre_1.1.0_universal.dmg',
+        'Daguerre_1.1.0_x64-setup.exe',
+        'Daguerre_1.1.0_x64-setup.exe.sig',
+        'Daguerre_1.1.0_amd64.AppImage',
+        'Daguerre_1.1.0_amd64.deb',
+      ],
+      readSig: (file: string) => `sig of ${file}\n`,
+      url: 'https://example.com/dl',
+      notes: 'Notes',
+      date: new Date('2026-11-04T00:00:00Z'),
+    });
+    const mac = {
+      signature: 'sig of Daguerre.app.tar.gz.sig',
+      url: 'https://example.com/dl/Daguerre.app.tar.gz',
+    };
+    const windows = {
+      signature: 'sig of Daguerre_1.1.0_x64-setup.exe.sig',
+      url: 'https://example.com/dl/Daguerre_1.1.0_x64-setup.exe',
+    };
+    expect(manifest).toEqual({
+      version: '1.1.0',
+      notes: 'Notes',
+      pub_date: '2026-11-04T00:00:00.000Z',
+      platforms: {
+        'darwin-aarch64-app': mac,
+        'darwin-x86_64-app': mac,
+        'darwin-aarch64': mac,
+        'darwin-x86_64': mac,
+        'windows-x86_64-nsis': windows,
+        'windows-x86_64': windows,
+      },
+    });
   });
 });

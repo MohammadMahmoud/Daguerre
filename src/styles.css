@@ -564,6 +564,314 @@ hr {
 
 /* ---------- Desktop app ---------- */
 
+.appearance-control {
+  width: 220px;
+  max-width: 100%;
+  flex: none;
+}
+
+.appearance-slider {
+  display: block;
+  width: 100%;
+  height: 32px;
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.appearance-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.app[data-appearance] {
+  color-scheme: dark;
+  --blend: var(--theme-blend, 0);
+  --text-blend: min(1, calc(4 * var(--blend)));
+  /* Black at 0%, thinning so more of the blurred desktop shows; the blur itself never changes. */
+  --glass-base-alpha: calc(1 - 0.9 * var(--blend));
+  --glass-window-bg: rgba(0, 0, 0, var(--glass-base-alpha));
+  --bg: #161618;
+  /* Cards stay frosted at every strength: smoked, so light text reads over bright desktops. */
+  --glass-card-bg: rgba(
+    calc(22 + 48 * var(--blend)),
+    calc(22 + 48 * var(--blend)),
+    calc(24 + 50 * var(--blend)),
+    calc(1 - 0.68 * var(--blend))
+  );
+  --panel: var(--glass-card-bg);
+  --panel-2: rgba(255, 255, 255, calc(0.04 + 0.04 * var(--blend)));
+  --panel-3: rgba(255, 255, 255, calc(0.08 + 0.08 * var(--blend)));
+  --line: rgba(255, 255, 255, calc(0.09 + 0.09 * var(--blend)));
+  --line-strong: rgba(255, 255, 255, calc(0.23 - 0.18 * var(--blend)));
+  --text: #f2f2f3;
+  --muted: rgb(
+    calc(157 + 85 * var(--text-blend)),
+    calc(157 + 85 * var(--text-blend)),
+    calc(166 + 77 * var(--text-blend))
+  );
+  --accent: #d6d8dd;
+  --accent-ink: #0b0b0c;
+  --accent-text: #eceef1;
+  --accent-soft: rgba(225, 228, 235, calc(0.09 + 0.03 * var(--blend)));
+  --danger: #ffaba4;
+  --danger-soft: rgba(135, 32, 26, 0.3);
+  --glass-filter: blur(calc(32px * var(--blend)))
+    saturate(calc(100% + 80% * var(--blend)))
+    contrast(calc(100% + 5% * var(--blend)));
+  --glass-inset:
+    inset 1px 1px 0.5px rgba(255, 255, 255, calc(0.45 * var(--blend))),
+    inset -1px -1px 0.5px rgba(255, 255, 255, calc(0.2 * var(--blend))),
+    inset 0 0 10px rgba(255, 255, 255, calc(0.1 * var(--blend))),
+    inset 0 -10px 18px -12px rgba(0, 0, 0, calc(0.25 * var(--blend)));
+  --shadow: 0 20px 40px -15px rgba(0, 0, 0, calc(0.5 * var(--blend)));
+  --desktop-fallback: linear-gradient(125deg, #c19aa9, #96adb9 46%, #91b0a1);
+  background:
+    linear-gradient(var(--glass-window-bg), var(--glass-window-bg)),
+    var(--desktop-fallback);
+  color: var(--text);
+}
+
+html:has(.app[data-appearance]),
+body:has(.app[data-appearance]),
+#app:has(.app[data-appearance]) {
+  background: transparent;
+}
+
+.app[data-native-glass='true'] {
+  --desktop-fallback: linear-gradient(transparent, transparent);
+}
+
+.app[data-appearance] .app-nav {
+  background: transparent;
+  border-color: var(--line);
+  box-shadow: inset -1px 0 1px rgba(255, 255, 255, calc(0.06 * var(--blend)));
+}
+
+.app[data-appearance]
+  :is(.app-main, .nav-foot, .history, .history-head, .history-main) {
+  background: transparent;
+}
+
+.app[data-appearance] .history-head {
+  border-color: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.app[data-appearance] .history-head[data-scrolled='true'] {
+  background: transparent;
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  backdrop-filter: blur(28px) saturate(180%);
+  box-shadow: none;
+}
+
+.app[data-appearance='current'] .history-head[data-scrolled='true'] {
+  background: var(--glass-window-bg);
+}
+
+.app[data-appearance] .nav-item[aria-current='page'] {
+  background: var(--accent-soft);
+  box-shadow: var(--glass-inset);
+}
+
+.app[data-appearance]
+  :is(.mode-card, .quick-action, .shot, .recent-empty, .panel, .dialog, .card) {
+  border-color: var(--line);
+  border-radius: calc(16px + 4px * var(--blend));
+  background: var(--panel);
+  -webkit-backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-filter);
+  box-shadow: var(--glass-inset), var(--shadow);
+  transition: transform 0.18s var(--ease);
+}
+
+.app[data-appearance]
+  :is(.mode-card, .quick-action, .shot, .panel, .dialog, .card) {
+  corner-shape: squircle;
+}
+
+.app[data-appearance] :is(.mode-card, .quick-action):hover:not(:disabled) {
+  border-color: var(--line);
+  background: var(--panel);
+  box-shadow:
+    var(--glass-inset),
+    0 14px 30px -6px rgba(0, 0, 0, 0.4);
+}
+
+.app[data-appearance] .shot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: var(--glass-inset);
+}
+
+.app[data-appearance] :is(.shot:hover, .shot-open) {
+  border-color: var(--line);
+}
+
+.app[data-appearance] :is(.shot-meta, .card-body) {
+  background: transparent;
+}
+
+.app[data-appearance] .card-thumb {
+  border-color: var(--line);
+  background: transparent;
+}
+
+.app[data-appearance] .card[data-selected] {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.app[data-appearance] .btn:not(.danger, .ghost),
+.app[data-appearance] .segmented,
+.app[data-appearance] .shortcut-input {
+  border-color: var(--line);
+  background: var(--panel-2);
+  color: var(--text);
+  box-shadow: var(--glass-inset);
+}
+
+.app[data-appearance] .btn:not(.danger, .ghost):hover:not(:disabled) {
+  background: var(--panel-3);
+}
+
+.app[data-appearance] .search {
+  background: rgba(0, 0, 0, calc(0.08 + 0.14 * var(--blend)));
+  border-color: rgba(255, 255, 255, calc(0.12 - 0.04 * var(--blend)));
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, calc(0.3 * var(--blend))),
+    0 1px 0 rgba(255, 255, 255, calc(0.08 * var(--blend)));
+}
+
+.app[data-appearance] .search:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.app[data-appearance] .segmented {
+  background: rgba(0, 0, 0, calc(0.12 + 0.13 * var(--blend)));
+  border-color: rgba(255, 255, 255, calc(0.1 - 0.04 * var(--blend)));
+  box-shadow: none;
+}
+
+.app[data-appearance] .segmented button[aria-checked='true'] {
+  background: rgba(255, 255, 255, calc(0.08 + 0.08 * var(--blend)));
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, calc(0.3 * var(--blend))),
+    inset 0 1px 0 rgba(255, 255, 255, calc(0.25 * var(--blend)));
+}
+
+.app[data-appearance] .segmented button:not([aria-checked='true']):hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.app[data-appearance] kbd {
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, calc(0.12 + 0.13 * var(--blend)));
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, calc(0.12 * var(--blend)));
+  color: var(--text);
+}
+
+.app[data-appearance] :is(.app-brand strong, .page-head h1, .section-head h2) {
+  letter-spacing: 0;
+}
+
+.app[data-appearance] .app-main {
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+.app[data-appearance]
+  :is(.page-head, .mode-label, .mode-desc, .shot-meta, .nav-item, .meta) {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, calc(0.35 * var(--blend)));
+}
+
+.app[data-appearance] ::selection {
+  background: #d6d8dd;
+  color: #161618;
+}
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .app[data-appearance] {
+    --blend: 0;
+    --line: rgba(255, 255, 255, 0.35);
+  }
+
+  .app[data-appearance] .history-head[data-scrolled='true'] {
+    background: var(--glass-window-bg);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .appearance-row {
+    flex-wrap: wrap;
+  }
+
+  .app[data-appearance] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .app[data-appearance] .app-nav {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 46px 12px 12px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .app[data-appearance] .app-brand {
+    padding: 0;
+  }
+
+  .app[data-appearance] :is(.app-brand div, .nav-foot) {
+    display: none;
+  }
+
+  .app[data-appearance] .nav-list {
+    display: flex;
+    flex: 1;
+    justify-content: space-around;
+  }
+
+  .app[data-appearance] .nav-item {
+    gap: 5px;
+    padding: 0 6px;
+    font-size: 12px;
+  }
+
+  .app[data-appearance] .page {
+    padding: 20px 16px;
+  }
+
+  .app[data-appearance] :is(.setting-row, .panel-head) {
+    flex-wrap: wrap;
+  }
+
+  .app[data-appearance] :is(.mode-grid, .shortcut-row) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app[data-appearance] .history-head {
+    padding: 20px 16px;
+  }
+
+  .app[data-appearance] .history-head > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
 .app {
   display: grid;
   grid-template-columns: 224px minmax(0, 1fr);
@@ -669,6 +977,11 @@ html[data-platform='macos'] .history.embedded .history-head {
   gap: 6px;
 }
 
+.nav-foot .nav-foot-row {
+  display: flex;
+  justify-content: space-between;
+}
+
 .app-main {
   position: relative;
   min-width: 0;
@@ -759,7 +1072,7 @@ html[data-platform='macos'] .history.embedded .history-head {
     box-shadow 0.18s;
 }
 
-.mode-card:hover,
+.mode-card:not(:disabled):hover,
 .quick-action:hover {
   border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
   background: var(--panel-2);
@@ -780,6 +1093,11 @@ html[data-platform='macos'] .history.embedded .history-head {
   min-height: 176px;
   padding: 18px;
   border-radius: 16px;
+}
+
+.mode-card:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .mode-icon {
@@ -1596,15 +1914,31 @@ html[data-platform='macos'] .history.embedded .history-head {
 .history-head {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 20;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 14px 18px;
   padding: 18px 32px;
-  border-bottom: 1px solid var(--line);
-  background: color-mix(in srgb, var(--bg) 86%, transparent);
-  backdrop-filter: blur(14px);
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  transition:
+    background 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    -webkit-backdrop-filter 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    backdrop-filter 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.history-head[data-scrolled='true'] {
+  background: var(--bg);
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  backdrop-filter: blur(28px) saturate(180%);
+  box-shadow: none;
 }
 
 .history-title {
@@ -1655,7 +1989,7 @@ html[data-platform='macos'] .history.embedded .history-head {
 .history-main {
   max-width: 1480px;
   margin: 0 auto;
-  padding: 8px 32px 64px;
+  padding: 16px 32px 64px;
 }
 
 .day h2 {

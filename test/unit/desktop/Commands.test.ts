@@ -66,6 +66,12 @@ test('the main window is never suspended while hidden', () => {
   expect(home?.backgroundThrottling).toBe('disabled');
 });
 
+test('Wayland startup does not initialize the X11 shortcut manager', () => {
+  expect(read('src-tauri/src/lib.rs')).toMatch(
+    /if !capture::is_wayland\(\) \{\s*builder = builder\.plugin\(\s*tauri_plugin_global_shortcut/,
+  );
+});
+
 // Local builds on macOS compile #[cfg(target_os = "macos")] items, hiding dead-code warnings that
 // would fail `cargo clippy -- -D warnings` on Linux and Windows if a helper isn't gated too.
 test('every un-gated private Rust helper is used outside macOS-only and test blocks', () => {

@@ -17,7 +17,7 @@ External account and deployment steps have not been verified. Check off any you 
 - [ ] Set `REPO_URL` in [store/index.html](store/index.html) to the repository URL.
 - [ ] In GitHub **Settings > Pages**, set **Source** to **GitHub Actions**.
 - [ ] Confirm the [CI workflow](.github/workflows/ci.yml) runs successfully on GitHub, including the frozen-lockfile install, tests, packaging, and Pages deployment.
-- [ ] Confirm the downloadable build artifact contains the extension zip.
+- [ ] Confirm the downloadable build artifact contains the extension zip and release notes.
 - [ ] Open the deployed showcase and privacy policy, including on a phone-sized screen.
 - [ ] Confirm the coverage report and README badges load after Pages is deployed.
 - [ ] Replace the placeholder privacy-policy URL in [store/listing.md](store/listing.md) with the deployed address.
@@ -40,8 +40,8 @@ https://<owner>.github.io/<repo>/coverage/
 - [ ] Check that ordinary capture actions still open the editor.
 - [ ] Check PNG, JPEG, WebP, PDF, searchable PDF, Copy Text, and print.
 - [ ] Check History, deletion, and the optional permission request for All tabs.
-- [ ] Confirm the release version matches in [public/manifest.json](public/manifest.json) and the `## [Extension x.y.z]` section of [CHANGELOG.md](CHANGELOG.md) (`pnpm release-notes extension` checks it). They currently target `1.0.0`.
-- [ ] After committing and pushing the final changes, push a matching tag such as `ext-v1.0.0` to create a GitHub release with its zip and changelog notes.
+- [ ] Confirm the release version matches in [package.json](package.json), [public/manifest.json](public/manifest.json), and [CHANGELOG.md](CHANGELOG.md). They currently target `1.0.0`.
+- [ ] After committing and pushing the final changes, push a matching version tag such as `v1.0.0` to create a GitHub release with its zip and changelog notes.
 
 ## 4. Chrome Web Store Submission
 
@@ -66,9 +66,9 @@ https://<owner>.github.io/<repo>/coverage/
 
 ## Future Updates
 
-- [ ] Increase the version in the manifest; the Web Store requires a higher version for each new upload.
-- [ ] Add a matching `## [Extension x.y.z]` section to the changelog.
-- [ ] Commit, push, and tag it `ext-vx.y.z` to produce its GitHub release.
+- [ ] Increase the version in both package metadata and the manifest; the Web Store requires a higher version for each new upload.
+- [ ] Add a matching version section to the changelog.
+- [ ] Commit, push, and tag the version to produce its GitHub release.
 - [ ] Upload the new extension zip in the Web Store dashboard and submit it for review. The current CI creates releases but does not upload to the Web Store automatically.
 
 ## Already Prepared

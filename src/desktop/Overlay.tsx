@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import {
   useEffect,
+  useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
@@ -24,8 +25,11 @@ interface OverlayInfo {
 
 type Point = { x: number; y: number };
 
-const finish = (pick: { rect?: Rect; windowId?: number }) =>
+const finish = (pick: { rect?: Rect; windowId?: number; error?: string }) =>
   invoke('finish_selection', pick);
+
+const reportError = (error: unknown) =>
+  finish({ error: error instanceof Error ? error.message : String(error) });
 
 const inside = (r: Rect, p: Point) =>
   p.x >= r.x && p.y >= r.y && p.x < r.x + r.w && p.y < r.y + r.h;
@@ -39,22 +43,43 @@ export function Overlay() {
   const [start, setStart] = useState<Point | null>(null);
   const [end, setEnd] = useState<Point | null>(null);
   const [hover, setHover] = useState<PickableWindow>();
+  const readyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
   // Monitor units per CSS pixel.
   const k = info ? info.width / innerWidth : 1;
 
   useEffect(() => {
+    let active = true;
+    let url: string | undefined;
+    readyTimer.current = setTimeout(() => {
+      active = false;
+      void reportError(
+        'The selection overlay did not become ready. Please try again.',
+      );
+    }, 15_000);
     Promise.all([
       invoke<ArrayBuffer>('overlay_frame'),
       invoke<OverlayInfo>('overlay_info'),
     ])
       .then(([png, next]) => {
-        setSrc(URL.createObjectURL(new Blob([png], { type: 'image/png' })));
+        if (!active) return;
+        url = URL.createObjectURL(new Blob([png], { type: 'image/png' }));
+        setSrc(url);
         setInfo(next);
       })
-      .catch(() => void finish({}));
+      .catch((error: unknown) => {
+        clearTimeout(readyTimer.current);
+        if (active) void reportError(error);
+      });
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && void finish({});
     addEventListener('keydown', onKey);
-    return () => removeEventListener('keydown', onKey);
+    return () => {
+      active = false;
+      clearTimeout(readyTimer.current);
+      if (url) URL.revokeObjectURL(url);
+      removeEventListener('keydown', onKey);
+    };
   }, []);
 
   const point = (e: ReactPointerEvent) => ({ x: e.clientX, y: e.clientY });
@@ -114,9 +139,19 @@ export function Overlay() {
           src={src}
           alt=''
           draggable={false}
+          onError={() => {
+            clearTimeout(readyTimer.current);
+            void reportError(
+              'Could not load the screenshot. Please try again.',
+            );
+          }}
           onLoad={() => {
             const win = getCurrentWindow();
-            void win.show().then(() => win.setFocus());
+            void win
+              .show()
+              .then(() => win.setFocus())
+              .catch(reportError)
+              .finally(() => clearTimeout(readyTimer.current));
           }}
         />
       )}

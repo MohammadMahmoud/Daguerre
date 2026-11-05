@@ -18,6 +18,9 @@ const COMMANDS: &[&str] = &[
     "platform",
     "screen_access",
     "set_tray_icon",
+    "set_liquid_glass",
+    "theme_blend",
+    "set_theme_blend",
 ];
 
 fn main() {

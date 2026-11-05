@@ -6,17 +6,19 @@ import { clearShots, getShot, listShots } from '../../../src/lib/db';
 let calls: { cmd: string; payload: any }[];
 let visible: boolean;
 let picked: { title: string } | null;
+let screenPicked: { title: string } | null;
 
 beforeEach(async () => {
   await clearShots();
   calls = [];
   visible = false;
   picked = { title: 'Notes' };
+  screenPicked = { title: 'Built-in Display' };
   mockWindows('home');
   mockIPC((cmd, payload) => {
     calls.push({ cmd, payload });
     if (cmd === 'plugin:window|is_visible') return visible;
-    if (cmd === 'capture_screen') return { title: 'Built-in Display' };
+    if (cmd === 'capture_screen') return screenPicked;
     if (cmd === 'select') return picked;
     if (cmd === 'take_capture') return new Uint8Array([1, 2, 3]).buffer;
   });
@@ -62,6 +64,13 @@ test('copy-selection copies and stays out of the editor', async () => {
 test('a cancelled selection saves nothing', async () => {
   picked = null;
   expect(await runCapture('selection')).toBe(false);
+  expect(await listShots()).toEqual([]);
+  expect(cmds()).not.toContain('take_capture');
+});
+
+test('a cancelled portal screen request saves nothing', async () => {
+  screenPicked = null;
+  expect(await runCapture('screen')).toBe(false);
   expect(await listShots()).toEqual([]);
   expect(cmds()).not.toContain('take_capture');
 });

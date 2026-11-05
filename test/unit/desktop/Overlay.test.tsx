@@ -1,18 +1,21 @@
 import { clearMocks, mockIPC, mockWindows } from '@tauri-apps/api/mocks';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, beforeEach, expect, test } from 'vitest';
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { Overlay } from '../../../src/desktop/Overlay';
 
 let calls: { cmd: string; payload: any }[];
 let fail: boolean;
+let failWindow: string | undefined;
 
 beforeEach(() => {
   calls = [];
   fail = false;
+  failWindow = undefined;
   mockWindows('overlay-0');
   // jsdom's window is 1024 CSS px wide; the monitor is 2048 units wide.
   mockIPC((cmd, payload) => {
     calls.push({ cmd, payload });
+    if (cmd === failWindow) throw new Error('Could not show selection.');
     if (cmd === 'overlay_frame') {
       if (fail) throw new Error('No selection in progress.');
       return new Uint8Array([1]).buffer;
@@ -28,6 +31,7 @@ beforeEach(() => {
   });
 });
 afterEach(() => {
+  vi.useRealTimers();
   clearMocks();
   history.replaceState(null, '', '/');
 });
@@ -81,5 +85,52 @@ test('Escape cancels', async () => {
 test('cancels if the frame is gone', async () => {
   fail = true;
   render(<Overlay />);
-  await waitFor(() => expect(finished()).toEqual([{}]));
+  await waitFor(() =>
+    expect(finished()).toEqual([{ error: 'No selection in progress.' }]),
+  );
+});
+
+test('reports an image decode failure instead of leaving selection pending', async () => {
+  const { container } = render(<Overlay />);
+  await waitFor(() => expect(container.querySelector('img')).not.toBeNull());
+  fireEvent.error(container.querySelector('img')!);
+  await waitFor(() =>
+    expect(finished()).toEqual([
+      { error: 'Could not load the screenshot. Please try again.' },
+    ]),
+  );
+});
+
+test.each(['plugin:window|show', 'plugin:window|set_focus'])(
+  'reports a failed overlay window operation: %s',
+  async (command) => {
+    failWindow = command;
+    const { container } = render(<Overlay />);
+    await waitFor(() => expect(container.querySelector('img')).not.toBeNull());
+    fireEvent.load(container.querySelector('img')!);
+    await waitFor(() =>
+      expect(finished()).toEqual([{ error: 'Could not show selection.' }]),
+    );
+  },
+);
+
+test('ends a stalled overlay load', async () => {
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+  render(<Overlay />);
+  await vi.advanceTimersByTimeAsync(15_000);
+  expect(finished()).toEqual([
+    { error: 'The selection overlay did not become ready. Please try again.' },
+  ]);
+});
+
+test('does not time out a ready selection', async () => {
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+  const { container } = render(<Overlay />);
+  await vi.advanceTimersByTimeAsync(0);
+  fireEvent.load(container.querySelector('img')!);
+  await vi.advanceTimersByTimeAsync(15_000);
+  expect(calls.map((call) => call.cmd)).toContain('plugin:window|set_focus');
+  expect(finished()).toEqual([]);
+  fireEvent.keyDown(window, { key: 'Escape' });
+  expect(finished()).toEqual([{}]);
 });

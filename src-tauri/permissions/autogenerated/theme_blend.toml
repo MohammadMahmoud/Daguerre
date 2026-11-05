@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-theme-blend"
+description = "Enables the theme_blend command without any pre-configured scope."
+commands.allow = ["theme_blend"]
+
+[[permission]]
+identifier = "deny-theme-blend"
+description = "Denies the theme_blend command without any pre-configured scope."
+commands.deny = ["theme_blend"]

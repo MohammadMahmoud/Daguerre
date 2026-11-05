@@ -15,7 +15,7 @@ export async function runCapture(action: Action, delay = 0) {
   const mode = action === 'copy-selection' ? 'selection' : action;
   const info =
     mode === 'screen'
-      ? await invoke<{ title: string }>('capture_screen')
+      ? await invoke<{ title: string } | null>('capture_screen')
       : await invoke<{ title: string } | null>('select', {
           kind: mode === 'window' ? 'window' : 'region',
         });

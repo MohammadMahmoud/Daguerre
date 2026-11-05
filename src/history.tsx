@@ -6,7 +6,7 @@ import {
   SEARCH_PLACEHOLDER,
   SHORTCUT_HINTS,
 } from '@platform';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   clearShots,
@@ -50,6 +50,8 @@ export function History({
   embedded?: boolean;
   onOpen?: (id: string) => void;
 } = {}) {
+  const root = useRef<HTMLDivElement>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [shots, setShots] = useState<Shot[]>();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<CaptureMode | 'all'>('all');
@@ -57,6 +59,18 @@ export function History({
   const [usage, setUsage] = useState<number>();
   const [confirmClear, setConfirmClear] = useState(false);
   const [toast, showToast] = useToast();
+
+  useEffect(() => {
+    const pane = embedded
+      ? root.current?.closest<HTMLElement>('.app-main')
+      : (document.scrollingElement ?? document.documentElement);
+    if (!pane) return;
+    const target = embedded ? pane : window;
+    const onScroll = () => setIsScrolled(pane.scrollTop > 12);
+    onScroll();
+    target.addEventListener('scroll', onScroll, { passive: true });
+    return () => target.removeEventListener('scroll', onScroll);
+  }, [embedded]);
 
   const load = useCallback(async () => {
     setShots(await listShots());
@@ -161,8 +175,8 @@ export function History({
   }
 
   return (
-    <div className={embedded ? 'history embedded' : 'history'}>
-      <header className='history-head'>
+    <div ref={root} className={embedded ? 'history embedded' : 'history'}>
+      <header className='history-head' data-scrolled={isScrolled}>
         <div className='history-title'>
           {!embedded && <Logo size={34} />}
           <div>

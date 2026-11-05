@@ -50,7 +50,7 @@ pub struct Selection(Mutex<Option<Session>>);
 
 struct Session {
     frames: HashMap<String, Frame>,
-    done: oneshot::Sender<Option<Picked>>,
+    done: oneshot::Sender<Result<Option<Picked>, String>>,
 }
 
 #[derive(Clone, Copy, Deserialize, PartialEq)]
@@ -170,8 +170,18 @@ fn close_overlays(app: &AppHandle) {
 /// Resolves to `None` when cancelled.
 #[tauri::command]
 pub async fn select(app: AppHandle, kind: Kind) -> Result<Option<CaptureInfo>, String> {
+    if crate::capture::is_wayland() && kind == Kind::Window {
+        return Err("Window picking requires X11. Use Select area with your desktop's screenshot picker instead.".into());
+    }
     cancel(&app);
+    #[cfg(target_os = "linux")]
+    if crate::capture::is_wayland() {
+        return crate::capture::portal_capture(&app, true).await;
+    }
     let monitors = app.available_monitors().map_err(err)?;
+    if monitors.is_empty() {
+        return Err("No display found.".into());
+    }
     let mut frames = HashMap::new();
     for (i, m) in monitors.iter().enumerate() {
         let xm = xcap_monitor(m)?;
@@ -197,9 +207,9 @@ pub async fn select(app: AppHandle, kind: Kind) -> Result<Option<CaptureInfo>, S
             return Err(e);
         }
     }
-    let picked = picked.await.ok().flatten();
+    let picked = picked.await.unwrap_or(Ok(None));
     close_overlays(&app);
-    match picked {
+    match picked? {
         None => Ok(None),
         Some(Picked::Region(img)) => store(&app, &img, "Selection".into()).map(Some),
         Some(Picked::Window(id, title)) => {
@@ -217,7 +227,7 @@ pub async fn select(app: AppHandle, kind: Kind) -> Result<Option<CaptureInfo>, S
 pub fn cancel(app: &AppHandle) {
     let session = app.state::<Selection>().0.lock().unwrap().take();
     if let Some(s) = session {
-        let _ = s.done.send(None);
+        let _ = s.done.send(Ok(None));
     }
     close_overlays(app);
 }
@@ -259,14 +269,18 @@ pub fn finish_selection(
     state: State<'_, Selection>,
     rect: Option<Rect>,
     window_id: Option<u32>,
+    error: Option<String>,
 ) -> Result<(), String> {
     let Some(session) = state.0.lock().unwrap().take() else {
         return Ok(());
     };
-    let picked = session
-        .frames
-        .get(window.label())
-        .and_then(|f| pick(f, rect, window_id));
+    let picked = match error {
+        Some(error) => Err(error),
+        None => Ok(session
+            .frames
+            .get(window.label())
+            .and_then(|f| pick(f, rect, window_id))),
+    };
     let _ = session.done.send(picked);
     Ok(())
 }

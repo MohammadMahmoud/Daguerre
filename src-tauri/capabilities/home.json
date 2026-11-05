@@ -1,14 +1,18 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "home",
-  "description": "The main window: captures, History, Settings, shortcuts and tray commands.",
+  "description": "The main window: captures, History, Settings, updates, shortcuts and tray commands.",
   "windows": ["home"],
   "permissions": [
     "core:default",
     "core:window:allow-start-dragging",
+    "core:window:allow-set-effects",
     "autostart:allow-enable",
     "autostart:allow-disable",
     "autostart:allow-is-enabled",
+    "updater:allow-check",
+    "updater:allow-download-and-install",
+    "process:allow-restart",
     "allow-capture-screen",
     "allow-take-capture",
     "allow-select",
@@ -21,6 +25,9 @@
     "allow-hide-main",
     "allow-platform",
     "allow-screen-access",
-    "allow-set-tray-icon"
+    "allow-set-tray-icon",
+    "allow-set-liquid-glass",
+    "allow-theme-blend",
+    "allow-set-theme-blend"
   ]
 }

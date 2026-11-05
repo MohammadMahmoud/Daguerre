@@ -4,14 +4,23 @@ All notable changes to Daguerre are listed here. The format follows [Keep a Chan
 
 The Chrome extension and the desktop app are versioned and released separately: extension sections are headed `## [Extension x.y.z]` (version in `public/manifest.json`, tag `ext-vx.y.z`), desktop sections `## [Desktop x.y.z]` (version in `src-tauri/Cargo.toml`, tag `desktop-vx.y.z`). Each release publishes its own section as the release notes. A change to shared code (the editor, History, export) goes in both.
 
-## [Desktop 0.0.3] - 2026-10-28
+## [Desktop 0.0.4] - 2026-11-04
 
 ### Added
 
-- Desktop app for macOS, Windows and Linux (Tauri 2, Rust): capture a selected area, a window or the screen from the tray, global shortcuts or `daguerre --capture <action>`, with the same editor, History, OCR and export as the extension.
-- Desktop main window with a sidebar: Capture (modes, copy to clipboard, delay, recent captures), History and Settings (shortcut recorder with restore defaults, open at login, macOS Screen Recording status, version). It remembers its size and position, and the macOS Dock icon shows only while a window is open.
-- Each screenshot opens in its own editor window, which asks before discarding unsaved changes.
-- Release pipeline: desktop checks on all three platforms, and `.dmg`, `.exe`, `.msi`, `.AppImage`, `.deb` and `.rpm` installers with `SHA256SUMS.txt` on every `desktop-v*` tag; optional macOS signing and notarization from repository secrets.
+- Settings → Updates: check GitHub for a new version, then download and install it.
+- Optional automatic updates, checked at launch and once a day.
+
+### Fixed
+
+- Editor and main windows no longer open off screen with several displays (unplugged monitors, mixed Retina and standard displays).
+- Wayland screenshot permission handling and recovery after stalled requests.
+- Unsupported Wayland shortcuts and window capture controls.
+
+### Changed
+
+- Wayland captures use the desktop screenshot portal.
+- Wayland Screen mode captures the whole desktop.
 
 ## [Extension Unreleased]
 

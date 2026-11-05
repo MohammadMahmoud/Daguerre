@@ -8,6 +8,7 @@
     "beforeBuildCommand": "pnpm vite build --mode desktop"
   },
   "app": {
+    "macOSPrivateApi": true,
     "windows": [
       {
         "label": "home",
@@ -19,6 +20,7 @@
         "minHeight": 560,
         "titleBarStyle": "Overlay",
         "hiddenTitle": true,
+        "transparent": true,
         "backgroundThrottling": "disabled",
         "visible": false,
         "center": true
@@ -33,6 +35,14 @@
         "worker-src": "'self'",
         "connect-src": "'self' ipc: http://ipc.localhost"
       }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQyQjc1NTU3RjREQUM2QkQKUldTOXh0cjBWMVczMHR4U25OdkprM1RCdWFYSXhyTm1YZFh6NWw4TVRIZm1iZy91ZDBpZEhFalgK",
+      "endpoints": [
+        "https://github.com/MohammadMahmoud/Daguerre/releases/latest/download/latest.json"
+      ]
     }
   },
   "bundle": {

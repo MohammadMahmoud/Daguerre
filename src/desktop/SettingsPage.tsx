@@ -1,4 +1,4 @@
-import type { KeyboardEvent } from 'react';
+import { useState, type KeyboardEvent } from 'react';
 import { DEFAULT_SHORTCUTS, type Action } from '../platform/Desktop';
 import { Icon, Logo } from '../ui';
 import {
@@ -8,6 +8,7 @@ import {
   toAccelerator,
   type Shortcuts,
 } from './Shortcuts';
+import type { Updater, UpdateState } from './Updater';
 
 export type TrayIcon = 'app' | 'white';
 
@@ -15,6 +16,53 @@ const TRAY_ICONS: { id: TrayIcon; label: string; mono: boolean }[] = [
   { id: 'white', label: 'White', mono: true },
   { id: 'app', label: 'App icon', mono: false },
 ];
+
+export function updateMessage(state: UpdateState) {
+  switch (state.status) {
+    case 'idle':
+      return 'New versions come from the Daguerre releases on GitHub.';
+    case 'checking':
+      return 'Checking for updates…';
+    case 'latest':
+      return "You're up to date.";
+    case 'unpublished':
+      return 'No installable update is published on GitHub yet.';
+    case 'available':
+      return `Daguerre ${state.version} is available.`;
+    case 'downloading':
+      return state.progress === undefined
+        ? `Downloading Daguerre ${state.version}…`
+        : `Downloading Daguerre ${state.version}… ${Math.round(state.progress * 100)}%`;
+    case 'ready':
+      return `Daguerre ${state.version} is installed. Restart to use it.`;
+    case 'error':
+      return `Couldn't update: ${state.message}`;
+  }
+}
+
+function UpdateButton({ state, check, install, restart }: Updater) {
+  if (state.status === 'available')
+    return (
+      <button className='btn primary' onClick={install}>
+        Install {state.version}
+      </button>
+    );
+  if (state.status === 'ready')
+    return (
+      <button className='btn primary' onClick={restart}>
+        Restart
+      </button>
+    );
+  return (
+    <button
+      className='btn'
+      onClick={check}
+      disabled={state.status === 'checking' || state.status === 'downloading'}
+    >
+      Check now
+    </button>
+  );
+}
 
 export function SettingsPage({
   shortcuts,
@@ -27,9 +75,12 @@ export function SettingsPage({
   onAutostart,
   trayIcon,
   onTrayIcon,
+  blend,
+  onBlend,
   screenAccess,
   onRequestAccess,
   version,
+  updater,
 }: {
   shortcuts: Shortcuts;
   failed: Record<string, string>;
@@ -42,11 +93,15 @@ export function SettingsPage({
   onAutostart: (on: boolean) => void;
   trayIcon: TrayIcon;
   onTrayIcon: (icon: TrayIcon) => void;
+  blend: number;
+  onBlend: (value: number) => void;
   screenAccess: boolean;
   onRequestAccess: () => void;
   version: string;
+  updater: Updater;
 }) {
   const tray = mac ? 'menu bar' : 'system tray';
+  const [strength, setStrength] = useState(blend);
 
   function record(action: Action, e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Tab') return;
@@ -64,9 +119,42 @@ export function SettingsPage({
       <header className='page-head' data-tauri-drag-region>
         <div>
           <h1>Settings</h1>
-          <p>Shortcuts work in any app while Daguerre runs in the {tray}.</p>
+          <p>
+            {wayland
+              ? 'Capture shortcuts are managed by your desktop.'
+              : `Shortcuts work in any app while Daguerre runs in the ${tray}.`}
+          </p>
         </div>
       </header>
+
+      <section className='panel' aria-labelledby='appearance-title'>
+        <h2 id='appearance-title'>Appearance</h2>
+        <div className='setting-row appearance-row'>
+          <label htmlFor='window-design'>Window design</label>
+          <div className='appearance-control'>
+            <input
+              id='window-design'
+              className='appearance-slider'
+              type='range'
+              min='0'
+              max='100'
+              step='1'
+              value={strength}
+              aria-valuetext={`${strength}% Liquid Glass`}
+              onChange={(e) => {
+                const value = e.target.valueAsNumber;
+                setStrength(value);
+                onBlend(value);
+              }}
+            />
+            <div className='appearance-labels' aria-hidden='true'>
+              <span>Current</span>
+              <output htmlFor='window-design'>{strength}%</output>
+              <span>Liquid Glass</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section className='panel' aria-labelledby='shortcuts-title'>
         <div className='panel-head'>
@@ -79,7 +167,7 @@ export function SettingsPage({
           <button
             className='btn ghost'
             onClick={() => onShortcuts(DEFAULT_SHORTCUTS)}
-            disabled={isDefault(shortcuts)}
+            disabled={wayland || isDefault(shortcuts)}
           >
             <Icon name='reset' size={15} />
             Restore defaults
@@ -88,6 +176,7 @@ export function SettingsPage({
         <ul className='shortcut-table'>
           {(Object.keys(ACTION_LABELS) as Action[]).map((action) => {
             const id = `shortcut-${action}`;
+            const accelerator = wayland ? '' : shortcuts[action];
             return (
               <li key={action} className='shortcut-row'>
                 <label htmlFor={id}>{ACTION_LABELS[action]}</label>
@@ -96,12 +185,9 @@ export function SettingsPage({
                     id={id}
                     className='shortcut-input'
                     readOnly
-                    value={
-                      shortcuts[action]
-                        ? formatShortcut(shortcuts[action], mac)
-                        : ''
-                    }
-                    placeholder='None'
+                    disabled={wayland}
+                    value={accelerator ? formatShortcut(accelerator, mac) : ''}
+                    placeholder={wayland ? 'Desktop settings' : 'None'}
                     onFocus={() => onRecording(true)}
                     onBlur={() => onRecording(false)}
                     onKeyDown={(e) => record(action, e)}
@@ -113,7 +199,7 @@ export function SettingsPage({
                   <button
                     className='icon-btn sm'
                     onClick={() => onShortcuts({ ...shortcuts, [action]: '' })}
-                    disabled={!shortcuts[action]}
+                    disabled={wayland || !shortcuts[action]}
                     aria-label={`Remove the ${ACTION_LABELS[action]} shortcut`}
                     title='Remove'
                   >
@@ -122,7 +208,7 @@ export function SettingsPage({
                 </div>
                 {failed[action] && (
                   <p className='shortcut-error' id={`${id}-error`} role='alert'>
-                    Couldn't use this shortcut. Another app may be using it.
+                    Couldn't use this shortcut: {failed[action]}
                   </p>
                 )}
               </li>
@@ -131,10 +217,10 @@ export function SettingsPage({
         </ul>
         {wayland && (
           <p className='panel-note'>
-            On Wayland, apps can't add global shortcuts. Add them in your
-            desktop's keyboard settings with commands such as{' '}
-            <code>daguerre --capture selection</code> (also <code>window</code>,{' '}
-            <code>screen</code> and <code>copy-selection</code>).
+            On Wayland, Daguerre uses desktop keyboard shortcuts. Add them in
+            your desktop's keyboard settings with commands such as{' '}
+            <code>daguerre --capture selection</code> (also <code>screen</code>{' '}
+            and <code>copy-selection</code>).
           </p>
         )}
       </section>
@@ -161,7 +247,9 @@ export function SettingsPage({
               {mac ? 'Menu bar icon' : 'System tray icon'}
             </strong>
             <p className='meta' id='tray-icon-hint'>
-              Choose how Daguerre appears in the {tray}.
+              {mac
+                ? 'Adaptive turns black or white to match the menu bar.'
+                : `Choose how Daguerre appears in the ${tray}.`}
             </p>
           </div>
           <div
@@ -184,7 +272,7 @@ export function SettingsPage({
                 >
                   <Logo size={opt.mono ? 16 : 18} mono={opt.mono} />
                 </span>
-                {opt.label}
+                {mac && opt.mono ? 'Adaptive' : opt.label}
               </button>
             ))}
           </div>
@@ -216,6 +304,36 @@ export function SettingsPage({
           </div>
         </section>
       )}
+
+      <section className='panel' aria-labelledby='updates-title'>
+        <h2 id='updates-title'>Updates</h2>
+        <div className='setting-row'>
+          <div>
+            <label htmlFor='auto-update'>Update automatically</label>
+            <p className='meta'>
+              Checks GitHub when Daguerre opens and once a day, and installs new
+              versions.
+            </p>
+          </div>
+          <input
+            id='auto-update'
+            type='checkbox'
+            role='switch'
+            className='switch'
+            checked={updater.auto}
+            onChange={(e) => updater.changeAuto(e.target.checked)}
+          />
+        </div>
+        <div className='setting-row'>
+          <div>
+            <strong>Check for updates</strong>
+            <p className='meta' role='status'>
+              {updateMessage(updater.state)}
+            </p>
+          </div>
+          <UpdateButton {...updater} />
+        </div>
+      </section>
 
       <section className='panel' aria-labelledby='about-title'>
         <h2 id='about-title'>About</h2>

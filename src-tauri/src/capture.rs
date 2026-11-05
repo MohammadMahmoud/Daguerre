@@ -14,6 +14,12 @@ pub struct Rect {
     pub h: f64,
 }
 
+impl Rect {
+    pub fn contains(&self, (px, py): (f64, f64)) -> bool {
+        px >= self.x && py >= self.y && px < self.x + self.w && py < self.y + self.h
+    }
+}
+
 /// The last capture, held until the webview fetches its bytes with `take_capture`.
 #[derive(Default)]
 pub struct Captured(pub std::sync::Mutex<Option<Vec<u8>>>);
@@ -25,6 +31,18 @@ pub struct CaptureInfo {
 
 pub fn err(e: impl std::fmt::Display) -> String {
     e.to_string()
+}
+
+fn wayland_session(session: Option<&str>, display: Option<&str>) -> bool {
+    session == Some("wayland") || display.is_some_and(|display| !display.is_empty())
+}
+
+pub fn is_wayland() -> bool {
+    cfg!(target_os = "linux")
+        && wayland_session(
+            std::env::var("XDG_SESSION_TYPE").ok().as_deref(),
+            std::env::var("WAYLAND_DISPLAY").ok().as_deref(),
+        )
 }
 
 /// Maps `rect` from a `mon_w`×`mon_h` monitor onto its `img_w`×`img_h` capture, clamped; `None` if empty.
@@ -58,6 +76,46 @@ pub fn encode_png(img: &RgbaImage) -> Result<Vec<u8>, String> {
     Ok(out)
 }
 
+/// Physical pixels per desktop unit: macOS lays displays out in points, others in pixels.
+pub fn unit_scale(scale: f64) -> f64 {
+    if cfg!(target_os = "macos") {
+        scale
+    } else {
+        1.0
+    }
+}
+
+/// A monitor's work area in desktop units.
+pub fn monitor_area(m: &Monitor) -> Rect {
+    let (r, k) = (m.work_area(), unit_scale(m.scale_factor()));
+    Rect {
+        x: f64::from(r.position.x) / k,
+        y: f64::from(r.position.y) / k,
+        w: f64::from(r.size.width) / k,
+        h: f64::from(r.size.height) / k,
+    }
+}
+
+/// The monitor under the mouse pointer, else the first one.
+pub fn monitor_at_cursor(app: &AppHandle) -> Result<Monitor, String> {
+    let c = app.cursor_position().map_err(err)?;
+    let monitors = app.available_monitors().map_err(err)?;
+    let under = monitors.iter().position(|m| {
+        let (p, s) = (m.position(), m.size());
+        Rect {
+            x: f64::from(p.x),
+            y: f64::from(p.y),
+            w: f64::from(s.width),
+            h: f64::from(s.height),
+        }
+        .contains((c.x, c.y))
+    });
+    monitors
+        .into_iter()
+        .nth(under.unwrap_or(0))
+        .ok_or_else(|| "No display found.".into())
+}
+
 /// The centre of a monitor (Tauri pixels) in xcap's units: points when `scale` isn't 1.
 fn centre_point((x, y): (i32, i32), (w, h): (u32, u32), scale: f64) -> (i32, i32) {
     let cx = (f64::from(x) + f64::from(w) / 2.0) / scale;
@@ -65,20 +123,14 @@ fn centre_point((x, y): (i32, i32), (w, h): (u32, u32), scale: f64) -> (i32, i32
     (cx as i32, cy as i32)
 }
 
-fn contains((px, py): (f64, f64), (x, y): (i32, i32), (w, h): (u32, u32)) -> bool {
-    let (x, y) = (f64::from(x), f64::from(y));
-    px >= x && py >= y && px < x + f64::from(w) && py < y + f64::from(h)
-}
-
 /// The xcap monitor matching a Tauri monitor. Tauri reports pixels; xcap uses points on macOS.
 pub fn xcap_monitor(m: &Monitor) -> Result<xcap::Monitor, String> {
-    let scale = if cfg!(target_os = "macos") {
-        m.scale_factor()
-    } else {
-        1.0
-    };
     let (p, s) = (m.position(), m.size());
-    let (cx, cy) = centre_point((p.x, p.y), (s.width, s.height), scale);
+    let (cx, cy) = centre_point(
+        (p.x, p.y),
+        (s.width, s.height),
+        unit_scale(m.scale_factor()),
+    );
     xcap::Monitor::from_point(cx, cy).map_err(err)
 }
 
@@ -87,22 +139,42 @@ pub fn store(app: &AppHandle, img: &RgbaImage, title: String) -> Result<CaptureI
     Ok(CaptureInfo { title })
 }
 
+#[cfg(target_os = "linux")]
+pub async fn portal_capture(
+    app: &AppHandle,
+    interactive: bool,
+) -> Result<Option<CaptureInfo>, String> {
+    let Some(path) = crate::portal::screenshot(interactive).await? else {
+        return Ok(None);
+    };
+    let png = tauri::async_runtime::spawn_blocking(move || {
+        let image = xcap::image::ImageReader::open(path)
+            .map_err(err)?
+            .with_guessed_format()
+            .map_err(err)?
+            .decode()
+            .map_err(err)?
+            .into_rgba8();
+        encode_png(&image)
+    })
+    .await
+    .map_err(err)??;
+    *app.state::<Captured>().0.lock().unwrap() = Some(png);
+    Ok(Some(CaptureInfo {
+        title: if interactive { "Selection" } else { "Desktop" }.into(),
+    }))
+}
+
 /// Captures the whole monitor under the mouse pointer.
 #[tauri::command]
-pub async fn capture_screen(app: AppHandle) -> Result<CaptureInfo, String> {
-    let c = app.cursor_position().map_err(err)?;
-    let monitors = app.available_monitors().map_err(err)?;
-    let m = monitors
-        .iter()
-        .find(|m| {
-            let (p, s) = (m.position(), m.size());
-            contains((c.x, c.y), (p.x, p.y), (s.width, s.height))
-        })
-        .or(monitors.first())
-        .ok_or("No display found.")?;
-    let xm = xcap_monitor(m)?;
+pub async fn capture_screen(app: AppHandle) -> Result<Option<CaptureInfo>, String> {
+    #[cfg(target_os = "linux")]
+    if is_wayland() {
+        return portal_capture(&app, false).await;
+    }
+    let xm = xcap_monitor(&monitor_at_cursor(&app)?)?;
     let title = xm.friendly_name().unwrap_or_else(|_| "Screen".into());
-    store(&app, &xm.capture_image().map_err(err)?, title)
+    store(&app, &xm.capture_image().map_err(err)?, title).map(Some)
 }
 
 #[tauri::command]
@@ -121,6 +193,16 @@ mod tests {
     use super::*;
 
     const R: fn(f64, f64, f64, f64) -> Rect = |x, y, w, h| Rect { x, y, w, h };
+
+    #[test]
+    fn detects_wayland_without_requiring_xdg_session_type() {
+        assert!(wayland_session(Some("wayland"), None));
+        assert!(wayland_session(None, Some("wayland-0")));
+        assert!(wayland_session(Some("x11"), Some("wayland-1")));
+        assert!(!wayland_session(Some("x11"), None));
+        assert!(!wayland_session(None, Some("")));
+        assert!(!wayland_session(None, None));
+    }
 
     #[test]
     fn scales_monitor_units_to_capture_pixels() {
@@ -155,11 +237,11 @@ mod tests {
     #[test]
     fn finds_the_monitor_under_the_pointer() {
         // A secondary display left of the main one.
-        let (pos, size) = ((-1920, 0), (1920, 1080));
-        assert!(contains((-1.0, 500.0), pos, size));
-        assert!(contains((-1920.0, 0.0), pos, size));
-        assert!(!contains((0.0, 500.0), pos, size));
-        assert!(!contains((-100.0, 1080.0), pos, size));
+        let display = R(-1920.0, 0.0, 1920.0, 1080.0);
+        assert!(display.contains((-1.0, 500.0)));
+        assert!(display.contains((-1920.0, 0.0)));
+        assert!(!display.contains((0.0, 500.0)));
+        assert!(!display.contains((-100.0, 1080.0)));
     }
 
     #[test]

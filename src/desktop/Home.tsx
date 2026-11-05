@@ -1,6 +1,7 @@
 import { getVersion } from '@tauri-apps/api/app';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
+import { Effect, EffectState, getCurrentWindow } from '@tauri-apps/api/window';
 import { disable, enable, isEnabled } from '@tauri-apps/plugin-autostart';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -12,8 +13,9 @@ import '../styles.css';
 import { Icon, Logo, Toast, useToast, type IconName } from '../ui';
 import { runCapture } from './Capture';
 import { CapturePage } from './CapturePage';
-import { SettingsPage, type TrayIcon } from './SettingsPage';
+import { SettingsPage, updateMessage, type TrayIcon } from './SettingsPage';
 import { loadShortcuts, type Shortcuts } from './Shortcuts';
+import { useUpdater } from './Updater';
 
 type Page = 'capture' | 'history' | 'settings';
 const PAGES: { id: Page; label: string; icon: IconName }[] = [
@@ -23,6 +25,25 @@ const PAGES: { id: Page; label: string; icon: IconName }[] = [
 ];
 
 const openEditor = (id: string) => void invoke('open_editor', { id });
+
+function loadThemeBlend() {
+  const saved = localStorage.getItem('themeBlend');
+  if (saved === null)
+    return localStorage.getItem('appearance') === 'glass' ? 100 : 0;
+  const value = Number(saved);
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+/** Applies a Window design strength to the whole document and remembers it locally. */
+function showThemeBlend(value: number) {
+  document.documentElement.style.setProperty(
+    '--theme-blend',
+    String(value / 100),
+  );
+  localStorage.setItem('themeBlend', String(value));
+  localStorage.setItem('appearance', value > 0 ? 'glass' : 'current');
+}
 
 /** The main window: capture, History and Settings. It hides on close and keeps handling shortcuts. */
 export function Home() {
@@ -36,6 +57,17 @@ export function Home() {
   const [platform, setPlatform] = useState({ os: '', wayland: false });
   const [screenAccess, setScreenAccess] = useState(true);
   const [autostart, setAutostart] = useState(false);
+  // Applied during the first render, so the first paint already matches the saved slider.
+  const [initialBlend] = useState(() => {
+    const value = loadThemeBlend();
+    showThemeBlend(value);
+    return value;
+  });
+  const blend = useRef(initialBlend);
+  // Remounts Settings when the saved value corrects the local one at launch.
+  const [blendSource, setBlendSource] = useState(0);
+  const [glass, setGlass] = useState(initialBlend > 0);
+  const [nativeGlass, setNativeGlass] = useState(false);
   const [trayIcon, setTrayIcon] = useState<TrayIcon>(() =>
     localStorage.getItem('trayIcon') === 'app' ? 'app' : 'white',
   );
@@ -43,18 +75,72 @@ export function Home() {
   const [shots, setShots] = useState<Shot[]>([]);
   const [usage, setUsage] = useState<number>();
   const [toast, showToast] = useToast();
+  const updater = useUpdater();
+  const updated = updater.state.status === 'ready';
   const busy = useRef(false);
   const recording = useRef(false);
   const current = useRef(shortcuts);
+  const platformInfo = useRef<typeof platform | null>(null);
   const mac = platform.os === 'macos';
+
+  useEffect(() => {
+    if (!mac) return;
+    let active = true;
+    const preference = window.matchMedia(
+      '(prefers-reduced-transparency: reduce), (prefers-contrast: more)',
+    );
+    const apply = async () => {
+      const transparent = glass && !preference.matches;
+      try {
+        const currentWindow = getCurrentWindow();
+        if (transparent) {
+          // Liquid Glass needs macOS 26; older versions get the vibrancy material.
+          const liquid = await invoke<boolean>('set_liquid_glass', {
+            on: true,
+          });
+          if (!liquid)
+            await currentWindow.setEffects({
+              effects: [Effect.UnderWindowBackground],
+              state: EffectState.Active,
+            });
+        } else {
+          await invoke('set_liquid_glass', { on: false });
+          await currentWindow.clearEffects();
+        }
+        if (active) setNativeGlass(transparent);
+      } catch {
+        if (active) setNativeGlass(false);
+      }
+    };
+    void apply();
+    preference.addEventListener('change', apply);
+    return () => {
+      active = false;
+      preference.removeEventListener('change', apply);
+    };
+  }, [glass, mac]);
+
+  useEffect(() => {
+    void invoke<number | null>('theme_blend').then((saved) => {
+      if (saved == null)
+        return void invoke('set_theme_blend', { value: blend.current });
+      if (saved === blend.current) return;
+      blend.current = saved;
+      showThemeBlend(saved);
+      setGlass(saved > 0);
+      setBlendSource((n) => n + 1);
+    });
+  }, []);
 
   const refresh = useCallback(async () => {
     setShots(await listShots());
     setUsage((await navigator.storage?.estimate?.())?.usage);
   }, []);
 
-  const register = async (next: Shortcuts) =>
+  const register = async (next: Shortcuts) => {
+    if (!platformInfo.current || platformInfo.current.wayland) return;
     setFailed(await invoke('set_shortcuts', { shortcuts: next }));
+  };
 
   const capture = useCallback(
     async (action: Action, wait = 0) => {
@@ -74,14 +160,15 @@ export function Home() {
   );
 
   useEffect(() => {
-    void register(current.current);
     void invoke('set_tray_icon', {
       icon: localStorage.getItem('trayIcon') === 'app' ? 'app' : 'white',
     });
     void refresh();
     void invoke<typeof platform>('platform').then((p) => {
+      platformInfo.current = p;
       setPlatform(p);
       document.documentElement.dataset.platform = p.os;
+      void register(current.current);
     });
     const checkAccess = () =>
       void invoke<boolean>('screen_access', { request: false }).then(
@@ -121,6 +208,7 @@ export function Home() {
   }
 
   function setRecording(on: boolean) {
+    if (platformInfo.current?.wayland) return;
     recording.current = on;
     if (on) void invoke('set_shortcuts', { shortcuts: {} });
     else void register(current.current);
@@ -142,6 +230,14 @@ export function Home() {
     void invoke('set_tray_icon', { icon: next });
   }
 
+  function changeBlend(value: number) {
+    const wasGlass = blend.current > 0;
+    blend.current = value;
+    showThemeBlend(value);
+    void invoke('set_theme_blend', { value });
+    if (wasGlass !== value > 0) setGlass(value > 0);
+  }
+
   async function copy(shot: Shot) {
     try {
       await copyPng(shot.blob);
@@ -157,7 +253,11 @@ export function Home() {
     );
 
   return (
-    <div className='app'>
+    <div
+      className='app'
+      data-appearance={glass ? 'glass' : 'current'}
+      data-native-glass={glass && nativeGlass}
+    >
       <nav className='app-nav' aria-label='Sections' data-tauri-drag-region>
         <div className='app-brand' data-tauri-drag-region>
           <Logo size={30} />
@@ -185,12 +285,17 @@ export function Home() {
             <Icon name='lock' size={13} />
             Stored only on this device
           </span>
-          {usage !== undefined && <span>{formatBytes(usage)} used</span>}
+          {(usage !== undefined || version) && (
+            <span className='nav-foot-row'>
+              {usage !== undefined && <span>{formatBytes(usage)} used</span>}
+              {version && <span>v{version}</span>}
+            </span>
+          )}
         </div>
       </nav>
 
       <main className='app-main'>
-        {(error || !screenAccess) && (
+        {(error || !screenAccess || updated) && (
           <div className='banners'>
             {error && (
               <div className='banner danger' role='alert'>
@@ -217,12 +322,22 @@ export function Home() {
                 </button>
               </div>
             )}
+            {updated && (
+              <div className='banner'>
+                <Icon name='check' size={17} />
+                <p>{updateMessage(updater.state)}</p>
+                <button className='btn primary' onClick={updater.restart}>
+                  Restart
+                </button>
+              </div>
+            )}
           </div>
         )}
         {page === 'capture' && (
           <CapturePage
             shortcuts={shortcuts}
             mac={mac}
+            wayland={platform.wayland}
             delay={delay}
             onDelay={changeDelay}
             onCapture={(action, wait) => void capture(action, wait)}
@@ -235,6 +350,7 @@ export function Home() {
         {page === 'history' && <History embedded onOpen={openEditor} />}
         {page === 'settings' && (
           <SettingsPage
+            key={blendSource}
             shortcuts={shortcuts}
             failed={failed}
             mac={mac}
@@ -245,9 +361,12 @@ export function Home() {
             onAutostart={(on) => void changeAutostart(on)}
             trayIcon={trayIcon}
             onTrayIcon={changeTrayIcon}
+            blend={blend.current}
+            onBlend={changeBlend}
             screenAccess={screenAccess}
             onRequestAccess={requestAccess}
             version={version}
+            updater={updater}
           />
         )}
       </main>

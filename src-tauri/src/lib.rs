@@ -1,9 +1,11 @@
 mod capture;
+#[cfg(target_os = "linux")]
+mod portal;
 mod selection;
 
 use std::{collections::HashMap, sync::Mutex};
 
-use capture::err;
+use capture::{err, Rect};
 use serde::Serialize;
 use tauri::{
     ipc::{InvokeBody, Request},
@@ -88,11 +90,63 @@ fn trigger(app: &AppHandle, action: &str) {
 
 fn show_home(app: &AppHandle) {
     if let Some(w) = app.get_webview_window("home") {
-        let _ = w.show();
         let _ = w.unminimize();
+        keep_on_screen(app, &w);
+        let _ = w.show();
         let _ = w.set_focus();
     }
     update_dock(app);
+}
+
+/// A window's outer rectangle in desktop units (see `capture::unit_scale`).
+fn window_area(w: &WebviewWindow) -> Option<Rect> {
+    let (p, s) = (w.outer_position().ok()?, w.outer_size().ok()?);
+    let k = capture::unit_scale(w.scale_factor().ok()?);
+    Some(Rect {
+        x: f64::from(p.x) / k,
+        y: f64::from(p.y) / k,
+        w: f64::from(s.width) / k,
+        h: f64::from(s.height) / k,
+    })
+}
+
+/// Pixel positions only line up across mixed-DPI displays on Windows and Linux; macOS needs points.
+fn move_window(w: &WebviewWindow, (x, y): (f64, f64)) {
+    let _ = if cfg!(target_os = "macos") {
+        w.set_position(tauri::LogicalPosition::new(x, y))
+    } else {
+        w.set_position(tauri::PhysicalPosition::new(
+            x.round() as i32,
+            y.round() as i32,
+        ))
+    };
+}
+
+/// Where to move a window whose title bar is on no display: centred on `fallback` (top-left if too big).
+fn rescue_position(win: Rect, displays: &[Rect], fallback: Rect) -> Option<(f64, f64)> {
+    let title_bar = (win.x + win.w / 2.0, win.y + 16.0);
+    if displays.iter().any(|d| d.contains(title_bar)) {
+        return None;
+    }
+    Some((
+        fallback.x + ((fallback.w - win.w) / 2.0).max(0.0),
+        fallback.y + ((fallback.h - win.h) / 2.0).max(0.0),
+    ))
+}
+
+/// Brings back windows left off screen, e.g. on an unplugged monitor or restored across mixed DPI.
+fn keep_on_screen(app: &AppHandle, w: &WebviewWindow) {
+    let (Some(win), Ok(monitors), Ok(fallback)) = (
+        window_area(w),
+        app.available_monitors(),
+        capture::monitor_at_cursor(app),
+    ) else {
+        return;
+    };
+    let displays: Vec<Rect> = monitors.iter().map(capture::monitor_area).collect();
+    if let Some(p) = rescue_position(win, &displays, capture::monitor_area(&fallback)) {
+        move_window(w, p);
+    }
 }
 
 /// Hides the main window (e.g. before a capture) and drops the Dock icon if nothing else is open.
@@ -119,6 +173,9 @@ fn set_shortcuts(
     state: State<'_, Shortcuts>,
     shortcuts: HashMap<String, String>,
 ) -> HashMap<String, String> {
+    if capture::is_wayland() {
+        return HashMap::new();
+    }
     let gs = app.global_shortcut();
     let _ = gs.unregister_all();
     let mut ids = state.0.lock().unwrap();
@@ -205,16 +262,18 @@ async fn open_editor(app: AppHandle, id: String) -> Result<(), String> {
                 .webview_windows()
                 .into_iter()
                 .filter(|(l, _)| l.starts_with("editor-") && *l != label)
-                .filter_map(|(_, other)| other.outer_position().ok())
-                .max_by_key(|p| p.x + p.y);
-            if let Some(p) = furthest {
-                let step = (28.0 * w.scale_factor().unwrap_or(1.0)) as i32;
-                let _ = w.set_position(tauri::PhysicalPosition::new(p.x + step, p.y + step));
+                .filter_map(|(_, other)| window_area(&other))
+                .max_by(|a, b| (a.x + a.y).total_cmp(&(b.x + b.y)));
+            if let Some(r) = furthest {
+                let k = w.scale_factor().unwrap_or(1.0);
+                let step = 28.0 * k / capture::unit_scale(k);
+                move_window(&w, (r.x + step, r.y + step));
             }
             w
         }
     };
     let _ = window.unminimize();
+    keep_on_screen(&app, &window);
     window.show().map_err(err)?;
     window.set_focus().map_err(err)?;
     update_dock(&app);
@@ -241,7 +300,7 @@ struct Platform {
 fn platform() -> Platform {
     Platform {
         os: std::env::consts::OS,
-        wayland: std::env::var("XDG_SESSION_TYPE").is_ok_and(|s| s == "wayland"),
+        wayland: capture::is_wayland(),
     }
 }
 
@@ -297,20 +356,164 @@ fn set_tray_icon(app: AppHandle, icon: String) -> Result<(), String> {
     let Some(tray) = app.tray_by_id("main") else {
         return Ok(());
     };
-    let image = match icon.as_str() {
-        "white" => Some(white_tray_icon()),
-        _ => app.default_window_icon().cloned(),
+    let mono = icon == "white";
+    let image = if mono {
+        Some(white_tray_icon())
+    } else {
+        app.default_window_icon().cloned()
     };
-    tray.set_icon(image).map_err(err)
+    tray.set_icon(image).map_err(err)?;
+    // A template image is tinted by macOS: black on a light menu bar, white on a dark one.
+    tray.set_icon_as_template(mono).map_err(err)
+}
+
+#[cfg(target_os = "macos")]
+#[repr(C)]
+#[derive(Clone, Copy)]
+struct NSRect {
+    origin: [f64; 2],
+    size: [f64; 2],
+}
+
+#[cfg(target_os = "macos")]
+unsafe impl objc2::encode::Encode for NSRect {
+    const ENCODING: objc2::encode::Encoding = {
+        use objc2::encode::Encoding::{Double, Struct};
+        Struct(
+            "CGRect",
+            &[
+                Struct("CGPoint", &[Double, Double]),
+                Struct("CGSize", &[Double, Double]),
+            ],
+        )
+    };
+}
+
+/// Puts native Liquid Glass (macOS 26+) behind the page. Returns false where it doesn't exist.
+#[tauri::command]
+fn set_liquid_glass(window: WebviewWindow, on: bool) -> Result<bool, String> {
+    apply_liquid_glass(&window, on).map_err(err)
+}
+
+fn apply_liquid_glass(window: &WebviewWindow, on: bool) -> tauri::Result<bool> {
+    #[cfg(target_os = "macos")]
+    {
+        use objc2::{
+            class, msg_send,
+            rc::{Allocated, Retained},
+            runtime::{AnyClass, AnyObject},
+            sel,
+        };
+        let Some(class) = AnyClass::get(c"NSGlassEffectView") else {
+            return Ok(false);
+        };
+        // A vibrancy view would sit on top of the glass and wash it out.
+        window.set_effects(None::<tauri::utils::config::WindowEffectsConfig>)?;
+        let win = window.clone();
+        window.run_on_main_thread(move || unsafe {
+            let Ok(ns) = win.ns_window() else { return };
+            let ns = ns.cast::<AnyObject>();
+            let content: *mut AnyObject = msg_send![ns, contentView];
+            if content.is_null() {
+                return;
+            }
+            let views: *mut AnyObject = msg_send![content, subviews];
+            let count: usize = msg_send![views, count];
+            let existing = (0..count)
+                .map(|i| -> *mut AnyObject { msg_send![views, objectAtIndex: i] })
+                .find(|&view| -> bool { msg_send![view, isKindOfClass: class] });
+            // Dark glass whatever the system appearance: it blurs like the light one but
+            // never turns the window white.
+            let appearance: *mut AnyObject = if on {
+                let name: *mut AnyObject = msg_send![
+                    class!(NSString),
+                    stringWithUTF8String: c"NSAppearanceNameDarkAqua".as_ptr()
+                ];
+                msg_send![class!(NSAppearance), appearanceNamed: name]
+            } else {
+                std::ptr::null_mut()
+            };
+            let _: () = msg_send![ns, setAppearance: appearance];
+            if !on {
+                if let Some(glass) = existing {
+                    let _: () = msg_send![glass, removeFromSuperview];
+                }
+                return;
+            }
+            if existing.is_some() {
+                return;
+            }
+            let bounds: NSRect = msg_send![content, bounds];
+            let view: Allocated<AnyObject> = msg_send![class, alloc];
+            let view: Retained<AnyObject> = msg_send![view, initWithFrame: bounds];
+            // NSViewWidthSizable | NSViewHeightSizable
+            let _: () = msg_send![&view, setAutoresizingMask: 18usize];
+            let rounded: bool = msg_send![ns, respondsToSelector: sel!(_cornerRadius)];
+            let radius: f64 = if rounded {
+                msg_send![ns, _cornerRadius]
+            } else {
+                16.0
+            };
+            let _: () = msg_send![&view, setCornerRadius: radius];
+            // NSWindowBelow every other subview, so the web view draws on top.
+            let _: () = msg_send![
+                content,
+                addSubview: &*view,
+                positioned: -1isize,
+                relativeTo: std::ptr::null::<AnyObject>()
+            ];
+        })?;
+        Ok(true)
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = (window, on);
+        Ok(false)
+    }
+}
+
+/// A saved Window design strength, 0-100; anything else (empty, garbage, old formats) is ignored.
+fn parse_theme_blend(text: &str) -> Option<u8> {
+    text.trim().parse::<u8>().ok().filter(|v| *v <= 100)
+}
+
+// WebKit flushes localStorage lazily, so a force quit can drop the last change; this file can't.
+fn theme_blend_path(app: &AppHandle) -> Option<std::path::PathBuf> {
+    Some(app.path().app_config_dir().ok()?.join("theme-blend"))
+}
+
+#[tauri::command]
+fn theme_blend(app: AppHandle) -> Option<u8> {
+    parse_theme_blend(&std::fs::read_to_string(theme_blend_path(&app)?).ok()?)
+}
+
+#[tauri::command]
+fn set_theme_blend(app: AppHandle, value: u8) -> Result<(), String> {
+    use std::io::Write;
+    if value > 100 {
+        return Err("Window design must be between 0 and 100.".into());
+    }
+    let path = theme_blend_path(&app).ok_or("No settings folder.")?;
+    if let Some(dir) = path.parent() {
+        std::fs::create_dir_all(dir).map_err(err)?;
+    }
+    // Written aside and renamed, so a crash mid-write leaves the previous value intact.
+    let temp = path.with_extension("tmp");
+    let mut file = std::fs::File::create(&temp).map_err(err)?;
+    file.write_all(value.to_string().as_bytes()).map_err(err)?;
+    file.sync_all().map_err(err)?;
+    std::fs::rename(&temp, &path).map_err(err)
 }
 
 fn tray(app: &AppHandle) -> tauri::Result<()> {
     let item = |id: &str, text: &str| MenuItem::with_id(app, id, text, true, None::<&str>);
+    let window_capture = item("window", "Capture window")?;
+    window_capture.set_enabled(!capture::is_wayland())?;
     let menu = Menu::with_items(
         app,
         &[
             &item("selection", "Capture selected area")?,
-            &item("window", "Capture window")?,
+            &window_capture,
             &item("screen", "Capture screen")?,
             &item("copy-selection", "Copy selected area")?,
             &PredefinedMenuItem::separator(app)?,
@@ -324,6 +527,7 @@ fn tray(app: &AppHandle) -> tauri::Result<()> {
     let tray = TrayIconBuilder::with_id("main")
         .tooltip("Daguerre")
         .icon(white_tray_icon())
+        .icon_as_template(true)
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id().as_ref() {
@@ -402,7 +606,7 @@ fn binaries_changed(watched: &[(std::path::PathBuf, Option<BinaryId>)]) -> bool 
 
 pub fn run() {
     let self_id = std::env::current_exe().ok().and_then(BinaryId::of);
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default()
         // Must be first: a second launch forwards its arguments here and exits.
         .plugin(tauri_plugin_single_instance::init(
             move |app, args, _cwd| match capture_arg(&args) {
@@ -424,8 +628,9 @@ pub fn run() {
                     }
                 }
             },
-        ))
-        .plugin(
+        ));
+    if !capture::is_wayland() {
+        builder = builder.plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(|app, shortcut, event| {
                     if event.state != ShortcutState::Pressed {
@@ -443,13 +648,17 @@ pub fn run() {
                     }
                 })
                 .build(),
-        )
+        );
+    }
+    builder
         .plugin(tauri_plugin_autostart::init(
             tauri_plugin_autostart::MacosLauncher::LaunchAgent,
             Some(vec!["--hidden"]),
         ))
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .plugin(
             // Size and position only: visibility is decided at launch (`--hidden`).
             tauri_plugin_window_state::Builder::default()
@@ -471,7 +680,25 @@ pub fn run() {
         .setup(|app| {
             // Tray utility until a window is shown; see `update_dock`.
             #[cfg(target_os = "macos")]
-            app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+            {
+                use tauri::window::{Effect, EffectState};
+
+                app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+                if let Some(window) = app.get_webview_window("home") {
+                    window.set_theme(Some(tauri::Theme::Dark))?;
+                    // Open with the saved glass, before the page loads; the page re-checks
+                    // accessibility settings once it runs.
+                    let blend = theme_blend(app.handle().clone()).unwrap_or(0);
+                    if blend > 0 && !apply_liquid_glass(&window, true)? {
+                        window.set_effects(
+                            tauri::window::EffectsBuilder::new()
+                                .effect(Effect::UnderWindowBackground)
+                                .state(EffectState::Active)
+                                .build(),
+                        )?;
+                    }
+                }
+            }
             tray(app.handle())?;
             // Close the older running instance when a new build is moved into /Applications.
             let watched = watched_binaries();
@@ -529,6 +756,9 @@ pub fn run() {
             platform,
             screen_access,
             set_tray_icon,
+            set_liquid_glass,
+            theme_blend,
+            set_theme_blend,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Daguerre");
@@ -540,6 +770,35 @@ mod tests {
 
     fn args(list: &[&str]) -> Vec<String> {
         list.iter().map(|s| s.to_string()).collect()
+    }
+
+    #[test]
+    fn rescues_windows_whose_title_bar_is_off_screen() {
+        let r = |x, y, w, h| Rect { x, y, w, h };
+        let laptop = r(0.0, 25.0, 1512.0, 857.0);
+        let external = r(1512.0, -200.0, 2560.0, 1415.0);
+        let displays = [laptop, external];
+        // On either display, even when partly off it.
+        let on_external = r(1800.0, 0.0, 1280.0, 820.0);
+        assert_eq!(rescue_position(on_external, &displays, laptop), None);
+        assert_eq!(
+            rescue_position(r(-600.0, 100.0, 1280.0, 820.0), &displays, laptop),
+            None
+        );
+        // Left on an unplugged display, or placed in the gap above the laptop.
+        assert_eq!(
+            rescue_position(on_external, &[laptop], laptop),
+            Some((116.0, 43.5))
+        );
+        assert_eq!(
+            rescue_position(r(100.0, -400.0, 1280.0, 820.0), &displays, laptop),
+            Some((116.0, 43.5))
+        );
+        // Bigger than the display: its top-left corner.
+        assert_eq!(
+            rescue_position(r(5000.0, 0.0, 2560.0, 1600.0), &displays, laptop),
+            Some((0.0, 25.0))
+        );
     }
 
     #[test]
@@ -588,6 +847,16 @@ mod tests {
         for accelerator in ["Alt+Shift+S", "Alt+Shift+V", "Alt+Shift+W", "Alt+Shift+C"] {
             assert!(accelerator.parse::<Shortcut>().is_ok(), "{accelerator}");
         }
+    }
+
+    #[test]
+    fn reads_only_valid_saved_blends() {
+        assert_eq!(parse_theme_blend("100\n"), Some(100));
+        assert_eq!(parse_theme_blend("0"), Some(0));
+        assert_eq!(parse_theme_blend("101"), None);
+        assert_eq!(parse_theme_blend("-5"), None);
+        assert_eq!(parse_theme_blend("NaN"), None);
+        assert_eq!(parse_theme_blend(""), None);
     }
 
     #[test]

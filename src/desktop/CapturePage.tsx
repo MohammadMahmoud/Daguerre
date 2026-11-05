@@ -8,24 +8,28 @@ const MODES: {
   action: Action;
   label: string;
   description: string;
+  waylandDescription: string;
   icon: IconName;
 }[] = [
   {
     action: 'selection',
     label: 'Select area',
     description: 'Drag across any part of the screen.',
+    waylandDescription: 'Desktop screenshot picker.',
     icon: 'selection',
   },
   {
     action: 'window',
     label: 'Window',
     description: 'Click a window to capture just that window.',
+    waylandDescription: 'Not available in Wayland sessions.',
     icon: 'window',
   },
   {
     action: 'screen',
     label: 'Screen',
     description: 'The whole display under the pointer.',
+    waylandDescription: 'The whole desktop.',
     icon: 'visible',
   },
 ];
@@ -43,6 +47,7 @@ const when = (ts: number) =>
 export function CapturePage({
   shortcuts,
   mac,
+  wayland,
   delay,
   onDelay,
   onCapture,
@@ -53,6 +58,7 @@ export function CapturePage({
 }: {
   shortcuts: Shortcuts;
   mac: boolean;
+  wayland: boolean;
   delay: number;
   onDelay: (seconds: number) => void;
   onCapture: (action: Action, delay: number) => void;
@@ -72,10 +78,12 @@ export function CapturePage({
   );
 
   const kbd = (action: Action) =>
-    shortcuts[action] ? (
+    !wayland && shortcuts[action] ? (
       <kbd>{formatShortcut(shortcuts[action], mac)}</kbd>
     ) : (
-      <span className='meta'>No shortcut</span>
+      <span className='meta'>
+        {wayland ? 'Desktop settings' : 'No shortcut'}
+      </span>
     );
 
   return (
@@ -118,14 +126,26 @@ export function CapturePage({
           <button
             key={m.action}
             className='mode-card'
+            disabled={wayland && m.action === 'window'}
+            title={
+              wayland && m.action === 'window'
+                ? 'Window picking requires X11.'
+                : undefined
+            }
             onClick={() => onCapture(m.action, delay)}
           >
             <span className='mode-icon'>
               <Icon name={m.icon} size={22} />
             </span>
             <span className='mode-label'>{m.label}</span>
-            <span className='mode-desc'>{m.description}</span>
-            <span className='mode-key'>{kbd(m.action)}</span>
+            <span className='mode-desc'>
+              {wayland ? m.waylandDescription : m.description}
+            </span>
+            <span className='mode-key'>
+              {wayland && m.action === 'window'
+                ? 'Requires X11'
+                : kbd(m.action)}
+            </span>
           </button>
         ))}
       </div>
