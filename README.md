@@ -7,7 +7,7 @@
 **Screenshots, plated in silver.** Capture, annotate and export screenshots in Chrome without anything leaving your browser.
 
 [![CI](https://github.com/MohammadMahmoud/Daguerre/actions/workflows/ci.yml/badge.svg)](https://github.com/MohammadMahmoud/Daguerre/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2FOWNER.github.io%2FREPO%2Fcoverage%2Fbadge.json&style=flat-square&logo=vitest&logoColor=white)](https://OWNER.github.io/REPO/coverage/)
+[![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fmohammadmahmoud.github.io%2FDaguerre%2Fcoverage%2Fbadge.json&style=flat-square&logo=vitest&logoColor=white)](https://mohammadmahmoud.github.io/Daguerre/coverage/)
 [![Release](https://img.shields.io/github/v/release/MohammadMahmoud/Daguerre?style=flat-square&color=0b0b0c&logo=github)](https://github.com/MohammadMahmoud/Daguerre/releases/latest)
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-0b0b0c?style=flat-square&logo=googlechrome&logoColor=white)
 ![Chrome 120+](https://img.shields.io/badge/Chrome-120%2B-0b0b0c?style=flat-square&logo=googlechrome&logoColor=white)
@@ -19,7 +19,7 @@
 
 <img src="store/hero.png" alt="The Daguerre editor: a revenue card framed and labelled, customer names pixelated, and the best month highlighted" width="860">
 
-**[See the interactive showcase →](https://OWNER.github.io/REPO/)**
+**[See the interactive showcase →](https://mohammadmahmoud.github.io/Daguerre/)**
 
 </div>
 
