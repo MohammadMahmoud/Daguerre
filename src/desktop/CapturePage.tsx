@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useId, useMemo } from 'react';
 import type { Shot } from '../lib/db';
 import type { Action } from '../platform/Desktop';
 import { Icon, MODE_LABEL, type IconName } from '../ui';
@@ -55,6 +55,7 @@ export function CapturePage({
   onOpen,
   onCopy,
   onViewAll,
+  previewMode,
 }: {
   shortcuts: Shortcuts;
   mac: boolean;
@@ -66,7 +67,9 @@ export function CapturePage({
   onOpen: (id: string) => void;
   onCopy: (shot: Shot) => void;
   onViewAll: () => void;
+  previewMode?: Action;
 }) {
+  const id = useId();
   const recent = useMemo(() => shots.slice(0, RECENT), [shots]);
   const thumbs = useMemo(
     () => new Map(recent.map((s) => [s.id, URL.createObjectURL(s.thumb)])),
@@ -94,15 +97,15 @@ export function CapturePage({
           <p>Screenshots open in the editor and are kept in History.</p>
         </div>
         <div className='delay-field'>
-          <span className='field-label' id='delay-label'>
+          <span className='field-label' id={`${id}-delay-label`}>
             <Icon name='timer' size={15} />
             Delay
           </span>
           <div
             className='segmented'
             role='radiogroup'
-            aria-labelledby='delay-label'
-            aria-describedby='delay-hint'
+            aria-labelledby={`${id}-delay-label`}
+            aria-describedby={`${id}-delay-hint`}
           >
             {DELAYS.map((d) => (
               <button
@@ -115,17 +118,19 @@ export function CapturePage({
               </button>
             ))}
           </div>
-          <p className='field-hint' id='delay-hint'>
+          <p className='field-hint' id={`${id}-delay-hint`}>
             For these buttons, so you can open menus first.
           </p>
         </div>
       </header>
 
-      <div className='mode-grid'>
+      <div className='mode-grid' data-tour='capture-controls'>
         {MODES.map((m) => (
           <button
             key={m.action}
             className='mode-card'
+            data-tour={`capture-${m.action}`}
+            aria-pressed={previewMode ? previewMode === m.action : undefined}
             disabled={wayland && m.action === 'window'}
             title={
               wayland && m.action === 'window'
@@ -152,6 +157,10 @@ export function CapturePage({
 
       <button
         className='quick-action'
+        data-tour='capture-copy-selection'
+        aria-pressed={
+          previewMode ? previewMode === 'copy-selection' : undefined
+        }
         onClick={() => onCapture('copy-selection', delay)}
       >
         <span className='mode-icon'>
@@ -166,9 +175,9 @@ export function CapturePage({
         {kbd('copy-selection')}
       </button>
 
-      <section aria-labelledby='recent-title'>
+      <section aria-labelledby={`${id}-recent-title`}>
         <div className='section-head'>
-          <h2 id='recent-title'>Recent</h2>
+          <h2 id={`${id}-recent-title`}>Recent</h2>
           {shots.length > 0 && (
             <button className='link' onClick={onViewAll}>
               View all {shots.length}

@@ -13,8 +13,10 @@ import '../styles.css';
 import { Icon, Logo, Toast, useToast, type IconName } from '../ui';
 import { runCapture } from './Capture';
 import { CapturePage } from './CapturePage';
+import { ProductTour } from './ProductTour';
 import { SettingsPage, updateMessage, type TrayIcon } from './SettingsPage';
 import { loadShortcuts, type Shortcuts } from './Shortcuts';
+import { applyTheme, changeTheme, type Theme } from './Theme';
 import { useUpdater } from './Updater';
 
 type Page = 'capture' | 'history' | 'settings';
@@ -57,12 +59,19 @@ export function Home() {
   const [platform, setPlatform] = useState({ os: '', wayland: false });
   const [screenAccess, setScreenAccess] = useState(true);
   const [autostart, setAutostart] = useState(false);
-  // Applied during the first render, so the first paint already matches the saved slider.
-  const [initialBlend] = useState(() => {
-    const value = loadThemeBlend();
-    showThemeBlend(value);
-    return value;
-  });
+  const [theme, setTheme] = useState(applyTheme);
+  const [themeReady, setThemeReady] = useState(false);
+  const [tourPreview, setTourPreview] = useState<{
+    theme: Theme;
+    blend: number;
+  }>();
+  const [tourOpen, setTourOpen] = useState(
+    () => localStorage.getItem('hasCompletedOnboardingTour') !== 'true',
+  );
+  const tourActive = useRef(tourOpen);
+  tourActive.current = tourOpen;
+  const previousPage = useRef<Page>('capture');
+  const [initialBlend] = useState(loadThemeBlend);
   const blend = useRef(initialBlend);
   // Remounts Settings when the saved value corrects the local one at launch.
   const [blendSource, setBlendSource] = useState(0);
@@ -82,6 +91,12 @@ export function Home() {
   const current = useRef(shortcuts);
   const platformInfo = useRef<typeof platform | null>(null);
   const mac = platform.os === 'macos';
+  const visibleGlass = tourPreview ? tourPreview.blend > 0 : glass;
+  const finishTour = useCallback(() => {
+    setTourPreview(undefined);
+    setTourOpen(false);
+    setPage(previousPage.current);
+  }, []);
 
   useEffect(() => {
     if (!mac) return;
@@ -90,7 +105,7 @@ export function Home() {
       '(prefers-reduced-transparency: reduce), (prefers-contrast: more)',
     );
     const apply = async () => {
-      const transparent = glass && !preference.matches;
+      const transparent = visibleGlass && !preference.matches;
       try {
         const currentWindow = getCurrentWindow();
         if (transparent) {
@@ -118,19 +133,45 @@ export function Home() {
       active = false;
       preference.removeEventListener('change', apply);
     };
-  }, [glass, mac]);
+  }, [visibleGlass, mac]);
 
   useEffect(() => {
-    void invoke<number | null>('theme_blend').then((saved) => {
-      if (saved == null)
-        return void invoke('set_theme_blend', { value: blend.current });
-      if (saved === blend.current) return;
-      blend.current = saved;
-      showThemeBlend(saved);
-      setGlass(saved > 0);
-      setBlendSource((n) => n + 1);
-    });
-  }, []);
+    if (!platform.os) return;
+    let active = true;
+    void invoke<number | null>('theme_blend')
+      .then((saved) => {
+        if (!active) return;
+        if (!mac) {
+          const legacyGlass = ['theme', 'appearance'].some((key) =>
+            ['liquid-glass', 'glass'].includes(localStorage.getItem(key) ?? ''),
+          );
+          if (blend.current > 0 || (saved ?? 0) > 0 || legacyGlass) {
+            changeTheme('dark');
+            setTheme('dark');
+          }
+          blend.current = 0;
+          showThemeBlend(0);
+          setGlass(false);
+          if (saved !== 0) void invoke('set_theme_blend', { value: 0 });
+          return;
+        }
+        showThemeBlend(blend.current);
+        if (saved == null)
+          return void invoke('set_theme_blend', { value: blend.current });
+        if (saved === blend.current) return;
+        blend.current = saved;
+        showThemeBlend(saved);
+        setGlass(saved > 0);
+        setBlendSource((n) => n + 1);
+      })
+      .catch((error: unknown) => setError(String(error)))
+      .finally(() => {
+        if (active) setThemeReady(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [mac, platform.os]);
 
   const refresh = useCallback(async () => {
     setShots(await listShots());
@@ -144,7 +185,7 @@ export function Home() {
 
   const capture = useCallback(
     async (action: Action, wait = 0) => {
-      if (busy.current) return;
+      if (busy.current || tourActive.current) return;
       busy.current = true;
       setError(undefined);
       try {
@@ -188,7 +229,8 @@ export function Home() {
       (e) => void capture(e.payload),
     );
     const offNavigate = listen<Page>('navigate', (e) => {
-      if (PAGES.some((p) => p.id === e.payload)) setPage(e.payload);
+      if (!tourActive.current && PAGES.some((p) => p.id === e.payload))
+        setPage(e.payload);
     });
     void invoke<Action | null>('take_pending').then(
       (action) => action && void capture(action),
@@ -231,6 +273,7 @@ export function Home() {
   }
 
   function changeBlend(value: number) {
+    if (!mac) return;
     const wasGlass = blend.current > 0;
     blend.current = value;
     showThemeBlend(value);
@@ -255,8 +298,8 @@ export function Home() {
   return (
     <div
       className='app'
-      data-appearance={glass ? 'glass' : 'current'}
-      data-native-glass={glass && nativeGlass}
+      data-appearance={mac ? (visibleGlass ? 'glass' : 'current') : undefined}
+      data-native-glass={mac && visibleGlass && nativeGlass}
     >
       <nav className='app-nav' aria-label='Sections' data-tauri-drag-region>
         <div className='app-brand' data-tauri-drag-region>
@@ -279,6 +322,19 @@ export function Home() {
               </button>
             </li>
           ))}
+          <li>
+            <button
+              className='nav-item'
+              data-tour='replay'
+              onClick={() => {
+                previousPage.current = page;
+                setTourOpen(true);
+              }}
+            >
+              <Icon name='visible' size={17} />
+              Product Tour
+            </button>
+          </li>
         </ul>
         <div className='nav-foot'>
           <span>
@@ -294,81 +350,100 @@ export function Home() {
         </div>
       </nav>
 
-      <main className='app-main'>
-        {(error || !screenAccess || updated) && (
-          <div className='banners'>
-            {error && (
-              <div className='banner danger' role='alert'>
-                <Icon name='alert' size={17} />
-                <p>{error}</p>
-                <button
-                  className='icon-btn sm'
-                  onClick={() => setError(undefined)}
-                  aria-label='Dismiss'
-                >
-                  <Icon name='close' size={14} />
-                </button>
-              </div>
-            )}
-            {!screenAccess && (
-              <div className='banner' role='alert'>
-                <Icon name='lock' size={17} />
-                <p>
-                  Daguerre needs Screen Recording access to capture other apps.
-                  After allowing it, quit and reopen Daguerre.
-                </p>
-                <button className='btn primary' onClick={requestAccess}>
-                  Allow
-                </button>
-              </div>
-            )}
-            {updated && (
-              <div className='banner'>
-                <Icon name='check' size={17} />
-                <p>{updateMessage(updater.state)}</p>
-                <button className='btn primary' onClick={updater.restart}>
-                  Restart
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-        {page === 'capture' && (
-          <CapturePage
-            shortcuts={shortcuts}
+      <main className='app-main' data-tour='workspace'>
+        {tourOpen && themeReady && (
+          <ProductTour
             mac={mac}
             wayland={platform.wayland}
-            delay={delay}
-            onDelay={changeDelay}
-            onCapture={(action, wait) => void capture(action, wait)}
-            shots={shots}
-            onOpen={openEditor}
-            onCopy={(s) => void copy(s)}
-            onViewAll={() => setPage('history')}
-          />
-        )}
-        {page === 'history' && <History embedded onOpen={openEditor} />}
-        {page === 'settings' && (
-          <SettingsPage
-            key={blendSource}
             shortcuts={shortcuts}
-            failed={failed}
-            mac={mac}
-            wayland={platform.wayland}
-            onShortcuts={changeShortcuts}
-            onRecording={setRecording}
-            autostart={autostart}
-            onAutostart={(on) => void changeAutostart(on)}
-            trayIcon={trayIcon}
-            onTrayIcon={changeTrayIcon}
+            theme={theme}
             blend={blend.current}
-            onBlend={changeBlend}
-            screenAccess={screenAccess}
-            onRequestAccess={requestAccess}
-            version={version}
-            updater={updater}
+            onPreview={setTourPreview}
+            onClose={finishTour}
+            onError={setError}
           />
         )}
+        <div className='home-content' hidden={tourOpen}>
+          {(error || !screenAccess || updated) && (
+            <div className='banners'>
+              {error && (
+                <div className='banner danger' role='alert'>
+                  <Icon name='alert' size={17} />
+                  <p>{error}</p>
+                  <button
+                    className='icon-btn sm'
+                    onClick={() => setError(undefined)}
+                    aria-label='Dismiss'
+                  >
+                    <Icon name='close' size={14} />
+                  </button>
+                </div>
+              )}
+              {!screenAccess && (
+                <div className='banner' role='alert'>
+                  <Icon name='lock' size={17} />
+                  <p>
+                    Daguerre needs Screen Recording access to capture other
+                    apps. After allowing it, quit and reopen Daguerre.
+                  </p>
+                  <button className='btn primary' onClick={requestAccess}>
+                    Allow
+                  </button>
+                </div>
+              )}
+              {updated && (
+                <div className='banner'>
+                  <Icon name='check' size={17} />
+                  <p>{updateMessage(updater.state)}</p>
+                  <button className='btn primary' onClick={updater.restart}>
+                    Restart
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          {page === 'capture' && (
+            <CapturePage
+              shortcuts={shortcuts}
+              mac={mac}
+              wayland={platform.wayland}
+              delay={delay}
+              onDelay={changeDelay}
+              onCapture={(action, wait) => void capture(action, wait)}
+              shots={shots}
+              onOpen={openEditor}
+              onCopy={(s) => void copy(s)}
+              onViewAll={() => setPage('history')}
+            />
+          )}
+          {page === 'history' && <History embedded onOpen={openEditor} />}
+          {page === 'settings' && (
+            <SettingsPage
+              key={blendSource}
+              shortcuts={shortcuts}
+              failed={failed}
+              mac={mac}
+              wayland={platform.wayland}
+              onShortcuts={changeShortcuts}
+              onRecording={setRecording}
+              autostart={autostart}
+              onAutostart={(on) => void changeAutostart(on)}
+              trayIcon={trayIcon}
+              onTrayIcon={changeTrayIcon}
+              blend={blend.current}
+              onBlend={changeBlend}
+              theme={theme}
+              onTheme={(next: Theme) => {
+                changeTheme(next);
+                setTheme(next);
+              }}
+              screenAccess={screenAccess}
+              onRequestAccess={requestAccess}
+              version={version}
+              updater={updater}
+            />
+          )}
+        </div>
       </main>
       <Toast message={toast} />
     </div>

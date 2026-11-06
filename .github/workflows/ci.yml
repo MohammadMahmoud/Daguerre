@@ -3,16 +3,20 @@ name: CI
 on:
   push:
     branches: [main]
-    # Each product is released on its own: ext-v1.2.0 or desktop-v1.1.0.
-    tags: ['ext-v*', 'desktop-v*']
   pull_request:
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      release_ref:
+        description: Immutable release commit to build
+        type: string
+        default: ''
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -25,37 +29,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.release_ref || github.sha }}
           fetch-depth: 0
-      # Tags build only their product; manual runs build both; otherwise scripts/changed.mjs decides.
+      # Every desktop/unified release also ships the latest extension build.
       - id: which
         env:
           EVENT: ${{ github.event_name }}
           BASE_REF: ${{ github.base_ref }}
           BEFORE: ${{ github.event.before }}
+          RELEASE_REF: ${{ inputs.release_ref }}
         run: |
-          case "$GITHUB_REF" in
-            refs/tags/ext-v*) printf 'extension=true\ndesktop=false\n' >> "$GITHUB_OUTPUT" ;;
-            refs/tags/desktop-v*) printf 'extension=false\ndesktop=true\n' >> "$GITHUB_OUTPUT" ;;
-            *)
-              if [ "$EVENT" = pull_request ]; then node scripts/changed.mjs "origin/$BASE_REF"
-              elif [ "$EVENT" = push ]; then node scripts/changed.mjs "$BEFORE"
-              else printf 'extension=true\ndesktop=true\n' >> "$GITHUB_OUTPUT"; fi ;;
-          esac
-      - name: Release notes (fails early if the tag doesn't match the product version)
-        if: startsWith(github.ref, 'refs/tags/')
-        run: node scripts/release-notes.mjs "$([[ $GITHUB_REF_NAME == ext-v* ]] && echo extension || echo desktop)"
-      - if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-notes
-          path: release-notes.md
-          if-no-files-found: error
+          if [ -n "$RELEASE_REF" ]; then
+            printf 'extension=true\ndesktop=true\n' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "$EVENT" = pull_request ]; then node scripts/changed.mjs "origin/$BASE_REF"
+          elif [ "$EVENT" = push ]; then node scripts/changed.mjs "$BEFORE"
+          else printf 'extension=true\ndesktop=true\n' >> "$GITHUB_OUTPUT"; fi
 
   test:
     name: Typecheck and unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_ref || github.sha }}
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -82,6 +80,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_ref || github.sha }}
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -90,16 +90,23 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Build, test and zip
         run: pnpm package
+      - name: Verify compiled extension output
+        run: pnpm extension:verify
       - id: meta
         run: |
           version=$(node -p "require('./public/manifest.json').version")
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
-          mv daguerre.zip "daguerre-extension-$version.zip"
+          mv daguerre.zip extension-dist.zip
       - uses: actions/upload-artifact@v4
         with:
           name: daguerre-extension-${{ steps.meta.outputs.version }}-${{ steps.meta.outputs.sha }}
-          path: daguerre-extension-*.zip
+          path: extension-dist.zip
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: extension-dist
+          path: dist/
           if-no-files-found: error
 
   desktop-check:
@@ -113,6 +120,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_ref || github.sha }}
       - name: Linux system libraries (webview, tray, screen capture)
         if: runner.os == 'Linux'
         run: |
@@ -166,6 +175,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_ref || github.sha }}
       - name: Linux system libraries (webview, tray, screen capture)
         if: runner.os == 'Linux'
         run: |
@@ -225,71 +236,6 @@ jobs:
             src-tauri/target/**/release/bundle/rpm/*.rpm
             src-tauri/target/**/release/bundle/**/*.sig
           if-no-files-found: error
-
-  release-extension:
-    name: GitHub release (extension)
-    if: startsWith(github.ref, 'refs/tags/ext-v')
-    needs: package
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: daguerre-extension-*
-          merge-multiple: true
-          path: out
-      - uses: actions/download-artifact@v4
-        with:
-          name: release-notes
-      - name: Checksums
-        id: version
-        run: |
-          echo "version=${GITHUB_REF_NAME#ext-v}" >> "$GITHUB_OUTPUT"
-          cd out && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
-      - uses: softprops/action-gh-release@v2
-        with:
-          name: Daguerre ${{ steps.version.outputs.version }}
-          body_path: release-notes.md
-          files: out/*
-          # The desktop updater reads releases/latest/download/latest.json.
-          make_latest: false
-
-  release-desktop:
-    name: GitHub release (desktop)
-    if: startsWith(github.ref, 'refs/tags/desktop-v')
-    needs: desktop-build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: scripts
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: daguerre-desktop-*
-          merge-multiple: true
-      - uses: actions/download-artifact@v4
-        with:
-          name: release-notes
-      - name: Collect installers, updater manifest and checksums
-        id: version
-        run: |
-          version=${GITHUB_REF_NAME#desktop-v}
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          mkdir out
-          find . -path ./out -prune -o -type f \( -name '*.dmg' -o -name '*.exe' -o -name '*.msi' \
-            -o -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' -o -name '*.app.tar.gz' -o -name '*.sig' \) -exec mv {} out/ \;
-          node scripts/updater-manifest.mjs out "$version" \
-            "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$GITHUB_REF_NAME" release-notes.md
-          cd out && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
-      - uses: softprops/action-gh-release@v2
-        with:
-          name: Daguerre ${{ steps.version.outputs.version }}
-          body_path: release-notes.md
-          files: out/*
-          make_latest: true
 
   pages:
     name: Showcase, privacy policy and coverage badge

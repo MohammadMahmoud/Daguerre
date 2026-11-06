@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
+import { readVersions } from '../../scripts/bump-version.mjs';
 import { classify } from '../../scripts/changed.mjs';
 import { readVersion, releaseNotes } from '../../scripts/release-notes.mjs';
+import { getReleaseSection } from '../../scripts/update-changelog.mjs';
 import { updaterManifest } from '../../scripts/updater-manifest.mjs';
 
 const CHANGELOG = `# Changelog
@@ -69,9 +71,7 @@ describe('release notes', () => {
     expect(readVersion('extension', read)).toBe('1.2.0');
     expect(readVersion('desktop', read)).toBe('1.1.0');
     files['src-tauri/tauri.conf.json'] = '{"version": "../package.json"}';
-    expect(() => readVersion('desktop', read)).toThrow(
-      'must not set "version"',
-    );
+    expect(() => readVersion('desktop', read)).toThrow('must match');
   });
 
   test('the real repository is consistent', () => {
@@ -82,11 +82,18 @@ describe('release notes', () => {
     )?.[1];
     expect(lockVersion).toBe(desktop);
     const changelog = readFileSync('CHANGELOG.md', 'utf8');
-    if (!changelog.includes('## [Desktop Unreleased]')) {
+    const unified = getReleaseSection(changelog, desktop);
+    if (unified) {
+      expect(readVersions().every((version) => version === desktop)).toBe(true);
+      expect(unified).toMatch(/^### (Added|Fixed|Changed)$/m);
+    } else if (!changelog.includes('## [Desktop Unreleased]')) {
       expect(() => releaseNotes('desktop', desktop, changelog)).not.toThrow();
     }
     const extension = readVersion('extension');
-    expect(() => releaseNotes('extension', extension, changelog)).not.toThrow();
+    if (!unified)
+      expect(() =>
+        releaseNotes('extension', extension, changelog),
+      ).not.toThrow();
     // xcap -> libspa 0.10 requires PipeWire >= 0.3.65 (Ubuntu 24.04+) and libwayshot links -lgbm.
     const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
     expect(ci).not.toContain('ubuntu-22.04');

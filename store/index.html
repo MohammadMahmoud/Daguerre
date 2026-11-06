@@ -892,9 +892,9 @@
             Screenshots, <span class="silver-text">plated in silver.</span>
           </h1>
           <p class="lead">
-            Capture any page or app, mark it up and export it in seconds: full
-            pages, scrolling selections, searchable PDFs. Nothing ever leaves
-            your device.
+            Capture web pages with the Chrome extension or any app with Daguerre
+            for macOS, Windows and Linux. Both share annotation tools, offline
+            text recognition and searchable PDFs, with separate local histories.
           </p>
           <div class="ctas">
             <a class="btn primary" data-install href="#"
@@ -917,12 +917,10 @@
               <i></i><i></i><i></i><span>Daguerre editor</span>
             </div>
             <img
-              src="hero.png"
-              srcset="screenshots/1-annotate.png 1280w, hero.png 2560w"
-              sizes="(max-width: 1088px) calc(100vw - 48px), 1040px"
-              width="1280"
-              height="800"
-              alt="The Daguerre editor: a revenue card framed and labelled, customer names pixelated, and the best month highlighted"
+              src="desktop/2-editor.png"
+              width="1440"
+              height="1100"
+              alt="Current Daguerre editor with persistent tool labels, pixelated sample text, an arrow, a rectangle and numbered steps"
             />
           </div>
         </div>
@@ -936,11 +934,15 @@
     <section id="capture">
       <div class="wrap">
         <div class="section-head reveal">
-          <p class="eyebrow">Capture</p>
+          <p class="eyebrow">Browser extension</p>
           <h2>
             Four ways to <span class="silver-text">freeze the moment.</span>
           </h2>
-          <p class="muted">Pick a mode to see it in action.</p>
+          <p class="muted">
+            Capture from the popup, a keyboard shortcut or the right-click menu.
+            Copy selected area sends a selection straight to the clipboard and
+            keeps it in History, without opening the editor.
+          </p>
         </div>
         <div class="modes">
           <div
@@ -1055,6 +1057,24 @@
             </div>
           </div>
         </div>
+        <p class="muted">
+          The popup includes delay, progress and cancellation controls.
+          Selection and scrolling scripts run only when requested; All tabs asks
+          for optional site access. No persistent content script or tabs
+          permission is needed. Every GitHub Release includes a pre-built
+          extension dist bundle: extract it, then load its dist folder at
+          chrome://extensions in Developer mode.
+        </p>
+        <figure class="reveal" style="margin: 32px 0 0">
+          <img
+            src="screenshots/3-capture-modes.png"
+            width="1280"
+            height="800"
+            loading="lazy"
+            alt="Current Chrome popup with four capture modes, Copy selected area, delay controls and recent captures"
+            style="display: block; width: 100%; height: auto"
+          />
+        </figure>
       </div>
     </section>
 
@@ -1066,9 +1086,10 @@
             Mark it up. <span class="silver-text">Hide what matters.</span>
           </h2>
           <p class="muted">
-            This is a working miniature of the real editor: pick a tool and draw
-            on the screenshot below. Pixelate the email and card number before
-            you share.
+            Pixelate private details, add Numbered Steps, Text, Arrows or
+            Shapes, and crop or highlight a screenshot. In the app, every tool
+            icon has a persistent name underneath it, with no hover required.
+            The miniature below offers a selection of these tools.
           </p>
         </div>
         <div class="playground reveal">
@@ -1123,8 +1144,9 @@
             ></canvas>
           </div>
           <p class="hint muted">
-            Tip: the real editor adds crop with handles, text, ellipses, a pen,
-            undo history, zoom, and exports to PNG, JPEG, WebP and PDF.
+            The full editor also includes crop handles, text, ellipses, pen,
+            undo history and zoom. Copy the image instantly or export PNG, JPEG,
+            WebP, PDF and Searchable PDF.
           </p>
         </div>
       </div>
@@ -1221,8 +1243,9 @@ Press Copy Text to read the invoice.</pre>
           <h2>Any app, <span class="silver-text">any screen.</span></h2>
           <p class="muted">
             The same editor, History, Copy Text and export for macOS, Windows
-            and Linux. Capture an area, a window or a whole screen with global
-            shortcuts, and keep Daguerre in the menu bar or system tray.
+            and Linux. Four capture workflows cover a selected area, a window, a
+            screen and direct clipboard copying. Global shortcuts and the menu
+            bar or system tray keep capture close at hand.
           </p>
         </div>
         <div class="modes">
@@ -1239,10 +1262,13 @@ Press Copy Text to read the invoice.</pre>
               aria-controls="desktop-shot"
               aria-selected="true"
               data-src="desktop/1-capture.png"
-              data-alt="Desktop main window on the Capture page: select area, window and screen, copy selected area, a delay timer and recent captures"
+              data-alt="Current desktop Capture page with four capture workflows and Product Tour directly below Settings"
             >
               Capture
-              <span>Select an area, a window or a screen, with a delay.</span>
+              <span
+                >Area, Window, Screen and Copy selected area; optional
+                delay.</span
+              >
             </button>
             <button
               class="tab"
@@ -1252,9 +1278,12 @@ Press Copy Text to read the invoice.</pre>
               aria-selected="false"
               tabindex="-1"
               data-src="desktop/2-editor.png"
-              data-alt="Desktop editor window with a dashboard capture: a highlighted revenue card, a callout, numbered steps and pixelated customer names"
+              data-alt="Current desktop editor with persistent tool sub-labels and a sample marked up with pixelation, numbered steps, text, an arrow and a rectangle"
             >
-              Editor <span>Every screenshot opens in its own window.</span>
+              Editor
+              <span
+                >Labeled tools, Copy Text, clipboard and Searchable PDFs.</span
+              >
             </button>
             <button
               class="tab"
@@ -1264,7 +1293,7 @@ Press Copy Text to read the invoice.</pre>
               aria-selected="false"
               tabindex="-1"
               data-src="desktop/3-history.png"
-              data-alt="Desktop History page with captures grouped by day and filters for selection, screen and window"
+              data-alt="Current desktop History with a disposable project handoff sample and the Product Tour sidebar entry"
             >
               History <span>Search, filter and bulk delete, all local.</span>
             </button>
@@ -1276,10 +1305,26 @@ Press Copy Text to read the invoice.</pre>
               aria-selected="false"
               tabindex="-1"
               data-src="desktop/4-settings.png"
-              data-alt="Desktop Settings page with editable global shortcuts, open at login and the Screen Recording permission"
+              data-alt="Windows Settings preview with Light, Dark and System themes, capture shortcuts and Product Tour below Settings"
             >
               Settings
-              <span>Your shortcuts, open at login and automatic updates.</span>
+              <span>Shortcuts, appearance, open at login and updates.</span>
+            </button>
+            <button
+              class="tab"
+              role="tab"
+              id="tab-desktop-tour"
+              aria-controls="desktop-shot"
+              aria-selected="false"
+              tabindex="-1"
+              data-src="desktop/5-tour.png"
+              data-alt="First stage of driver.js onboarding highlighting Select area, with the replay entry directly below Settings"
+            >
+              Product Tour
+              <span
+                >Four workflows, real editor tools, export and live theme
+                previews.</span
+              >
             </button>
           </div>
           <div
@@ -1290,33 +1335,81 @@ Press Copy Text to read the invoice.</pre>
           >
             <img
               src="desktop/1-capture.png"
-              width="2560"
-              height="1600"
+              width="2360"
+              height="1362"
               loading="lazy"
-              alt="Desktop main window on the Capture page: select area, window and screen, copy selected area, a delay timer and recent captures"
+              alt="Current desktop Capture page with four capture workflows and Product Tour directly below Settings"
             />
           </div>
+        </div>
+        <ol class="desktop-workflows">
+          <li>
+            <strong>Select area.</strong> Freeze the display, drag a region and
+            open the result in its own editor window.
+          </li>
+          <li>
+            <strong>Window.</strong> Pick a window and annotate the capture.
+            Window picking requires macOS, Windows or Linux X11.
+          </li>
+          <li>
+            <strong>Screen.</strong> Capture the display under the pointer. On
+            Wayland, the screenshot portal captures the whole desktop.
+          </li>
+          <li>
+            <strong>Copy selected area.</strong> Select a region and copy its
+            image immediately, while retaining it in local History for later
+            editing.
+          </li>
+        </ol>
+        <div class="section-head reveal" style="margin-top: 48px">
+          <h3>A tour through the real workspace</h3>
+          <p class="muted">
+            The 14-stage driver.js onboarding tour previews all four capture
+            workflows, opens an in-memory sample in the real editor, simulates
+            tool toggling, previews the export menu and switches themes live.
+            Replay it with Product Tour, directly below Settings in the left
+            sidebar. Leaving the tour restores your view and appearance without
+            writing sample captures, clipboard contents or saved preferences.
+          </p>
+          <p class="muted">
+            Liquid Glass belongs exclusively to macOS, with an adjustable glass
+            blend. Windows and Linux have dedicated Light and Dark themes, plus
+            System to follow OS appearance. Solid theme choices also apply to
+            editor windows.
+          </p>
         </div>
         <div class="grid reveal" style="margin-top: 48px">
           <div class="chip">
             <span class="tag">.dmg</span>
             <h3>macOS</h3>
-            <p>One universal app for Apple silicon and Intel.</p>
+            <p>
+              Universal Apple silicon and Intel app, with macOS-only Liquid
+              Glass.
+            </p>
           </div>
           <div class="chip">
             <span class="tag">.exe · .msi</span>
             <h3>Windows</h3>
-            <p>Installer or MSI package, 64-bit.</p>
+            <p>
+              64-bit installer or MSI package, with dedicated Light and Dark
+              themes.
+            </p>
           </div>
           <div class="chip">
             <span class="tag">AppImage · .deb · .rpm</span>
             <h3>Linux</h3>
-            <p>X11 and Wayland, through your desktop's screenshot portal.</p>
+            <p>
+              Light and Dark themes. X11 capture or the Wayland screenshot
+              portal.
+            </p>
           </div>
           <div class="chip">
             <span class="tag">Signed</span>
             <h3>Updates</h3>
-            <p>Check from Settings, or let Daguerre install them daily.</p>
+            <p>
+              Check from Settings, or enable automatic update checks at launch
+              and daily.
+            </p>
           </div>
         </div>
         <div class="ctas reveal" style="margin-top: 40px">
@@ -1333,8 +1426,9 @@ Press Copy Text to read the invoice.</pre>
             Your screenshots <span class="silver-text">never leave.</span>
           </h2>
           <p class="muted">
-            No accounts, no servers, no analytics. History lives in your browser
-            and disappears when you clear it or uninstall.
+            No accounts or analytics. Each app keeps its own local History;
+            screenshots are never uploaded. Optional desktop update checks
+            contact GitHub, not a screenshot service.
           </p>
         </div>
         <div class="privacy reveal">

@@ -1,0 +1,137 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_version:
+        description: Optional X.Y.Z override; blank increments patch with rollover at 9
+        type: string
+        required: false
+  push:
+    branches: ['release/**']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Prepare release on main
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+      sha: ${{ steps.commit.outputs.sha }}
+    env:
+      HUSKY: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Calculate and synchronize release version
+        id: bump
+        env:
+          TARGET_VERSION: ${{ inputs.target_version }}
+        run: |
+          args=(--fetch)
+          if [ -n "$TARGET_VERSION" ]; then args+=(--version "$TARGET_VERSION"); fi
+          node scripts/bump-version.mjs "${args[@]}"
+      - name: Generate changelog and exact release body
+        run: |
+          node scripts/update-changelog.mjs
+          git diff --name-only -z -- '*.json' '*.md' | xargs -0 -r pnpm exec prettier --write
+          node scripts/release-notes.mjs all
+      - name: Check release and production extension before tagging
+        run: |
+          pnpm typecheck
+          pnpm lint
+          pnpm format:check
+          pnpm coverage
+          pnpm build
+          pnpm extension:verify
+          test -s dist/manifest.json
+      - name: Commit and atomically push main and annotated tag
+        id: commit
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -u
+          git commit -m "chore(release): v$VERSION [skip ci]"
+          git tag -a "v$VERSION" -m "Daguerre v$VERSION"
+          git push --atomic origin HEAD:refs/heads/main "refs/tags/v$VERSION"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build and verify both targets
+    needs: prepare
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/ci.yml
+    with:
+      release_ref: ${{ needs.prepare.outputs.sha }}
+    secrets: inherit
+
+  publish:
+    name: Publish desktop and extension assets
+    needs: [prepare, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Extract release body from committed changelog
+        run: node scripts/release-notes.mjs all
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: daguerre-desktop-*
+          merge-multiple: true
+          path: installers
+      - uses: actions/download-artifact@v4
+        with:
+          name: extension-dist
+          path: dist
+      - name: Verify and package extension alongside installers
+        run: |
+          test -s dist/manifest.json
+          node scripts/package-extension.mjs --verify
+          mkdir out
+          zip -qrX "out/daguerre-extension-dist-v$VERSION.zip" dist -x '*/.*'
+          find installers -type f \( -name '*.dmg' -o -name '*.exe' -o -name '*.msi' \
+            -o -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' -o -name '*.app.tar.gz' -o -name '*.sig' \) -exec mv {} out/ \;
+          test -n "$(find out -name '*.dmg' -print -quit)"
+          test -n "$(find out -name '*.exe' -print -quit)"
+          test -n "$(find out -name '*.AppImage' -print -quit)"
+          node scripts/updater-manifest.mjs out "$VERSION" \
+            "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/v$VERSION" .release-notes.md
+          cd out && sha256sum * > SHA256SUMS.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.prepare.outputs.version }}
+          target_commitish: ${{ needs.prepare.outputs.sha }}
+          name: Daguerre ${{ needs.prepare.outputs.version }}
+          body_path: .release-notes.md
+          files: out/*
+          fail_on_unmatched_files: true
+          make_latest: true

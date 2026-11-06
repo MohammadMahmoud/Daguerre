@@ -2,7 +2,32 @@
 
 All notable changes to Daguerre are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
-The Chrome extension and the desktop app are versioned and released separately: extension sections are headed `## [Extension x.y.z]` (version in `public/manifest.json`, tag `ext-vx.y.z`), desktop sections `## [Desktop x.y.z]` (version in `src-tauri/Cargo.toml`, tag `desktop-vx.y.z`). Each release publishes its own section as the release notes. A change to shared code (the editor, History, export) goes in both.
+New releases synchronize the desktop app and browser extension under one `vX.Y.Z` tag. Release CI turns the `## [Unreleased]` section below into `## [vX.Y.Z] - YYYY-MM-DD` and uses it verbatim as the GitHub Release body; without one, it generates Added, Fixed and Changed entries from commit messages. Version files are updated on remote main, not by local hooks. Earlier product-specific Desktop and Extension sections remain unchanged as historical records.
+
+## [Unreleased]
+
+### Added
+
+- Desktop: an interactive 14-step product tour opens on first launch. It walks through all four capture modes, the editor tools, Copy Text, export options and themes, using a temporary sample that never touches your History, clipboard or settings.
+- Desktop: replay the tour anytime from **Product Tour**, directly below Settings.
+- Desktop: Windows and Linux get dedicated **Light**, **Dark** and **System** themes, which also apply to editor windows.
+- Editor: every annotation tool shows its name below its icon, so you can find Pixelate, Steps, Text, Arrow and the shapes without hovering.
+- Editor: collapse or expand the annotation toolbar to give the screenshot more room.
+- Every GitHub release now includes the browser extension as a ready-to-load `dist` folder next to the desktop installers.
+
+### Fixed
+
+- Desktop: Liquid Glass is applied only on macOS. On Windows and Linux, an earlier glass setting switches to the Dark theme instead of a transparent window.
+- Desktop: a saved glass strength no longer flashes before the app confirms it is running on macOS.
+- Documentation links point to the correct repository.
+
+### Changed
+
+- The desktop app and browser extension now share one version number and are released together.
+- Desktop: **Copy selected area** is shown as its own action below the three capture modes.
+- Desktop: **Settings → Appearance** groups the theme choice and, on macOS, the Liquid Glass slider.
+- History asks before **Clear all** in its own dialog instead of the browser's.
+- The extension remembers the export quality in the page's local storage; a previously chosen quality resets once to 80%.
 
 ## [Desktop 0.0.4] - 2026-11-04
 
@@ -21,14 +46,6 @@ The Chrome extension and the desktop app are versioned and released separately: 
 
 - Wayland captures use the desktop screenshot portal.
 - Wayland Screen mode captures the whole desktop.
-
-## [Extension Unreleased]
-
-### Changed
-
-- History asks before **Clear all** in its own dialog instead of the browser's.
-- The extension remembers the export quality in the page's local storage; a previously chosen quality resets once to 80%.
-- Releases are tagged `ext-v*` now, so desktop releases no longer bump the extension.
 
 ## [Extension 1.0.0] - 2026-10-22
 

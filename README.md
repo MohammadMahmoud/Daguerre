@@ -4,7 +4,7 @@
 
 # Daguerre
 
-**Screenshots, plated in silver.** Capture, annotate and export screenshots in Chrome without anything leaving your browser.
+**Capture, annotate and export screenshots on your device.** Daguerre is a desktop app for macOS, Windows and Linux and a Chrome browser extension. Use either independently: they share an editor, offline OCR and export tools, but keep separate local screenshot histories. No account or synchronization service is required.
 
 [![CI](https://github.com/MohammadMahmoud/Daguerre/actions/workflows/ci.yml/badge.svg)](https://github.com/MohammadMahmoud/Daguerre/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fmohammadmahmoud.github.io%2FDaguerre%2Fcoverage%2Fbadge.json&style=flat-square&logo=vitest&logoColor=white)](https://mohammadmahmoud.github.io/Daguerre/coverage/)
@@ -17,7 +17,7 @@
 ![Local only](https://img.shields.io/badge/data-local%20only-c9ccd2?style=flat-square&logo=shield&logoColor=0b0b0c)
 ![OCR on-device](https://img.shields.io/badge/OCR-on--device-c9ccd2?style=flat-square&logo=googledocs&logoColor=0b0b0c)
 
-<img src="store/hero.png" alt="The Daguerre editor: a revenue card framed and labelled, customer names pixelated, and the best month highlighted" width="860">
+<img src="store/desktop/2-editor.png" alt="Current Daguerre editor with persistent tool labels, pixelation, arrows, shapes, text and numbered steps on a disposable sample" width="860">
 
 **[See the interactive showcase →](https://mohammadmahmoud.github.io/Daguerre/)**
 
@@ -25,7 +25,9 @@
 
 > Named after Louis Daguerre, whose 1839 daguerreotype fixed the first practical photographs on silver-plated copper.
 
-## ✨ Features
+## ✨ Browser Extension & Shared Features
+
+The extension captures web pages; the desktop app captures other applications and displays. Both provide the annotation, OCR, export and History features below. Scrolling and all-tab capture are extension-only.
 
 |                            |                                                                                                                                                                              |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -41,7 +43,7 @@
 
 <table>
   <tr>
-    <td><img src="store/screenshots/3-capture-modes.png" alt="Popup with the four capture modes and the delay timer"></td>
+    <td><img src="store/screenshots/3-capture-modes.png" alt="Popup with the four capture modes, the delay timer, Copy selected area and recent captures"></td>
     <td><img src="store/screenshots/2-export.png" alt="Export menu with PNG, PDF, Searchable PDF, print, JPEG and WebP"></td>
   </tr>
   <tr>
@@ -51,6 +53,10 @@
 </table>
 
 Choose **Copy selected area** in the popup, or press **Alt+Shift+C**, to select and copy an area without opening the editor. The capture stays in local History for editing later. Other capture actions open the editor as usual.
+
+Start a browser capture from the toolbar popup, a capture shortcut or the page's right-click menu. The popup provides capture modes, the delay timer, progress/cancel controls and access to History. The Manifest V3 background service worker injects selection and scrolling functions into the active page on demand; no persistent content script is installed. It stitches full-page or tall-selection captures and opens the shared editor. The direct-copy workflow briefly focuses an extension clipboard frame instead. **All tabs** requests optional site access on first use. Production files, including the manifest, service worker, popup, editor, History and bundled OCR assets, are written to `dist/`.
+
+Every GitHub Release includes `daguerre-extension-dist-vX.Y.Z.zip` alongside desktop installers. Extract it and choose the enclosed `dist/` folder in **Load unpacked**. Desktop and extension work independently; neither needs the other installed.
 
 ## ⌨️ Shortcuts
 
@@ -79,20 +85,49 @@ pnpm build        # typecheck + build into dist/
 
 Open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick `dist/`. After each rebuild, click the reload button on the extension card.
 
-| Script               | What it does                                                                          |
-| -------------------- | ------------------------------------------------------------------------------------- |
-| `pnpm dev`           | Rebuild on change                                                                     |
-| `pnpm test`          | Unit and component tests (Vitest + jsdom)                                             |
-| `pnpm coverage`      | Tests with a coverage report; fails below 80% (report in `coverage/`)                 |
-| `pnpm icons`         | Regenerate `public/icons`                                                             |
-| `pnpm package`       | Build, run tests with coverage, and zip `dist/` into `daguerre.zip` for the Web Store |
-| `pnpm release-notes` | Write `release-notes.md` from `CHANGELOG.md`; fails if versions don't match           |
+| Script                   | What it does                                                                          |
+| ------------------------ | ------------------------------------------------------------------------------------- |
+| `pnpm dev`               | Rebuild on change                                                                     |
+| `pnpm test`              | Unit and component tests (Vitest + jsdom)                                             |
+| `pnpm coverage`          | Tests with a coverage report; fails below 80% (report in `coverage/`)                 |
+| `pnpm icons`             | Regenerate `public/icons`                                                             |
+| `pnpm package`           | Build, run tests with coverage, and zip `dist/` into `daguerre.zip` for the Web Store |
+| `pnpm changelog:update`  | CI release preparation: prepend generated notes to CHANGELOG.md                       |
+| `pnpm release-notes all` | Extract a committed release section to ignored `.release-notes.md`                    |
+| `pnpm extension:verify`  | Verify `dist/manifest.json`, entry points, assets and OCR output                      |
+| `pnpm publish:release`   | Dispatch the main-branch release workflow without changing local files                |
 
 ## 🖥️ Desktop app
 
 The same editor, History, OCR and export, as a desktop app for macOS, Windows and Linux. It is built with [Tauri 2](https://v2.tauri.app/): Rust captures screens and windows ([xcap](https://github.com/nashaofu/xcap)), shows the selection overlay, registers global shortcuts and writes the clipboard, while the web UI from `src/` is reused. Screenshots stay in the app's local storage.
 
-The main window has three sections: **Capture** (the three capture modes, copy to clipboard, a delay and your recent captures), **History** (search, filters, bulk delete) and **Settings** (shortcuts, open at login, permissions). Each screenshot opens in its own editor window, which asks before closing with unsaved changes. Closing the main window keeps Daguerre running in the menu bar or system tray, where it still answers shortcuts; the tray menu has every capture plus History and Settings. Window sizes and positions are remembered.
+The four desktop capture workflows are **Select area**, **Window**, **Screen**, and **Copy selected area**. The first three open the editor; Copy selected area immediately copies the image to the system clipboard and keeps it in History. Capture controls, global shortcuts, tray actions and `daguerre --capture <selection|window|screen|copy-selection>` provide access to these workflows. The Capture page also has a 3, 5 or 10 second delay and recent captures.
+
+<img src="store/desktop/1-capture.png" alt="Desktop capture workspace showing Select area, Window, Screen, Copy selected area, the delay timer and four sample captures" width="860">
+
+| Workflow           | What happens                                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------------------------- |
+| Select area        | Freeze the display, drag a region, then annotate it in an editor window.                                |
+| Window             | Pick a window and open its capture in the editor; unavailable on Wayland.                               |
+| Screen             | Capture the display under the pointer; Wayland captures the whole desktop through its portal.           |
+| Copy selected area | Drag a region and immediately copy the image, without opening the editor; keep it in History for later. |
+
+The shared editing suite includes **Pixelate**, **Numbered Steps**, **Text**, **Arrows**, rectangles, ellipses, lines, pen, highlighter, crop, undo and redo. **Copy Text** extracts English text locally. Copy the edited image instantly or export PNG, JPEG, WebP, multi-page PDF and **Searchable PDF**, with compression controls, size estimates and printing.
+
+Each annotation tool has a persistent sub-label beneath its icon: you can identify tools immediately without hovering. The tour simulates toggling those tools, previews the export menu and changes themes live, without committing edits or exports.
+
+The main window has **Capture**, **History** (search, filters, bulk delete) and **Settings** (shortcuts, open at login, permissions, appearance and updates). Each screenshot opens in its own editor window, which asks before closing with unsaved changes. Closing the main window keeps Daguerre running in the menu bar or system tray, where it still answers shortcuts; the tray menu has every capture plus History and Settings. Window sizes and positions are remembered. Onboarding uses **driver.js**.
+
+A 14-step interactive product tour opens on first launch. It previews all four desktop capture workflows, opens the real editor with an in-memory sample, demonstrates annotation tools and export options, and previews the available themes. Back works across screens; completing or dismissing the tour removes the sample and restores your original view and appearance without changing History, the clipboard, or saved preferences. **Product Tour**, directly below **Settings**, replays it anytime. Annotation tools show their names below their icons. In **Settings → Appearance**, macOS retains the Liquid Glass slider; Windows and Linux offer **Light**, **Dark**, and **System**. Existing glass preferences on Windows/Linux migrate to Dark, and solid theme choices also apply to editor windows.
+
+<table>
+  <tr>
+    <td><img src="store/desktop/4-settings.png" alt="Windows Settings with Light, Dark and System themes and Product Tour directly below Settings"></td>
+    <td><img src="store/desktop/5-tour.png" alt="The interactive 14-step product tour highlighting Select area"></td>
+  </tr>
+</table>
+
+Current UI previews use a disposable sample and mocked native APIs. macOS-only Liquid Glass is a native effect; these screenshots show Windows-style solid themes.
 
 | Download from a release         | File                                                              |
 | ------------------------------- | ----------------------------------------------------------------- |
@@ -115,7 +150,7 @@ Change them in **Settings** (shortcuts pause while you record a new one). Select
 - **Windows:** unsigned installers show a SmartScreen warning; choose **More info → Run anyway**.
 - **Linux (Wayland):** apps can't register global shortcuts. Bind `daguerre --capture selection` (or `window`, `screen`, `copy-selection`) in your desktop's keyboard settings. Window picking needs X11.
 
-Build from source with Rust 1.90 or newer ([rustup](https://rustup.rs); make sure `cargo` is on your `PATH`). On Linux, first install the [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/#linux) plus `libxcb1-dev libxrandr-dev libdbus-1-dev libpipewire-0.3-dev libwayland-dev libegl-dev libclang-dev`.
+Build from source with Rust 1.90 or newer ([rustup](https://rustup.rs); make sure `cargo` is on your `PATH`). On Linux, use Ubuntu 24.04 or equivalent and install the [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/#linux) plus `libxcb1-dev libxrandr-dev libdbus-1-dev libpipewire-0.3-dev libwayland-dev libegl-dev libgbm-dev libclang-dev`.
 
 | Script               | What it does                                                          |
 | -------------------- | --------------------------------------------------------------------- |
@@ -145,26 +180,57 @@ test/
 
 The Rust code in `src-tauri/` has its own unit tests (`cargo test`) for coordinate mapping, window picking, command-line arguments, shortcut filtering and editor window labels.
 
-## ⚙️ CI and releases
+## CI and Releases
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push and pull request:
+[.github/workflows/ci.yml](.github/workflows/ci.yml) runs checks on `main`, pull requests and manual dispatch, and is reused by the release workflow:
 
-1. **Test:** typecheck, then the unit tests with coverage. The job fails below 80% and posts a coverage summary on the run.
-2. **Package:** once tests pass, it checks that `package.json`, the manifest, `src-tauri/Cargo.toml` and `CHANGELOG.md` agree on the version, runs `pnpm package`, and uploads `daguerre-<version>.zip` plus `release-notes.md` as the run's artifact.
-3. **Desktop checks:** on macOS, Windows and Ubuntu, `cargo fmt --check`, `clippy` (warnings fail) and `cargo test`.
-4. **Installers:** on `main`, `v*` tags and manual runs (**Actions → CI → Run workflow**), it builds the universal `.dmg`, the Windows `.exe` and `.msi`, and the Linux `.AppImage`, `.deb` and `.rpm`, and uploads them as artifacts. Pull requests stop after the checks.
-5. **Release:** for a `v*` tag, it creates a GitHub release with the extension zip, every installer and `SHA256SUMS.txt`, and that version's changelog as the notes.
-6. **Pages:** on `main`, it publishes the [showcase](store/index.html), the [privacy policy](store/privacy.html), the coverage report and the coverage badge.
+1. **Quality:** typecheck, lint, formatting and Vitest coverage, with an 80% floor for statements, branches, functions and lines.
+2. **Extension:** affected changes build and test `dist/`; `pnpm extension:verify` rejects a missing manifest, stale version or incomplete output. CI preserves the unpacked `extension-dist` artifact and uploads `extension-dist.zip` with the manifest at the archive root.
+3. **Desktop:** affected changes run Rust formatting, Clippy and tests on macOS, Windows and Ubuntu 24.04, plus Linux portal lifecycle tests. Non-PR runs build the platform installers.
+4. **Release:** [.github/workflows/release.yml](.github/workflows/release.yml) prepares one synchronized version on remote `main`, calls CI with that immutable release commit, and attaches desktop installers, `daguerre-extension-dist-vX.Y.Z.zip` and checksums to one GitHub Release. The extension archive preserves the `dist/` directory. Legacy product tags remain historical references, not publishing triggers.
+5. **Pages:** `main` publishes the showcase, privacy policy and coverage report. Set **Settings → Pages → Source** to **GitHub Actions** once.
 
-To ship a version, bump `version` in `package.json`, `public/manifest.json` and `src-tauri/Cargo.toml`, add a `## [x.y.z]` section to [CHANGELOG.md](CHANGELOG.md), then tag and push it:
+## Publishing a Release
+
+### Prerequisites
+
+- Merge the desired features into `main` first. Releases always use remote `main`; a `release/**` branch push requests a release but does not publish unmerged branch code. Keep commit messages clear and user-oriented, preferably `feat:`, `fix:` or `docs:`/`chore:`.
+- For the local trigger, install GitHub CLI and authenticate with `gh auth login` using an account allowed to dispatch Actions, or provide an appropriate `GH_TOKEN` outside the repository. No local Rust build is required to request a release. You can also use **Actions → Release → Run workflow** on `main` without the CLI.
+- Enable Actions and allow the preparation job's `contents: write` permission. Branch and tag protections must permit `github-actions[bot]` to push the release metadata and tag; otherwise preparation fails without force-pushing. CI uses the supplied `GITHUB_TOKEN`, not a committed personal token. Reusable CI retains its Pages permissions, but Pages is skipped during releases.
+- [CHANGELOG.md](CHANGELOG.md) is the only source of release history. Release CI generates its new **Added**, **Fixed**, and **Changed** section from commits since the previous unified tag. [AGENT.md](AGENT.md) is maintained deliberately when architecture changes. Local hooks run quality checks only: no post-commit/post-merge amendment or changelog generation on feature branches.
+- Optional macOS signing/notarization secrets: `APPLE_CERTIFICATE` (base64 Developer ID `.p12`), `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_PASSWORD` (app-specific), `APPLE_TEAM_ID`. Without them macOS builds remain ad-hoc signed. See [Tauri's signing guide](https://v2.tauri.app/distribute/sign/macos/).
+- For signed in-app updates, set repository secrets `TAURI_SIGNING_PRIVATE_KEY` and, when needed, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. The private key must match the public key in [src-tauri/tauri.conf.json](src-tauri/tauri.conf.json). CI then publishes signatures and `latest.json`; without the key installers still publish, but the updater manifest is omitted. Never commit signing keys or tokens. Windows installers currently have no signing configuration.
+
+### Publish
 
 ```sh
-git tag v1.0.0 && git push origin v1.0.0
+pnpm publish:release --dry-run                # print the dispatch command only
+pnpm publish:release                          # automatically calculate the next version in CI
+pnpm publish:release --version 0.1.0           # explicit version override
+# npm equivalent: npm run publish:release -- --version 0.1.0
 ```
 
-One-time setup: in **Settings → Pages**, set **Source** to **GitHub Actions**. Then replace `MohammadMahmoud/Daguerre` in this README with your repository.
+`pnpm release` is an alias. The script runs `gh workflow run release.yml --ref main`, optionally with `target_version`. It never rewrites local manifests, changelogs, commits or tags, even when called from a feature branch with uncommitted changes. The workflow must already exist on remote `main` before dispatching it. There is no registry-publishing lifecycle alias.
 
-**Optional macOS signing and notarization:** add these repository secrets and the next build signs and notarizes the `.dmg` (without them it stays ad-hoc signed): `APPLE_CERTIFICATE` (base64 `.p12` Developer ID Application certificate), `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_PASSWORD` (an app-specific password) and `APPLE_TEAM_ID`. See [Tauri's macOS signing guide](https://v2.tauri.app/distribute/sign/macos/).
+### Automatic Versions and Changelog
+
+[scripts/bump-version.mjs](scripts/bump-version.mjs) fetches tags in CI and uses the nearest reachable unified `vX.Y.Z` tag, falling back to the root package version if none exists. It increments the patch until 9, then increments the minor and resets the patch: `0.0.4 → 0.0.5 → … → 0.0.9 → 0.1.0 → … → 0.1.9 → 0.2.0`. Historical versions with patches above 9 also roll to the next minor. With today's package baseline `1.0.0` and no unified tags, the default first unified version is `1.0.1`.
+
+`--version X.Y.Z` or the workflow's `target_version` input selects that exact numeric version. It must be unused and newer than a previous unified release. Do not choose an override below a previously distributed product version if you expect Chrome Web Store updates or desktop updater upgrades to recognize it.
+
+All manifests are validated first, then updated as a single transaction with rollback on write failure: root and workspace package files, Tauri config, Cargo manifest/lock and extension manifest. No developer needs to bump them on a feature branch.
+
+[scripts/update-changelog.mjs](scripts/update-changelog.mjs) first looks for a curated `## [Unreleased]` section in CHANGELOG.md. If it has entries, CI renames it to `## [vX.Y.Z] - YYYY-MM-DD` and uses it verbatim. Otherwise it groups commit summaries since the previous unified tag (or, before the first one, the newest legacy tag) into **Added**, **Fixed**, and **Changed**, deduplicates identical entries, and prepends the section above existing history. It writes that exact section to ignored `.release-notes.md`; after formatting, CI extracts it again so the GitHub Release body matches the committed changelog verbatim. Existing historical entries are preserved. Fill the Unreleased section just before releasing, or keep commit subjects clear for the generated fallback.
+
+### Pipeline Sequence
+
+1. A manual dispatch, local publish command or `release/**` branch push enters the serialized `release-main` queue. Release runs never cancel one another.
+2. CI checks out fresh `main`, calculates the version, synchronizes manifests and generates the changelog. It runs checks and a production extension build, rejecting missing or invalid `dist/manifest.json` and incomplete assets.
+3. The bot commits `chore(release): vX.Y.Z [skip ci]`, creates an annotated tag and atomically pushes `main` and the tag. A concurrent ordinary push to `main` makes the push fail safely rather than overwrite work.
+4. Reusable CI builds and tests both targets from that exact commit. The publishing job verifies the extension output again, archives the complete `dist/` folder, collects all installers, optional updater signatures and `latest.json`, and writes `SHA256SUMS.txt`.
+5. Once every required build succeeds, GitHub publishes the release with the exact changelog section and all assets. This does not submit the extension to the Chrome Web Store; that remains a separate [store submission](store/listing.md).
+
+Follow **Actions → Release** or `gh run list --workflow release.yml`. If preparation fails, fix the reported issue and dispatch again. If a build fails after the tag was pushed, rerun **failed jobs** to reuse the prepared version and commit; rerunning the whole workflow requests another automatic bump. Never silently move a published tag. GitHub concurrency allows one running and one pending run; additional requests may replace the pending run, so check the Actions queue before dispatching repeatedly.
 
 ## 🛡️ Permissions
 

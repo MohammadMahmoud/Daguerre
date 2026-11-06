@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from 'react';
+import { useEffect, useId, useState, type KeyboardEvent } from 'react';
 import { DEFAULT_SHORTCUTS, type Action } from '../platform/Desktop';
 import { Icon, Logo } from '../ui';
 import {
@@ -8,9 +8,84 @@ import {
   toAccelerator,
   type Shortcuts,
 } from './Shortcuts';
+import type { Theme } from './Theme';
 import type { Updater, UpdateState } from './Updater';
 
 export type TrayIcon = 'app' | 'white';
+
+export function Appearance({
+  mac,
+  blend,
+  onBlend,
+  theme,
+  onTheme,
+}: {
+  mac: boolean;
+  blend: number;
+  onBlend: (value: number) => void;
+  theme: Theme;
+  onTheme: (theme: Theme) => void;
+}) {
+  const id = useId();
+  const [strength, setStrength] = useState(blend);
+  useEffect(() => setStrength(blend), [blend]);
+  return (
+    <section
+      className='panel'
+      aria-labelledby={`${id}-appearance-title`}
+      data-tour='appearance'
+    >
+      <h2 id={`${id}-appearance-title`}>Appearance</h2>
+      {mac ? (
+        <div className='setting-row appearance-row'>
+          <label htmlFor={`${id}-window-design`}>Window design</label>
+          <div className='appearance-control'>
+            <input
+              id={`${id}-window-design`}
+              className='appearance-slider'
+              type='range'
+              min='0'
+              max='100'
+              step='1'
+              value={strength}
+              aria-valuetext={`${strength}% Liquid Glass`}
+              onChange={(event) => {
+                const value = event.target.valueAsNumber;
+                setStrength(value);
+                onBlend(value);
+              }}
+            />
+            <div className='appearance-labels' aria-hidden='true'>
+              <span>Current</span>
+              <output htmlFor={`${id}-window-design`}>{strength}%</output>
+              <span>Liquid Glass</span>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className='setting-row'>
+          <strong id={`${id}-theme-label`}>Theme</strong>
+          <div
+            className='segmented'
+            role='radiogroup'
+            aria-labelledby={`${id}-theme-label`}
+          >
+            {(['light', 'dark', 'system'] as const).map((option) => (
+              <button
+                key={option}
+                role='radio'
+                aria-checked={theme === option}
+                onClick={() => onTheme(option)}
+              >
+                {option.charAt(0).toUpperCase() + option.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
 
 const TRAY_ICONS: { id: TrayIcon; label: string; mono: boolean }[] = [
   { id: 'white', label: 'White', mono: true },
@@ -77,6 +152,8 @@ export function SettingsPage({
   onTrayIcon,
   blend,
   onBlend,
+  theme,
+  onTheme,
   screenAccess,
   onRequestAccess,
   version,
@@ -95,13 +172,14 @@ export function SettingsPage({
   onTrayIcon: (icon: TrayIcon) => void;
   blend: number;
   onBlend: (value: number) => void;
+  theme: Theme;
+  onTheme: (theme: Theme) => void;
   screenAccess: boolean;
   onRequestAccess: () => void;
   version: string;
   updater: Updater;
 }) {
   const tray = mac ? 'menu bar' : 'system tray';
-  const [strength, setStrength] = useState(blend);
 
   function record(action: Action, e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Tab') return;
@@ -127,34 +205,13 @@ export function SettingsPage({
         </div>
       </header>
 
-      <section className='panel' aria-labelledby='appearance-title'>
-        <h2 id='appearance-title'>Appearance</h2>
-        <div className='setting-row appearance-row'>
-          <label htmlFor='window-design'>Window design</label>
-          <div className='appearance-control'>
-            <input
-              id='window-design'
-              className='appearance-slider'
-              type='range'
-              min='0'
-              max='100'
-              step='1'
-              value={strength}
-              aria-valuetext={`${strength}% Liquid Glass`}
-              onChange={(e) => {
-                const value = e.target.valueAsNumber;
-                setStrength(value);
-                onBlend(value);
-              }}
-            />
-            <div className='appearance-labels' aria-hidden='true'>
-              <span>Current</span>
-              <output htmlFor='window-design'>{strength}%</output>
-              <span>Liquid Glass</span>
-            </div>
-          </div>
-        </div>
-      </section>
+      <Appearance
+        mac={mac}
+        blend={blend}
+        onBlend={onBlend}
+        theme={theme}
+        onTheme={onTheme}
+      />
 
       <section className='panel' aria-labelledby='shortcuts-title'>
         <div className='panel-head'>

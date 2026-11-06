@@ -7,3 +7,5 @@ src-tauri/gen
 .DS_Store
 coverage
 release-notes.md
+.release-notes.md
+*.release-tmp

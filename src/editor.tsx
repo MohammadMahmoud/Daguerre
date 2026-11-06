@@ -54,6 +54,12 @@ import {
 } from './ui';
 
 type Tool = 'select' | 'crop' | Shape['kind'];
+export type EditorTourState = {
+  tool: Tool;
+  shapes: Shape[];
+  toolsVisible: boolean;
+  exportOpen: boolean;
+};
 type Drag = {
   mode: 'draw' | 'move' | 'crop-new' | 'crop-move' | 'crop-resize';
   x: number;
@@ -72,18 +78,18 @@ type TextEdit = {
 };
 type Compressed = 'jpeg' | 'webp';
 
-const TOOLS: { id: Tool; label: string; key: string }[] = [
-  { id: 'select', label: 'Select and move', key: 'v' },
+const TOOLS: { id: Tool; label: string; short?: string; key: string }[] = [
+  { id: 'select', label: 'Select and move', short: 'Select', key: 'v' },
   { id: 'crop', label: 'Crop', key: 'c' },
   { id: 'arrow', label: 'Arrow', key: 'a' },
   { id: 'rect', label: 'Rectangle', key: 'r' },
   { id: 'ellipse', label: 'Ellipse', key: 'o' },
   { id: 'line', label: 'Line', key: 'l' },
   { id: 'pen', label: 'Pen', key: 'p' },
-  { id: 'highlight', label: 'Highlighter', key: 'h' },
+  { id: 'highlight', label: 'Highlighter', short: 'Highlight', key: 'h' },
   { id: 'text', label: 'Text', key: 't' },
-  { id: 'step', label: 'Numbered step', key: 'n' },
-  { id: 'blur', label: 'Pixelate sensitive info', key: 'b' },
+  { id: 'step', label: 'Numbered step', short: 'Steps', key: 'n' },
+  { id: 'blur', label: 'Pixelate sensitive info', short: 'Pixelate', key: 'b' },
 ];
 const COLORS = [
   '#ff4d4f',
@@ -109,7 +115,10 @@ const sizeFor = (kind: Shape['kind'], index: number, unit: number) =>
 const clamp = (v: number, min: number, max: number) =>
   Math.min(Math.max(v, min), max);
 
-export function Editor() {
+export function Editor({
+  sample,
+  tourState,
+}: { sample?: Shot; tourState?: EditorTourState } = {}) {
   const id = useMemo(
     () => new URLSearchParams(location.search).get('id') ?? '',
     [],
@@ -118,7 +127,7 @@ export function Editor() {
   const [img, setImg] = useState<ImageBitmap>();
   const [hist, setHist] = useState({ stack: [EMPTY], index: 0 });
   const [savedDoc, setSavedDoc] = useState(EMPTY);
-  const [tool, setTool] = useState<Tool>('arrow');
+  const [tool, setTool] = useState<Tool>(tourState?.tool ?? 'arrow');
   const [color, setColor] = useState(COLORS[0]);
   const [sizeIdx, setSizeIdx] = useState(1);
   const [draft, setDraftState] = useState<Shape | null>(null);
@@ -127,7 +136,10 @@ export function Editor() {
   const [editing, setEditingState] = useState<TextEdit | null>(null);
   const [zoom, setZoom] = useState<number | 'fit'>('fit');
   const [stage, setStage] = useState({ w: 1000, h: 700 });
-  const [exportOpen, setExportOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(tourState?.exportOpen ?? false);
+  const [toolsVisible, setToolsVisible] = useState(
+    tourState?.toolsVisible ?? true,
+  );
   const [quality, setQuality] = useState(
     () => Number(localStorage.getItem('quality')) || 0.8,
   );
@@ -176,18 +188,38 @@ export function Editor() {
   };
 
   useEffect(() => {
+    let active = true;
     (async () => {
-      const s = await getShot(id);
+      const s = sample ?? (await getShot(id));
+      if (!active) return;
       if (!s) return setShot(null);
       const bmp = await createImageBitmap(s.original ?? s.blob);
+      if (!active) return bmp.close();
       const edits = s.edits ?? EMPTY;
       setHist({ stack: [edits], index: 0 });
       setSavedDoc(edits);
       setImg(bmp);
       setShot(s);
       document.title = `${s.title} – Daguerre`;
-    })().catch(() => setShot(null));
-  }, [id]);
+    })().catch(() => {
+      if (active) setShot(null);
+    });
+    return () => {
+      active = false;
+    };
+  }, [id, sample]);
+
+  useEffect(() => () => img?.close(), [img]);
+
+  useEffect(() => {
+    if (!sample || !tourState || !img) return;
+    setTool(tourState.tool);
+    setToolsVisible(tourState.toolsVisible);
+    setExportOpen(tourState.exportOpen);
+    const edits = { shapes: tourState.shapes, crop: null };
+    setHist({ stack: [edits], index: 0 });
+    setSavedDoc(edits);
+  }, [sample, tourState, img]);
 
   useEffect(() => {
     const el = stageRef.current;
@@ -200,21 +232,25 @@ export function Editor() {
   }, [img]);
 
   useEffect(() => {
+    if (sample) return;
     const onBeforeUnload = (e: BeforeUnloadEvent) =>
       dirty && e.preventDefault();
     addEventListener('beforeunload', onBeforeUnload);
     return () => removeEventListener('beforeunload', onBeforeUnload);
-  }, [dirty]);
+  }, [dirty, sample]);
 
   const dirtyRef = useRef(dirty);
   dirtyRef.current = dirty;
   useEffect(
     () =>
-      guardClose(
-        () => dirtyRef.current,
-        () => new Promise<boolean>((resolve) => setConfirmClose(() => resolve)),
-      ),
-    [],
+      !sample
+        ? guardClose(
+            () => dirtyRef.current,
+            () =>
+              new Promise<boolean>((resolve) => setConfirmClose(() => resolve)),
+          )
+        : undefined,
+    [sample],
   );
 
   function answerClose(discard: boolean) {
@@ -349,27 +385,33 @@ export function Editor() {
   // Live file-size estimates for the export menu.
   useEffect(() => {
     if (!exportOpen || !img) return;
+    let active = true;
     const timer = setTimeout(async () => {
       const png = await canvasToBlob(renderFinal());
+      if (!active) return;
       const small = renderFinal(halfSize);
       const [jpeg, webp] = await Promise.all([
         canvasToBlob(small, 'image/jpeg', quality),
         canvasToBlob(small, 'image/webp', quality),
       ]);
-      setEstimates({ png: png.size, jpeg: jpeg.size, webp: webp.size });
+      if (active)
+        setEstimates({ png: png.size, jpeg: jpeg.size, webp: webp.size });
     }, 150);
-    return () => clearTimeout(timer);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
     // renderFinal is rebuilt every render; listing it would re-estimate (and re-render) forever.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exportOpen, img, doc, quality, halfSize]);
 
   useEffect(() => {
-    if (!exportOpen) return;
+    if (!exportOpen || sample) return;
     const onDown = (e: PointerEvent) =>
       !exportRef.current?.contains(e.target as Node) && setExportOpen(false);
     document.addEventListener('pointerdown', onDown);
     return () => document.removeEventListener('pointerdown', onDown);
-  }, [exportOpen]);
+  }, [exportOpen, sample]);
 
   useEffect(() => {
     if (!printUrl) return;
@@ -383,6 +425,7 @@ export function Editor() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (sample) return;
       if ((e.target as HTMLElement).closest('input, textarea, select')) return;
       const mod = e.metaKey || e.ctrlKey;
       const key = e.key.toLowerCase();
@@ -750,7 +793,7 @@ export function Editor() {
     label: string | (() => string),
     fn: () => Promise<unknown>,
   ) {
-    if (busy) return;
+    if (busy || sample) return;
     setBusy(true);
     try {
       await fn();
@@ -818,6 +861,7 @@ export function Editor() {
   }
 
   function download(type: 'png' | Compressed) {
+    if (sample) return;
     setExportOpen(false);
     let saved: unknown;
     // A cancelled save dialog (desktop) shows no toast.
@@ -841,6 +885,7 @@ export function Editor() {
   }
 
   function exportPdf(searchable = false) {
+    if (sample) return;
     setExportOpen(false);
     let saved: unknown;
     return withBusy(
@@ -860,11 +905,13 @@ export function Editor() {
   }
 
   async function print() {
+    if (sample) return;
     setExportOpen(false);
     setPrintUrl(URL.createObjectURL(await canvasToBlob(renderFinal())));
   }
 
   async function rename(title: string) {
+    if (sample) return;
     const clean = title.trim() || 'Untitled';
     if (clean === shot!.title) return;
     const next = { ...shot!, title: clean };
@@ -875,7 +922,7 @@ export function Editor() {
 
   function changeQuality(q: number) {
     setQuality(q);
-    localStorage.setItem('quality', String(q));
+    if (!sample) localStorage.setItem('quality', String(q));
   }
 
   const cursor =
@@ -887,25 +934,53 @@ export function Editor() {
           ? cropCursor
           : 'crosshair';
   const out = doc.crop ?? full;
+  const StageElement = sample ? 'section' : 'main';
 
   return (
     <>
-      <div className='editor'>
+      <div
+        className='editor'
+        data-tools-visible={toolsVisible}
+        data-tour={sample ? 'sample-editor' : undefined}
+        data-tour-ready={
+          tourState &&
+          tool === tourState.tool &&
+          toolsVisible === tourState.toolsVisible &&
+          exportOpen === tourState.exportOpen &&
+          doc.shapes === tourState.shapes
+            ? ''
+            : undefined
+        }
+      >
         <header className='topbar'>
-          <a
+          {!sample && (
+            <a
+              className='icon-btn'
+              href='history.html'
+              onClick={(e) => leaveToHistory() && e.preventDefault()}
+              aria-label='Back to history'
+              title='History'
+            >
+              <Icon name='back' />
+            </a>
+          )}
+          <button
             className='icon-btn'
-            href='history.html'
-            onClick={(e) => leaveToHistory() && e.preventDefault()}
-            aria-label='Back to history'
-            title='History'
+            aria-label='Toggle annotation tools'
+            aria-expanded={toolsVisible}
+            aria-controls='annotation-tools'
+            data-tour='tools-toggle'
+            title='Toggle annotation tools'
+            onClick={() => setToolsVisible(!toolsVisible)}
           >
-            <Icon name='back' />
-          </a>
+            <Icon name='pen' />
+          </button>
           <div className='doc-meta'>
             <input
               className='title-input'
               defaultValue={shot.title}
               aria-label='Screenshot title'
+              readOnly={!!sample}
               onBlur={(e) => void rename(e.currentTarget.value)}
               onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
             />
@@ -973,25 +1048,29 @@ export function Editor() {
               Reset
             </button>
           )}
-          <button
-            className='btn'
-            onClick={() => void copy()}
-            disabled={busy}
-            title='Copy to clipboard (⌘C)'
-          >
-            <Icon name='copy' size={16} />
-            Copy to Clipboard
-          </button>
-          <button
-            className='btn'
-            onClick={() => void copyText()}
-            disabled={busy}
-            title='Copy the text in this screenshot, read on your device (⇧⌘C)'
-          >
-            <Icon name='scanText' size={16} />
-            Copy Text
-          </button>
-          <div className='export' ref={exportRef}>
+          <div className='copy-actions' data-tour='copy-actions'>
+            <button
+              className='btn'
+              onClick={() => void copy()}
+              disabled={busy || !!sample}
+              data-tour='copy-image'
+              title='Copy to clipboard (⌘C)'
+            >
+              <Icon name='copy' size={16} />
+              Copy to Clipboard
+            </button>
+            <button
+              className='btn'
+              onClick={() => void copyText()}
+              disabled={busy || !!sample}
+              data-tour='copy-text'
+              title='Copy the text in this screenshot, read on your device (⇧⌘C)'
+            >
+              <Icon name='scanText' size={16} />
+              Copy Text
+            </button>
+          </div>
+          <div className='export' ref={exportRef} data-tour='export-control'>
             <button
               className='btn'
               aria-expanded={exportOpen}
@@ -1004,7 +1083,12 @@ export function Editor() {
               <Icon name='chevron' size={14} />
             </button>
             {exportOpen && (
-              <div className='menu' role='dialog' aria-label='Export'>
+              <div
+                className='menu'
+                role='dialog'
+                aria-label='Export'
+                data-tour='export-menu'
+              >
                 <p className='menu-title'>Full quality</p>
                 <MenuItem
                   icon='image'
@@ -1082,71 +1166,77 @@ export function Editor() {
           </button>
         </header>
 
-        <nav
-          className='toolbar'
-          role='toolbar'
-          aria-orientation='vertical'
-          aria-label='Tools'
-        >
-          {TOOLS.map((t) => (
-            <button
-              key={t.id}
-              className='tool'
-              aria-pressed={tool === t.id}
-              aria-label={t.label}
-              title={`${t.label} (${t.key.toUpperCase()})`}
-              onClick={() => selectTool(t.id)}
-            >
-              <Icon name={t.id as IconName} />
-            </button>
-          ))}
-          <hr />
-          {COLORS.map((c) => (
-            <button
-              key={c}
-              className='swatch'
-              style={{ '--c': c } as CSSProperties}
-              aria-pressed={color === c}
-              aria-label={`Color ${c}`}
-              onClick={() => {
-                setColor(c);
-                updateSelected({ color: c });
-              }}
-            />
-          ))}
-          <label
-            className='swatch custom'
-            title='Custom color'
-            style={{ '--c': color } as CSSProperties}
+        {toolsVisible && (
+          <nav
+            id='annotation-tools'
+            className='toolbar'
+            role='toolbar'
+            aria-orientation='vertical'
+            aria-label='Tools'
+            data-tour='editor-tools'
           >
-            <input
-              type='color'
-              value={color}
-              aria-label='Custom color'
-              onChange={(e) => setColor(e.target.value)}
-              onBlur={(e) => updateSelected({ color: e.target.value })}
-            />
-          </label>
-          <hr />
-          {SIZE_NAMES.map((name, i) => (
-            <button
-              key={name}
-              className='size'
-              aria-pressed={sizeIdx === i}
-              aria-label={`${name} size`}
-              title={`${name} size`}
-              onClick={() => {
-                setSizeIdx(i);
-                const sel = doc.shapes.find((s) => s.id === selectedId);
-                if (sel) updateSelected({ size: sizeFor(sel.kind, i, unit) });
-              }}
+            {TOOLS.map((t) => (
+              <button
+                key={t.id}
+                data-tour={`tool-${t.id}`}
+                className='tool'
+                aria-pressed={tool === t.id}
+                aria-label={t.label}
+                title={t.key.toUpperCase()}
+                onClick={() => selectTool(t.id)}
+              >
+                <Icon name={t.id as IconName} />
+                <span>{t.short ?? t.label}</span>
+              </button>
+            ))}
+            <hr />
+            {COLORS.map((c) => (
+              <button
+                key={c}
+                className='swatch'
+                style={{ '--c': c } as CSSProperties}
+                aria-pressed={color === c}
+                aria-label={`Color ${c}`}
+                onClick={() => {
+                  setColor(c);
+                  updateSelected({ color: c });
+                }}
+              />
+            ))}
+            <label
+              className='swatch custom'
+              title='Custom color'
+              style={{ '--c': color } as CSSProperties}
             >
-              <span style={{ width: 4 + i * 4, height: 4 + i * 4 }} />
-            </button>
-          ))}
-        </nav>
+              <input
+                type='color'
+                value={color}
+                aria-label='Custom color'
+                onChange={(e) => setColor(e.target.value)}
+                onBlur={(e) => updateSelected({ color: e.target.value })}
+              />
+            </label>
+            <hr />
+            {SIZE_NAMES.map((name, i) => (
+              <button
+                key={name}
+                className='size'
+                aria-pressed={sizeIdx === i}
+                aria-label={`${name} size`}
+                title={`${name} size`}
+                onClick={() => {
+                  setSizeIdx(i);
+                  const sel = doc.shapes.find((s) => s.id === selectedId);
+                  if (sel) updateSelected({ size: sizeFor(sel.kind, i, unit) });
+                }}
+              >
+                <span style={{ width: 4 + i * 4, height: 4 + i * 4 }} />
+              </button>
+            ))}
+          </nav>
+        )}
 
-        <main className='stage' ref={stageRef}>
+        <StageElement className='stage' ref={stageRef}>
           <div
             className='canvas-wrap'
             ref={wrapRef}
@@ -1212,7 +1302,7 @@ export function Editor() {
               </button>
             </div>
           )}
-        </main>
+        </StageElement>
       </div>
       <Toast message={toast} />
       {confirmClose && (

@@ -9,13 +9,33 @@ import {
   waitFor,
   within,
 } from '@testing-library/react';
+import { driver } from 'driver.js';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { Home } from '../../../src/desktop/Home';
 import * as updater from '../../../src/desktop/Updater';
-import { addShot, clearShots } from '../../../src/lib/db';
+import { addShot, clearShots, listShots } from '../../../src/lib/db';
 import { imageBlob } from '../../setup';
 
 const runCapture = vi.fn();
+vi.mock('driver.js', () => ({
+  driver: vi.fn(() => {
+    let index = 0;
+    return {
+      drive: vi.fn(() => {
+        index = 0;
+      }),
+      destroy: vi.fn(),
+      refresh: vi.fn(),
+      getActiveIndex: () => index,
+      moveNext: vi.fn(() => {
+        index++;
+      }),
+      movePrevious: vi.fn(() => {
+        index--;
+      }),
+    };
+  }),
+}));
 vi.mock('../../../src/desktop/Capture', () => ({
   runCapture: (...args: unknown[]) => runCapture(...args),
 }));
@@ -33,6 +53,8 @@ let savedBlend: number | null;
 
 beforeEach(async () => {
   await clearShots();
+  localStorage.setItem('hasCompletedOnboardingTour', 'true');
+  vi.mocked(driver).mockClear();
   vi.stubGlobal(
     'matchMedia',
     vi.fn(() => ({
@@ -120,6 +142,7 @@ afterEach(async () => {
   clearMocks();
   vi.unstubAllGlobals();
   delete document.documentElement.dataset.platform;
+  delete document.documentElement.dataset.theme;
   document.documentElement.style.removeProperty('--theme-blend');
 });
 
@@ -148,7 +171,26 @@ async function openSettings() {
   return screen.findByRole('heading', { name: 'Settings', level: 1 });
 }
 
+async function moveTour(
+  direction: 'onNextClick' | 'onPrevClick' = 'onNextClick',
+) {
+  const config = vi.mocked(driver).mock.calls.at(-1)![0]!;
+  const tour = vi.mocked(driver).mock.results.at(-1)!.value;
+  const expected =
+    tour.getActiveIndex()! + (direction === 'onNextClick' ? 1 : -1);
+  let transition!: Promise<void>;
+  act(() => {
+    transition = (config[direction] as () => Promise<void>)();
+  });
+  await waitFor(() => expect(tour.getActiveIndex()).toBe(expected));
+  await transition;
+  expect(
+    document.querySelector(config.steps![expected].element as string),
+  ).toBeTruthy();
+}
+
 test('the appearance slider switches designs and remembers the selection', async () => {
+  os.os = 'macos';
   await openSettings();
   const slider = screen.getByRole('slider', { name: 'Window design' });
   const app = screen.getByRole('navigation', {
@@ -181,10 +223,11 @@ test('the appearance slider switches designs and remembers the selection', async
   expect(savedBlend).toBe(0);
 });
 
-test('applies the saved strength to the document during the first render', () => {
+test('applies the saved strength after confirming macOS', async () => {
+  os.os = 'macos';
   localStorage.setItem('themeBlend', '100');
-  render(<Home />);
-  expect(rootBlend()).toBe('1');
+  await renderHome();
+  await waitFor(() => expect(rootBlend()).toBe('1'));
   expect(
     screen
       .getByRole('navigation', { name: 'Sections' })
@@ -194,11 +237,12 @@ test('applies the saved strength to the document during the first render', () =>
 
 test('a fresh install starts at 0% and saves it durably', async () => {
   render(<Home />);
-  expect(rootBlend()).toBe('0');
   await waitFor(() => expect(savedBlend).toBe(0));
+  expect(rootBlend()).toBe('0');
 });
 
 test('the durable saved strength wins over a stale local copy at launch', async () => {
+  os.os = 'macos';
   localStorage.setItem('themeBlend', '50');
   savedBlend = 100;
   await openSettings();
@@ -219,6 +263,7 @@ test('the durable saved strength wins over a stale local copy at launch', async 
 test.each(['glass', 'unknown'])(
   'restores a saved appearance safely: %s',
   async (saved) => {
+    os.os = 'macos';
     localStorage.setItem('appearance', saved);
     await openSettings();
     const slider = screen.getByRole('slider', { name: 'Window design' });
@@ -241,11 +286,203 @@ test.each([
   ['-20', '0'],
   ['broken', '0'],
 ])('restores and clamps the saved blend %s', async (saved, expected) => {
+  os.os = 'macos';
   localStorage.setItem('themeBlend', saved);
   await openSettings();
   const slider = screen.getByRole('slider', { name: 'Window design' });
   expect((slider as HTMLInputElement).value).toBe(expected);
   expect(rootBlend()).toBe(String(Number(expected) / 100));
+});
+
+test.each(['windows', 'linux'])(
+  '%s migrates glass to dark and only offers solid themes',
+  async (platform) => {
+    os.os = platform;
+    localStorage.setItem('appearance', 'glass');
+    localStorage.setItem('theme', 'liquid-glass');
+    localStorage.setItem('themeBlend', '80');
+    savedBlend = 80;
+    render(<Home />);
+    const app = screen.getByRole('navigation', {
+      name: 'Sections',
+    }).parentElement!;
+    expect(app.hasAttribute('data-appearance')).toBe(false);
+    fireEvent.click(nav('Settings'));
+    await waitFor(() =>
+      expect(document.documentElement.dataset.platform).toBe(platform),
+    );
+    expect(screen.queryByRole('slider', { name: 'Window design' })).toBeNull();
+    expect(screen.queryByText('Liquid Glass')).toBeNull();
+    await waitFor(() =>
+      expect(document.documentElement.dataset.theme).toBe('dark'),
+    );
+    expect(localStorage.getItem('theme')).toBe('dark');
+    expect(localStorage.getItem('themeBlend')).toBe('0');
+    expect(savedBlend).toBe(0);
+    expect(cmds()).not.toContain('set_liquid_glass');
+    fireEvent.click(screen.getByRole('radio', { name: 'Light' }));
+    expect(document.documentElement.dataset.theme).toBe('light');
+    expect(localStorage.getItem('theme')).toBe('light');
+    fireEvent.click(screen.getByRole('radio', { name: 'Dark' }));
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    cleanup();
+    await renderHome();
+    expect(document.documentElement.dataset.theme).toBe('dark');
+  },
+);
+
+test.each(['theme', 'appearance'])(
+  'migrates a legacy liquid-glass %s without a saved blend',
+  async (key) => {
+    os.os = 'linux';
+    localStorage.setItem(key, 'liquid-glass');
+    await openSettings();
+    await waitFor(() =>
+      expect(document.documentElement.dataset.theme).toBe('dark'),
+    );
+    expect(screen.queryByText('Liquid Glass')).toBeNull();
+    fireEvent.click(screen.getByRole('radio', { name: 'System' }));
+    expect(document.documentElement.dataset.theme).toBeUndefined();
+    expect(localStorage.getItem('theme')).toBe('system');
+  },
+);
+
+test('first visit starts an interactive tour and dismissal persists across reloads', async () => {
+  localStorage.removeItem('hasCompletedOnboardingTour');
+  await renderHome();
+  await waitFor(() => expect(driver).toHaveBeenCalledOnce());
+  const config = vi.mocked(driver).mock.calls[0][0]!;
+  expect(config.steps!.length).toBeGreaterThanOrEqual(10);
+  expect(
+    config.steps?.map((step) => step.popover?.description).join(' '),
+  ).toContain('Searchable PDFs');
+  expect(vi.mocked(driver).mock.results[0].value.drive).toHaveBeenCalledOnce();
+  act(() => (config.onDestroyed as () => void)());
+  expect(localStorage.getItem('hasCompletedOnboardingTour')).toBe('true');
+  cleanup();
+  await renderHome();
+  expect(driver).toHaveBeenCalledOnce();
+  const tourButton = nav('Product Tour');
+  expect(tourButton.closest('li')?.previousElementSibling?.textContent).toBe(
+    'Settings',
+  );
+  fireEvent.click(nav('Settings'));
+  fireEvent.click(tourButton);
+  await waitFor(() => expect(driver).toHaveBeenCalledTimes(2));
+  expect(
+    screen.getByRole('heading', { name: 'Capture', level: 1 }),
+  ).toBeTruthy();
+  await waitFor(() =>
+    expect(
+      vi.mocked(driver).mock.results[1].value.drive,
+    ).toHaveBeenCalledWith(),
+  );
+});
+
+test('tour transitions mount real editor targets, reverse boundaries, and discard the sandbox', async () => {
+  await openSettings();
+  fireEvent.click(screen.getByRole('radio', { name: 'Light' }));
+  fireEvent.click(nav('Product Tour'));
+  await waitFor(() => expect(driver).toHaveBeenCalledOnce());
+  const config = vi.mocked(driver).mock.calls[0][0]!;
+  const tour = vi.mocked(driver).mock.results[0].value;
+  await waitFor(() => expect(tour.drive).toHaveBeenCalledOnce());
+  for (let index = 0; index < 4; index++) await moveTour();
+  expect(screen.getByRole('img', { name: 'Screenshot canvas' })).toBeTruthy();
+  await moveTour('onPrevClick');
+  expect(
+    document.querySelector('[data-tour="capture-copy-selection"]'),
+  ).toBeTruthy();
+  await moveTour();
+  while (tour.getActiveIndex()! < config.steps!.length - 3) await moveTour();
+  expect(screen.getByRole('dialog', { name: 'Export' })).toBeTruthy();
+  await moveTour();
+  expect(screen.queryByRole('dialog', { name: 'Export' })).toBeNull();
+  expect(document.querySelector('[data-tour="appearance"]')).toBeTruthy();
+  await moveTour('onPrevClick');
+  expect(screen.getByRole('dialog', { name: 'Export' })).toBeTruthy();
+  await act(async () => {
+    (config.onDestroyed as () => void)();
+  });
+  expect(screen.queryByRole('img', { name: 'Screenshot canvas' })).toBeNull();
+  expect(
+    screen.getByRole('heading', { name: 'Settings', level: 1 }),
+  ).toBeTruthy();
+  expect(document.documentElement.dataset.theme).toBe('light');
+  expect(localStorage.getItem('theme')).toBe('light');
+  expect(await listShots()).toHaveLength(0);
+  expect(runCapture).not.toHaveBeenCalled();
+  expect(cmds()).not.toContain('open_editor');
+});
+
+test.each(['windows', 'macos'])(
+  'closing a %s theme preview restores preferences without saving them',
+  async (platform) => {
+    os.os = platform;
+    localStorage.setItem('theme', 'dark');
+    localStorage.setItem('themeBlend', platform === 'macos' ? '35' : '0');
+    await openSettings();
+    await waitFor(() => expect(savedBlend).toBe(platform === 'macos' ? 35 : 0));
+    const originalTitle = document.title;
+    const originalBlend = rootBlend();
+    const writes = calls.filter(
+      (call) => call.cmd === 'set_theme_blend',
+    ).length;
+    fireEvent.click(nav('Product Tour'));
+    await waitFor(() => expect(driver).toHaveBeenCalledOnce());
+    const config = vi.mocked(driver).mock.calls[0][0]!;
+    const tour = vi.mocked(driver).mock.results[0].value;
+    await waitFor(() => expect(tour.drive).toHaveBeenCalledOnce());
+    while (tour.getActiveIndex()! < config.steps!.length - 2) await moveTour();
+    if (platform === 'macos')
+      await waitFor(() => expect(rootBlend()).toBe('1'), { timeout: 2000 });
+    else
+      await waitFor(
+        () => expect(document.documentElement.dataset.theme).toBe('light'),
+        { timeout: 2000 },
+      );
+    expect(localStorage.getItem('theme')).toBe('dark');
+    expect(localStorage.getItem('themeBlend')).toBe(
+      platform === 'macos' ? '35' : '0',
+    );
+    act(() => (config.onDestroyStarted as () => void)());
+    expect(screen.queryByRole('img', { name: 'Screenshot canvas' })).toBeNull();
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(rootBlend()).toBe(originalBlend);
+    expect(document.title).toBe(originalTitle);
+    expect(calls.filter((call) => call.cmd === 'set_theme_blend')).toHaveLength(
+      writes,
+    );
+    expect(
+      screen.getByRole('heading', { name: 'Settings', level: 1 }),
+    ).toBeTruthy();
+  },
+);
+
+test('closing while the sample is loading cancels the transition and ignores native commands', async () => {
+  await renderHome();
+  fireEvent.click(nav('Product Tour'));
+  await waitFor(() => expect(driver).toHaveBeenCalledOnce());
+  const config = vi.mocked(driver).mock.calls[0][0]!;
+  const tour = vi.mocked(driver).mock.results[0].value;
+  await waitFor(() => expect(tour.drive).toHaveBeenCalledOnce());
+  for (let index = 0; index < 3; index++) await moveTour();
+  await act(() => emit('command', 'selection'));
+  await act(() => emit('navigate', 'settings'));
+  let pendingTransition!: Promise<void>;
+  act(() => {
+    pendingTransition = (config.onNextClick as () => Promise<void>)();
+    (config.onDestroyStarted as () => void)();
+  });
+  await act(async () => {
+    await pendingTransition;
+  });
+  expect(screen.queryByRole('img', { name: 'Screenshot canvas' })).toBeNull();
+  expect(
+    screen.getByRole('heading', { name: 'Capture', level: 1 }),
+  ).toBeTruthy();
+  expect(runCapture).not.toHaveBeenCalled();
+  expect(await listShots()).toHaveLength(0);
 });
 
 test('changing glass strength does not reapply native effects or replace the layout', async () => {

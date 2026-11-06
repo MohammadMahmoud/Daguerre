@@ -1,8 +1,10 @@
-// Writes the CHANGELOG section for one product's current version to release-notes.md (or argv[3]).
-// Usage: node scripts/release-notes.mjs <extension|desktop> [out]
-// Fails if a pushed tag (ext-v* / desktop-v*) doesn't match that product's version.
+// Writes finalized unified notes or a legacy CHANGELOG section to .release-notes.md (or argv[3]).
+// Usage: node scripts/release-notes.mjs <all|extension|desktop> [out]
+// Fails if a pushed tag doesn't match the release version.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
+import { readVersions } from './bump-version.mjs';
+import { getReleaseSection } from './update-changelog.mjs';
 
 export const PRODUCTS = {
   extension: { label: 'Extension', tag: 'ext-v', title: 'Daguerre extension' },
@@ -15,11 +17,13 @@ const readText = (path) => readFileSync(path, 'utf8');
 export function readVersion(product, read = readText) {
   if (product === 'extension')
     return JSON.parse(read('public/manifest.json')).version;
-  if ('version' in JSON.parse(read('src-tauri/tauri.conf.json')))
-    throw new Error(
-      'src-tauri/tauri.conf.json must not set "version"; the desktop version lives in src-tauri/Cargo.toml',
-    );
-  return read('src-tauri/Cargo.toml').match(/^version = "(.+)"$/m)?.[1];
+  const tauriVersion = JSON.parse(read('src-tauri/tauri.conf.json')).version;
+  const cargoVersion = read('src-tauri/Cargo.toml').match(
+    /^version = "(.+)"$/m,
+  )?.[1];
+  if (tauriVersion && tauriVersion !== cargoVersion)
+    throw new Error('Tauri config version must match src-tauri/Cargo.toml');
+  return cargoVersion;
 }
 
 export function releaseNotes(product, version, changelog, tag) {
@@ -42,10 +46,28 @@ if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(process.argv[1]).href
 ) {
-  const [product, out = 'release-notes.md'] = process.argv.slice(2);
+  const [product, out = '.release-notes.md'] = process.argv.slice(2);
   try {
+    if (product === 'all') {
+      const versions = readVersions();
+      const version = versions[0];
+      if (!version || versions.some((value) => value !== version))
+        throw new Error('Release versions are not synchronized');
+      if (
+        process.env.GITHUB_REF_TYPE === 'tag' &&
+        process.env.GITHUB_REF_NAME !== `v${version}`
+      )
+        throw new Error('Tag does not match the synchronized release version');
+      const section = getReleaseSection(readText('CHANGELOG.md'), version);
+      if (!section || !/^- \S/m.test(section))
+        throw new Error(
+          `Missing nonempty CHANGELOG.md section for v${version}`,
+        );
+      writeFileSync(out, section);
+      process.exit(0);
+    }
     if (!PRODUCTS[product])
-      throw new Error('usage: release-notes.mjs <extension|desktop> [out]');
+      throw new Error('usage: release-notes.mjs <all|extension|desktop> [out]');
     const version = readVersion(product);
     const tag =
       process.env.GITHUB_REF_TYPE === 'tag'

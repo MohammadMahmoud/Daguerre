@@ -81,10 +81,81 @@ async function savedEdits(id: string) {
   return (await getShot(id))!.edits!;
 }
 
+test('every annotation tool has a persistent label and a shortcut-only tooltip', async () => {
+  await open();
+  const tools = within(screen.getByRole('toolbar', { name: 'Tools' }));
+  for (const [name, label, shortcut] of [
+    ['Select and move', 'Select', 'V'],
+    ['Crop', 'Crop', 'C'],
+    ['Arrow', 'Arrow', 'A'],
+    ['Rectangle', 'Rectangle', 'R'],
+    ['Ellipse', 'Ellipse', 'O'],
+    ['Line', 'Line', 'L'],
+    ['Pen', 'Pen', 'P'],
+    ['Highlighter', 'Highlight', 'H'],
+    ['Text', 'Text', 'T'],
+    ['Numbered step', 'Steps', 'N'],
+    ['Pixelate sensitive info', 'Pixelate', 'B'],
+  ]) {
+    const tool = tools.getByRole('button', { name });
+    expect(tool.textContent).toBe(label);
+    expect(tool.title).toBe(shortcut);
+  }
+});
+
 test('explains when the screenshot is missing', async () => {
   history.replaceState(null, '', '/editor.html?id=nope');
   render(<Editor />);
   expect(await screen.findByText('Screenshot not found')).toBeTruthy();
+});
+
+test('the annotation toolbar can be collapsed and expanded', async () => {
+  await open();
+  const toggle = button('Toggle annotation tools');
+  fireEvent.click(toggle);
+  expect(screen.queryByRole('toolbar', { name: 'Tools' })).toBeNull();
+  expect(toggle.getAttribute('aria-expanded')).toBe('false');
+  fireEvent.click(toggle);
+  expect(screen.getByRole('toolbar', { name: 'Tools' })).toBeTruthy();
+});
+
+test('an in-memory editor preview never renames or saves the real capture', async () => {
+  const id = await addShot(imageBlob(900, 600), {
+    title: 'Original',
+    url: '',
+    mode: 'screen',
+  });
+  const sample = (await getShot(id))!;
+  render(
+    <Editor
+      sample={sample}
+      tourState={{
+        tool: 'blur',
+        shapes: [],
+        toolsVisible: true,
+        exportOpen: true,
+      }}
+    />,
+  );
+  await screen.findByRole('img', { name: 'Screenshot canvas' });
+  expect(button('Pixelate sensitive info').getAttribute('aria-pressed')).toBe(
+    'true',
+  );
+  expect(screen.getByRole('dialog', { name: 'Export' })).toBeTruthy();
+  fireEvent.pointerDown(document.body);
+  expect(screen.getByRole('dialog', { name: 'Export' })).toBeTruthy();
+  fireEvent.click(button(/^PNG/));
+  fireEvent.click(button(/^Searchable PDF/));
+  expect(screen.getByRole('dialog', { name: 'Export' })).toBeTruthy();
+  fireEvent.blur(screen.getByRole('textbox', { name: 'Screenshot title' }), {
+    target: { value: 'Changed' },
+  });
+  fireEvent.click(button('Rectangle'));
+  drag([100, 100], [300, 250]);
+  key('s', { metaKey: true });
+  fireEvent.click(button(/^Save/));
+  expect((await getShot(id))!.title).toBe('Original');
+  expect((await getShot(id))!.edits).toBeUndefined();
 });
 
 test('shows the screenshot details and renames it', async () => {

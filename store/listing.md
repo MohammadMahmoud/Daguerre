@@ -1,6 +1,6 @@
 # Chrome Web Store submission
 
-Copy these values into the [Developer Dashboard](https://chrome.google.com/webstore/devconsole). Build the upload with `pnpm package` (creates `daguerre.zip`), or download the `daguerre-extension-<version>` artifact from the CI run or the `ext-v<version>` GitHub release.
+Copy these values into the [Developer Dashboard](https://chrome.google.com/webstore/devconsole). Build the upload with `pnpm package` (creates `daguerre.zip` with the manifest at its root). Every unified GitHub Release also includes `daguerre-extension-dist-vX.Y.Z.zip`: extract its `dist/` folder for Load unpacked, or zip the contents of `dist/` with the manifest at the archive root for store submission. Release publishing does not submit to the Web Store automatically.
 
 ## Store listing
 
@@ -69,7 +69,7 @@ Copy these values into the [Developer Dashboard](https://chrome.google.com/webst
 - [ ] Contact email added to `store/privacy.html`, and the policy live on GitHub Pages
 - [ ] "Daguerre" checked against existing store listings and trademarks
 - [ ] `pnpm package` run, and the zip loaded unpacked once in a clean Chrome profile to smoke-test
-- [ ] Bump `version` in `public/manifest.json`, and add a matching `## [Extension x.y.z]` section to `CHANGELOG.md`, for every update you upload
+- [ ] Request a CI release from merged `main` with `pnpm publish:release` (optional `--version X.Y.Z`); use the synchronized manifest and generated CHANGELOG.md section instead of editing version files on a feature branch
 
 ## Third-party software
 

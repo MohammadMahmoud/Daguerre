@@ -1,6 +1,12 @@
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { applyTheme } from '../desktop/Theme';
 import type { CaptureMode } from '../lib/db';
+
+applyTheme();
+addEventListener('storage', (event) => {
+  if (event.key === 'theme' || event.key === null) applyTheme();
+});
 
 export const CAPTURE_MODES: CaptureMode[] = ['selection', 'screen', 'window'];
 

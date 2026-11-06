@@ -1,5 +1,6 @@
 {
   "name": "daguerre",
+  "version": "1.0.0",
   "private": true,
   "description": "Daguerre: a Chrome extension and desktop app to capture, annotate and export screenshots. Everything stays on your device.",
   "type": "module",
@@ -15,8 +16,12 @@
     "coverage": "vitest run --coverage",
     "coverage:badge": "node scripts/coverage-badge.mjs",
     "release-notes": "node scripts/release-notes.mjs",
+    "changelog:update": "node scripts/update-changelog.mjs",
+    "publish:release": "node scripts/publish-release.mjs",
+    "release": "node scripts/publish-release.mjs",
+    "extension:verify": "node scripts/package-extension.mjs --verify",
     "icons": "node scripts/icons.mjs",
-    "package": "pnpm build && pnpm coverage && rm -f daguerre.zip && cd dist && zip -qrX ../daguerre.zip . -x '.*'",
+    "package": "pnpm build && pnpm coverage && node scripts/package-extension.mjs",
     "desktop:dev": "vite build --mode desktop && tauri dev",
     "desktop:build": "tsc --noEmit && id=$(security find-identity -v -p codesigning 2>/dev/null | sed -n 's/.*\"\\(.*\\)\"/\\1/p' | head -n 1); APPLE_SIGNING_IDENTITY=\"${APPLE_SIGNING_IDENTITY:-${id:--}}\" tauri build",
     "lint": "eslint --max-warnings 0 .",
@@ -37,6 +42,7 @@
     "@tauri-apps/plugin-process": "^2.4.0",
     "@tauri-apps/plugin-updater": "^2.14.1",
     "@tesseract.js-data/eng": "^1.0.0",
+    "driver.js": "^1.10.2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "tesseract.js": "^7.0.0"
