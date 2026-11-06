@@ -27,7 +27,7 @@ jobs:
       extension: ${{ steps.which.outputs.extension }}
       desktop: ${{ steps.which.outputs.desktop }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.release_ref || github.sha }}
           fetch-depth: 0
@@ -51,7 +51,7 @@ jobs:
     name: Typecheck and unit tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.release_ref || github.sha }}
       - uses: pnpm/action-setup@v4
@@ -79,7 +79,7 @@ jobs:
     if: needs.changes.outputs.extension == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.release_ref || github.sha }}
       - uses: pnpm/action-setup@v4
@@ -119,7 +119,7 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-24.04]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.release_ref || github.sha }}
       - name: Linux system libraries (webview, tray, screen capture)
@@ -174,7 +174,7 @@ jobs:
             args: --bundles appimage,deb,rpm
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.release_ref || github.sha }}
       - name: Linux system libraries (webview, tray, screen capture)
@@ -249,7 +249,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/download-artifact@v4
         with:
           name: coverage-report
