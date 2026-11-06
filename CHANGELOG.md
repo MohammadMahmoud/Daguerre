@@ -4,6 +4,16 @@ All notable changes to Daguerre are listed here. The format follows [Keep a Chan
 
 New releases synchronize the desktop app and browser extension under one `vX.Y.Z` tag. Release CI turns the `## [Unreleased]` section below into `## [vX.Y.Z] - YYYY-MM-DD` and uses it verbatim as the GitHub Release body; without one, it generates Added, Fixed and Changed entries from commit messages. Version files are updated on remote main, not by local hooks. Earlier product-specific Desktop and Extension sections remain unchanged as historical records.
 
+## [v1.0.2] - 2026-11-06
+
+### Added
+
+### Fixed
+
+- Ensure drive is called once after onboarding tour completion.
+
+### Changed
+
 ## [v1.0.1] - 2026-11-06
 
 ### Added

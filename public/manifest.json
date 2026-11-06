@@ -72,7 +72,7 @@
     "clipboardWrite"
   ],
   "short_name": "Daguerre",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "web_accessible_resources": [
     {
       "matches": ["<all_urls>"],
