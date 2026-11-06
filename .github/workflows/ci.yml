@@ -67,7 +67,7 @@ jobs:
         run: pnpm coverage
       - name: Coverage badge and job summary
         run: pnpm coverage:badge
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: coverage/
@@ -98,12 +98,12 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           mv daguerre.zip extension-dist.zip
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: daguerre-extension-${{ steps.meta.outputs.version }}-${{ steps.meta.outputs.sha }}
           path: extension-dist.zip
           if-no-files-found: error
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: extension-dist
           path: dist/
@@ -223,7 +223,7 @@ jobs:
           updater=()
           [ -n "$TAURI_SIGNING_PRIVATE_KEY" ] && updater=(--config '{"bundle":{"createUpdaterArtifacts":true}}')
           pnpm tauri build ${{ matrix.args }} "${updater[@]}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: daguerre-desktop-${{ matrix.name }}
           path: |
