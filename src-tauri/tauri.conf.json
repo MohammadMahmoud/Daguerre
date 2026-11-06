@@ -64,5 +64,6 @@
       "minimumSystemVersion": "13.0",
       "signingIdentity": "-"
     }
-  }
+  },
+  "version": "1.0.1"
 }
