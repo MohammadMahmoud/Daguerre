@@ -356,7 +356,11 @@ test('first visit starts an interactive tour and dismissal persists across reloa
   expect(
     config.steps?.map((step) => step.popover?.description).join(' '),
   ).toContain('Searchable PDFs');
-  expect(vi.mocked(driver).mock.results[0].value.drive).toHaveBeenCalledOnce();
+  await waitFor(() =>
+    expect(
+      vi.mocked(driver).mock.results[0].value.drive,
+    ).toHaveBeenCalledOnce(),
+  );
   act(() => (config.onDestroyed as () => void)());
   expect(localStorage.getItem('hasCompletedOnboardingTour')).toBe('true');
   cleanup();
