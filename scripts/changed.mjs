@@ -14,15 +14,15 @@ const DESKTOP = [
 ];
 const EXTENSION = [
   'public/',
-  'src/background.ts',
-  'src/popup.tsx',
+  'src/Background.ts',
+  'src/Popup.tsx',
   'src/Clipboard.ts',
   'src/platform/Chrome.ts',
   'popup.html',
   'clipboard.html',
-  'test/chrome.ts',
-  'test/unit/background.test.ts',
-  'test/unit/popup.test.tsx',
+  'test/Chrome.ts',
+  'test/unit/Background.test.ts',
+  'test/unit/Popup.test.tsx',
   'test/unit/Clipboard.test.ts',
 ];
 // Docs, the store site and dev tooling: the always-on test job covers lint and formatting.

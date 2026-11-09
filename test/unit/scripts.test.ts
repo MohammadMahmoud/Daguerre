@@ -1,11 +1,16 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
-import { readVersions } from '../../scripts/bump-version.mjs';
-import { classify } from '../../scripts/changed.mjs';
-import { buildCrxBuffer } from '../../scripts/package-extension.mjs';
-import { readVersion, releaseNotes } from '../../scripts/release-notes.mjs';
-import { getReleaseSection } from '../../scripts/update-changelog.mjs';
-import { updaterManifest } from '../../scripts/updater-manifest.mjs';
+import { readVersions } from '../../scripts/BumpVersion.mjs';
+import { classify } from '../../scripts/Changed.mjs';
+import {
+  buildDesktop,
+  resolveAppleSigningIdentity,
+  resolveCargoEnv,
+} from '../../scripts/DesktopBuild.mjs';
+import { buildCrxBuffer } from '../../scripts/PackageExtension.mjs';
+import { readVersion, releaseNotes } from '../../scripts/ReleaseNotes.mjs';
+import { getReleaseSection } from '../../scripts/UpdateChangelog.mjs';
+import { updaterManifest } from '../../scripts/UpdaterManifest.mjs';
 
 const CHANGELOG = `# Changelog
 
@@ -108,7 +113,7 @@ describe('changed products', () => {
       extension: false,
       desktop: true,
     });
-    expect(classify(['src/popup.tsx', 'public/manifest.json'])).toEqual({
+    expect(classify(['src/Popup.tsx', 'public/manifest.json'])).toEqual({
       extension: true,
       desktop: false,
     });
@@ -116,8 +121,8 @@ describe('changed products', () => {
 
   test('shared code, build config and CI count for both', () => {
     for (const file of [
-      'src/editor.tsx',
-      'src/lib/export.ts',
+      'src/Editor.tsx',
+      'src/lib/Export.ts',
       'package.json',
       'pnpm-lock.yaml',
       'vite.config.ts',
@@ -191,5 +196,65 @@ describe('updater manifest', () => {
     const headerLen = crx.readUInt32LE(8);
     expect(headerLen).toBeGreaterThan(256);
     expect(crx.subarray(12 + headerLen).equals(zipPayload)).toBe(true);
+  });
+});
+
+describe('desktop build', () => {
+  test('resolves cargo environment when cargo is missing from PATH', () => {
+    const fakeHome = process.cwd();
+    const env = { PATH: '/usr/bin' };
+    const resolved = resolveCargoEnv(env, fakeHome, 'linux');
+    expect(resolved.PATH).toBeDefined();
+  });
+
+  test('preserves existing APPLE_SIGNING_IDENTITY if configured', () => {
+    const env = { APPLE_SIGNING_IDENTITY: 'My Team Cert' };
+    expect(resolveAppleSigningIdentity(env, 'darwin')).toBe('My Team Cert');
+  });
+
+  test('defaults to ad-hoc identity on macOS when no signing identity is found', () => {
+    const env = {};
+    const identity = resolveAppleSigningIdentity(env, 'darwin', () => '');
+    expect(identity).toBe('-');
+  });
+
+  test('extracts matched signing identity on macOS', () => {
+    const env = {};
+    const output =
+      '  1) 1234567890ABCDEF "Developer ID Application: Company (12345)"\n';
+    const identity = resolveAppleSigningIdentity(env, 'darwin', () => output);
+    expect(identity).toBe('Developer ID Application: Company (12345)');
+  });
+
+  test('returns undefined identity on non-macOS platforms when unset', () => {
+    const env = {};
+    expect(resolveAppleSigningIdentity(env, 'win32')).toBeUndefined();
+    expect(resolveAppleSigningIdentity(env, 'linux')).toBeUndefined();
+  });
+
+  test('buildDesktop passes arguments and execution environment to runner', () => {
+    let capturedCmd = '';
+    let capturedArgs: string[] = [];
+    let capturedEnv: Record<string, string> = {};
+
+    const runner = (cmd: string, args: string[], opts: any) => {
+      capturedCmd = cmd;
+      capturedArgs = args;
+      capturedEnv = opts.env;
+      return { status: 0 };
+    };
+
+    buildDesktop(['--no-bundle', '--bundles', 'nsis'], {
+      env: { PATH: '/bin' },
+      platform: 'win32',
+      runner: runner as any,
+    });
+
+    expect(capturedCmd).toBe(process.execPath);
+    expect(capturedArgs).toContain('build');
+    expect(capturedArgs).toContain('--no-bundle');
+    expect(capturedArgs).toContain('--bundles');
+    expect(capturedArgs).toContain('nsis');
+    expect(capturedEnv.PATH).toBeDefined();
   });
 });

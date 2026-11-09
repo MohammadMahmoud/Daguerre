@@ -68,7 +68,7 @@ afterEach(() => {
 test('rejects unknown release flags without writing manifests', () => {
   const cwd = createRepository();
   const before = readFileSync(join(cwd, 'package.json'), 'utf8');
-  for (const script of ['bump-version.mjs', 'publish-release.mjs']) {
+  for (const script of ['BumpVersion.mjs', 'PublishRelease.mjs']) {
     expect(runScript(cwd, script, '--unknown', '--dry-run').status).not.toBe(0);
     expect(readFileSync(join(cwd, 'package.json'), 'utf8')).toBe(before);
   }
@@ -83,7 +83,7 @@ test.each([
   const cwd = createRepository(version);
   git(cwd, 'tag', `v${version}`);
   const head = git(cwd, 'rev-parse', 'HEAD');
-  const result = runScript(cwd, 'bump-version.mjs');
+  const result = runScript(cwd, 'BumpVersion.mjs');
   expect(result.status, result.stderr).toBe(0);
   for (const file of [
     'package.json',
@@ -107,7 +107,7 @@ test('uses unified version tags rather than legacy tags or package drift', () =>
   const cwd = createRepository('3.0.0');
   git(cwd, 'tag', 'v0.0.9');
   git(cwd, 'tag', 'desktop-v3.0.0');
-  expect(runScript(cwd, 'bump-version.mjs').status).toBe(0);
+  expect(runScript(cwd, 'BumpVersion.mjs').status).toBe(0);
   expect(
     JSON.parse(readFileSync(join(cwd, 'package.json'), 'utf8')).version,
   ).toBe('0.1.0');
@@ -115,7 +115,7 @@ test('uses unified version tags rather than legacy tags or package drift', () =>
 
 test('supports explicit versions and validates all manifests before writing', () => {
   const cwd = createRepository();
-  expect(runScript(cwd, 'bump-version.mjs', '--version', '0.1.0').status).toBe(
+  expect(runScript(cwd, 'BumpVersion.mjs', '--version', '0.1.0').status).toBe(
     0,
   );
   expect(
@@ -124,11 +124,11 @@ test('supports explicit versions and validates all manifests before writing', ()
   writeFileSync(join(cwd, 'src-tauri/tauri.conf.json'), 'invalid json');
   const before = readFileSync(join(cwd, 'package.json'), 'utf8');
   expect(
-    runScript(cwd, 'bump-version.mjs', '--version', '0.2.0').status,
+    runScript(cwd, 'BumpVersion.mjs', '--version', '0.2.0').status,
   ).not.toBe(0);
   expect(readFileSync(join(cwd, 'package.json'), 'utf8')).toBe(before);
   expect(
-    runScript(cwd, 'bump-version.mjs', '--version', '0.02.0').status,
+    runScript(cwd, 'BumpVersion.mjs', '--version', '0.02.0').status,
   ).not.toBe(0);
 });
 
@@ -143,8 +143,8 @@ test('preserves changelog history and emits the exact categorized release sectio
   ])
     git(cwd, 'commit', '--allow-empty', '-qm', subject);
   const before = readFileSync(join(cwd, 'CHANGELOG.md'), 'utf8');
-  expect(runScript(cwd, 'bump-version.mjs').status).toBe(0);
-  const result = runScript(cwd, 'update-changelog.mjs', '--version', '0.0.5');
+  expect(runScript(cwd, 'BumpVersion.mjs').status).toBe(0);
+  const result = runScript(cwd, 'UpdateChangelog.mjs', '--version', '0.0.5');
   expect(result.status, result.stderr).toBe(0);
   const changelog = readFileSync(join(cwd, 'CHANGELOG.md'), 'utf8');
   const notes = readFileSync(join(cwd, '.release-notes.md'), 'utf8');
@@ -158,11 +158,11 @@ test('preserves changelog history and emits the exact categorized release sectio
     true,
   );
   expect(
-    runScript(cwd, 'update-changelog.mjs', '--version', '0.0.5').status,
+    runScript(cwd, 'UpdateChangelog.mjs', '--version', '0.0.5').status,
   ).toBe(0);
   expect(readFileSync(join(cwd, 'CHANGELOG.md'), 'utf8')).toBe(changelog);
   expect(existsSync(join(cwd, 'RELEASE_NOTES.md'))).toBe(false);
-  expect(runScript(cwd, 'release-notes.mjs', 'all').status).toBe(0);
+  expect(runScript(cwd, 'ReleaseNotes.mjs', 'all').status).toBe(0);
   expect(readFileSync(join(cwd, '.release-notes.md'), 'utf8')).toBe(notes);
 });
 
@@ -171,7 +171,7 @@ test('first unified changelog starts at the latest legacy tag and keeps every ca
   git(cwd, 'commit', '--allow-empty', '-qm', 'feat: ancient feature');
   git(cwd, 'tag', 'desktop-v0.0.4');
   git(cwd, 'commit', '--allow-empty', '-qm', 'fix: keep windows visible');
-  const result = runScript(cwd, 'update-changelog.mjs', '--version', '0.0.5');
+  const result = runScript(cwd, 'UpdateChangelog.mjs', '--version', '0.0.5');
   expect(result.status, result.stderr).toBe(0);
   const notes = readFileSync(join(cwd, '.release-notes.md'), 'utf8');
   expect(notes).toContain('### Fixed\n\n- Keep windows visible.');
@@ -192,7 +192,7 @@ test('a curated Unreleased section becomes the release notes verbatim', () => {
     join(cwd, 'CHANGELOG.md'),
     `${changelog.slice(0, offset)}## [Unreleased]\n\n${curated}\n${changelog.slice(offset)}`,
   );
-  const result = runScript(cwd, 'update-changelog.mjs', '--version', '0.0.5');
+  const result = runScript(cwd, 'UpdateChangelog.mjs', '--version', '0.0.5');
   expect(result.status, result.stderr).toBe(0);
   const notes = readFileSync(join(cwd, '.release-notes.md'), 'utf8');
   const updated = readFileSync(join(cwd, 'CHANGELOG.md'), 'utf8');
@@ -210,7 +210,7 @@ test('local publisher dispatches main without changing feature-branch files', ()
   const before = git(cwd, 'status', '--porcelain');
   const result = runScript(
     cwd,
-    'publish-release.mjs',
+    'PublishRelease.mjs',
     '--version',
     '0.1.0',
     '--dry-run',
@@ -221,7 +221,7 @@ test('local publisher dispatches main without changing feature-branch files', ()
   );
   expect(git(cwd, 'status', '--porcelain')).toBe(before);
   expect(
-    runScript(cwd, 'publish-release.mjs', '--version', 'garbage', '--dry-run')
+    runScript(cwd, 'PublishRelease.mjs', '--version', 'garbage', '--dry-run')
       .status,
   ).not.toBe(0);
 });

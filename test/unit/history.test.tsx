@@ -7,15 +7,15 @@ import {
   within,
 } from '@testing-library/react';
 import { beforeEach, expect, test, vi } from 'vitest';
-import { History } from '../../src/history';
+import { History } from '../../src/History';
 import {
   addShot,
   clearShots,
   getShot,
   listShots,
   putShots,
-} from '../../src/lib/db';
-import { imageBlob } from '../setup';
+} from '../../src/lib/Db';
+import { imageBlob } from '../Setup';
 
 const DAY = 864e5;
 

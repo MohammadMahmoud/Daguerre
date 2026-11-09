@@ -9,16 +9,20 @@ New releases synchronize the desktop app and browser extension under one `vX.Y.Z
 ### Added
 
 - Both: added a native **Support** (Buy Me a Coffee) section with a monochrome coffee icon in the desktop sidebar (below **Product Tour**), the Chrome extension popup (below **Copy selected area**), and `README.md`.
+- Both: animated the support coffee icon with ambient steam wafting and a joyful rainbow color wave on hover across Desktop and Chrome Extension, respecting `prefers-reduced-motion`.
 - Desktop: added a validated `open_external` Tauri command to open external `https://` links in the system's default browser.
-- Extension: `pnpm build` and `scripts/package-extension.mjs` now generate a signed CRX3 archive (`daguerre.crx`) alongside `dist/` and `daguerre.zip`, and GitHub Releases attach `daguerre-extension-vX.Y.Z.crx`.
+- Extension: `pnpm build` and `scripts/PackageExtension.mjs` now generate a signed CRX3 archive (`daguerre.crx`) alongside `dist/` and `daguerre.zip`, and GitHub Releases attach `daguerre-extension-vX.Y.Z.crx`.
 - Extension: added the Chrome Web Store badge and direct store installation links in `README.md` and the interactive showcase (`store/index.html`).
 
 ### Fixed
 
-- Extension: Windows packaging in `scripts/package-extension.mjs` uses `tar` when creating `daguerre.zip`.
+- Desktop: replaced POSIX bash pipeline in `desktop:build` with cross-platform `scripts/DesktopBuild.mjs` to support Windows environments and auto-detect cargo in `~/.cargo/bin`.
+- Extension: Windows packaging in `scripts/PackageExtension.mjs` uses `tar` when creating `daguerre.zip`.
 - Both: release verification tests handle CRLF line endings when reading `src-tauri/Cargo.lock`.
 
 ### Changed
+
+- Both: unified all codebase modules, utilities, components, scripts, and unit tests to strict PascalCase naming convention across Desktop and Extension.
 
 - Both: consolidated change detection and extension packaging into the CI `test` job, removed duplicate pre-tag release checks in `release.yml`, and updated `pnpm package` to alias `pnpm build`.
 - Desktop: skipped `desktop-check` during release/manual runs so `desktop-build` starts immediately in parallel with `test` instead of compiling Rust twice across all three OS runners.

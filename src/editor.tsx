@@ -21,7 +21,7 @@ import {
   render,
   resizeRect,
   type Handle,
-} from './editor/draw';
+} from './editor/Draw';
 import {
   getShot,
   makeThumb,
@@ -30,7 +30,7 @@ import {
   type Rect,
   type Shape,
   type Shot,
-} from './lib/db';
+} from './lib/Db';
 import {
   canvasToBlob,
   canvasToPdf,
@@ -41,9 +41,9 @@ import {
   formatBytes,
   hostOf,
   printPage,
-} from './lib/export';
-import { recognize } from './lib/ocr';
-import './styles.css';
+} from './lib/Export';
+import { recognize } from './lib/Ocr';
+import './Styles.css';
 import {
   ConfirmDialog,
   Icon,
@@ -51,7 +51,7 @@ import {
   Toast,
   useToast,
   type IconName,
-} from './ui';
+} from './Ui';
 
 type Tool = 'select' | 'crop' | Shape['kind'];
 export type EditorTourState = {

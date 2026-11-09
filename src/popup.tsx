@@ -5,8 +5,8 @@ import {
   type CaptureMode,
   type Progress,
   type Shot,
-} from './lib/db';
-import './styles.css';
+} from './lib/Db';
+import './Styles.css';
 import {
   Icon,
   Logo,
@@ -14,7 +14,7 @@ import {
   SUPPORT_TEXT,
   SUPPORT_URL,
   type IconName,
-} from './ui';
+} from './Ui';
 
 const ACTIONS: {
   mode: CaptureMode;

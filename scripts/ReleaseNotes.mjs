@@ -3,8 +3,8 @@
 // Fails if a pushed tag doesn't match the release version.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { readVersions } from './bump-version.mjs';
-import { getReleaseSection } from './update-changelog.mjs';
+import { readVersions } from './BumpVersion.mjs';
+import { getReleaseSection } from './UpdateChangelog.mjs';
 
 export const PRODUCTS = {
   extension: { label: 'Extension', tag: 'ext-v', title: 'Daguerre extension' },

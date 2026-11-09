@@ -7,18 +7,18 @@ import {
   within,
 } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { Editor } from '../../src/editor';
+import { Editor } from '../../src/Editor';
 import {
   addShot,
   clearShots,
   getShot,
   putShots,
   type Edits,
-} from '../../src/lib/db';
-import { recognize } from '../../src/lib/ocr';
-import { defaultBitmap, imageBlob } from '../setup';
+} from '../../src/lib/Db';
+import { recognize } from '../../src/lib/Ocr';
+import { defaultBitmap, imageBlob } from '../Setup';
 
-vi.mock('../../src/lib/ocr', () => ({ recognize: vi.fn() }));
+vi.mock('../../src/lib/Ocr', () => ({ recognize: vi.fn() }));
 
 beforeEach(async () => {
   await clearShots();

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
-import { validateVersion } from './bump-version.mjs';
+import { validateVersion } from './BumpVersion.mjs';
 
 try {
   const args = process.argv.slice(2);

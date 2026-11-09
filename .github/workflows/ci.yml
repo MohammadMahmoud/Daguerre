@@ -43,8 +43,8 @@ jobs:
             printf 'extension=true\ndesktop=true\n' >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          if [ "$EVENT" = pull_request ]; then node scripts/changed.mjs "origin/$BASE_REF"
-          elif [ "$EVENT" = push ]; then node scripts/changed.mjs "$BEFORE"
+          if [ "$EVENT" = pull_request ]; then node scripts/Changed.mjs "origin/$BASE_REF"
+          elif [ "$EVENT" = push ]; then node scripts/Changed.mjs "$BEFORE"
           else printf 'extension=true\ndesktop=true\n' >> "$GITHUB_OUTPUT"; fi
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
@@ -68,7 +68,7 @@ jobs:
         if: steps.which.outputs.extension == 'true'
         run: |
           pnpm vite build
-          node scripts/package-extension.mjs
+          node scripts/PackageExtension.mjs
       - uses: actions/upload-artifact@v4
         if: steps.which.outputs.extension == 'true'
         with:

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
-import { imageBlob } from '../../test/setup';
+import { imageBlob } from '../../test/Setup';
 import {
   buildPdf,
   canvasToBlob,
@@ -10,7 +10,7 @@ import {
   fileName,
   formatBytes,
   hostOf,
-} from './export';
+} from './Export';
 
 const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xd9]);
 const latin1 = (bytes: Uint8Array) => Buffer.from(bytes).toString('latin1');

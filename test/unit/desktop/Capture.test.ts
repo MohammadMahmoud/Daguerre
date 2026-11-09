@@ -1,7 +1,7 @@
 import { clearMocks, mockIPC, mockWindows } from '@tauri-apps/api/mocks';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { runCapture } from '../../../src/desktop/Capture';
-import { clearShots, getShot, listShots } from '../../../src/lib/db';
+import { clearShots, getShot, listShots } from '../../../src/lib/Db';
 
 let calls: { cmd: string; payload: any }[];
 let visible: boolean;

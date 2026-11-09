@@ -7,8 +7,8 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react';
 import { createRoot } from 'react-dom/client';
-import type { Rect } from '../lib/db';
-import '../styles.css';
+import type { Rect } from '../lib/Db';
+import '../Styles.css';
 
 interface PickableWindow {
   id: number;

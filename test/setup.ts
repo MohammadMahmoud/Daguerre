@@ -3,7 +3,7 @@ import 'fake-indexeddb/auto';
 import { Blob as NodeBlob } from 'node:buffer';
 import { afterEach, beforeEach } from 'vitest';
 import 'vitest-canvas-mock';
-import { installChrome } from './chrome';
+import { installChrome } from './Chrome';
 
 // jsdom's Blob has no text()/arrayBuffer() and can't be structured-cloned into IndexedDB.
 globalThis.Blob = NodeBlob as unknown as typeof Blob;

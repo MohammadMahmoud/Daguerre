@@ -6,10 +6,10 @@ import {
   waitFor,
 } from '@testing-library/react';
 import { beforeEach, expect, test, vi } from 'vitest';
-import { addShot, clearShots } from '../../src/lib/db';
-import { Popup } from '../../src/popup';
-import type { ChromeMock } from '../chrome';
-import { imageBlob } from '../setup';
+import { addShot, clearShots } from '../../src/lib/Db';
+import { Popup } from '../../src/Popup';
+import type { ChromeMock } from '../Chrome';
+import { imageBlob } from '../Setup';
 
 let chrome: ChromeMock;
 let close: ReturnType<typeof vi.spyOn>;

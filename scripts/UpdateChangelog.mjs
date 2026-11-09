@@ -2,7 +2,7 @@
 import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { getPreviousTag, git, validateVersion } from './bump-version.mjs';
+import { getPreviousTag, git, validateVersion } from './BumpVersion.mjs';
 
 export function getReleaseSection(changelog, version) {
   validateVersion(version);

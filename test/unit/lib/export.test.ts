@@ -9,8 +9,8 @@ import {
   fileName,
   formatBytes,
   hostOf,
-} from '../../../src/lib/export';
-import { imageBlob } from '../../setup';
+} from '../../../src/lib/Export';
+import { imageBlob } from '../../Setup';
 
 const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xd9]);
 const latin1 = (bytes: Uint8Array) => Buffer.from(bytes).toString('latin1');

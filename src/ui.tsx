@@ -5,7 +5,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import type { CaptureMode } from './lib/db';
+import type { CaptureMode } from './lib/Db';
 
 // Static, trusted SVG markup (24×24, stroked).
 const ICONS = {
@@ -59,7 +59,7 @@ const ICONS = {
   close: '<path d="M6 6l12 12M18 6 6 18"/>',
   alert: '<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5h.01"/>',
   coffee:
-    '<path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 2v3M10 2v3M14 2v3"/>',
+    '<path class="coffee-handle" d="M17 8h1a4 4 0 1 1 0 8h-1"/><path class="coffee-cup" d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path class="coffee-steam coffee-steam-1" d="M6 2v3"/><path class="coffee-steam coffee-steam-2" d="M10 2v3"/><path class="coffee-steam coffee-steam-3" d="M14 2v3"/>',
 } as const;
 
 export const SUPPORT_URL = 'https://buymeacoffee.com/projectra';
@@ -69,7 +69,16 @@ export const SUPPORT_TEXT =
 
 export type IconName = keyof typeof ICONS;
 
-export function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
+export function Icon({
+  name,
+  size = 18,
+  className,
+}: {
+  name: IconName;
+  size?: number;
+  className?: string;
+}) {
+  const classes = ['icon', `icon-${name}`, className].filter(Boolean).join(' ');
   return (
     <svg
       width={size}
@@ -81,6 +90,7 @@ export function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
       strokeLinecap='round'
       strokeLinejoin='round'
       aria-hidden='true'
+      className={classes}
       dangerouslySetInnerHTML={{ __html: ICONS[name] }}
     />
   );

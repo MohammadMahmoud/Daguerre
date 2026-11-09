@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { clearShots, listShots } from '../../src/lib/db';
-import type { ChromeMock } from '../chrome';
-import { imageBlob } from '../setup';
+import { clearShots, listShots } from '../../src/lib/Db';
+import type { ChromeMock } from '../Chrome';
+import { imageBlob } from '../Setup';
 
 let chrome: ChromeMock;
 const page = (over: Partial<chrome.tabs.Tab> = {}) =>
@@ -24,7 +24,7 @@ beforeEach(async () => {
     value: 768,
   });
   vi.resetModules();
-  await import('../../src/background');
+  await import('../../src/Background');
   vi.stubGlobal(
     'fetch',
     vi.fn(async () => ({ blob: async () => imageBlob(1024, 768) })),

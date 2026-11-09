@@ -5,11 +5,11 @@ import { Effect, EffectState, getCurrentWindow } from '@tauri-apps/api/window';
 import { disable, enable, isEnabled } from '@tauri-apps/plugin-autostart';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { History } from '../history';
-import { listShots, type Shot } from '../lib/db';
-import { formatBytes } from '../lib/export';
+import { History } from '../History';
+import { listShots, type Shot } from '../lib/Db';
+import { formatBytes } from '../lib/Export';
 import { copyPng, type Action } from '../platform/Desktop';
-import '../styles.css';
+import '../Styles.css';
 import {
   Icon,
   Logo,
@@ -19,7 +19,7 @@ import {
   Toast,
   useToast,
   type IconName,
-} from '../ui';
+} from '../Ui';
 import { runCapture } from './Capture';
 import { CapturePage } from './CapturePage';
 import { ProductTour } from './ProductTour';

@@ -1,6 +1,6 @@
 import { useEffect, useId, useState, type KeyboardEvent } from 'react';
 import { DEFAULT_SHORTCUTS, type Action } from '../platform/Desktop';
-import { Icon, Logo } from '../ui';
+import { Icon, Logo } from '../Ui';
 import {
   ACTION_LABELS,
   formatShortcut,

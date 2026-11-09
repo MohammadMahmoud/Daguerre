@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { expect, test, vi } from 'vitest';
-import { ConfirmDialog } from '../../src/ui';
+import { ConfirmDialog, Icon } from '../../src/Ui';
 
 function renderDialog() {
   const onConfirm = vi.fn();
@@ -62,4 +62,27 @@ test('confirms, cancels on a backdrop click and restores focus', () => {
   unmount();
   expect(document.activeElement).toBe(opener);
   opener.remove();
+});
+
+test('Icon renders with default and custom class names', () => {
+  const { container } = render(
+    <Icon name='timer' size={20} className='custom-class' />,
+  );
+  const svg = container.querySelector('svg');
+  expect(svg).not.toBeNull();
+  expect(svg?.getAttribute('class')).toBe('icon icon-timer custom-class');
+  expect(svg?.getAttribute('width')).toBe('20');
+  expect(svg?.getAttribute('height')).toBe('20');
+});
+
+test('coffee Icon renders structured steam and cup paths for animation', () => {
+  const { container } = render(<Icon name='coffee' />);
+  const svg = container.querySelector('svg');
+  expect(svg?.getAttribute('class')).toBe('icon icon-coffee');
+  expect(container.querySelector('.coffee-handle')).not.toBeNull();
+  expect(container.querySelector('.coffee-cup')).not.toBeNull();
+  expect(container.querySelectorAll('.coffee-steam')).toHaveLength(3);
+  expect(container.querySelector('.coffee-steam-1')).not.toBeNull();
+  expect(container.querySelector('.coffee-steam-2')).not.toBeNull();
+  expect(container.querySelector('.coffee-steam-3')).not.toBeNull();
 });

@@ -1,4 +1,4 @@
-import type { Rect, Shape } from '../lib/db';
+import type { Rect, Shape } from '../lib/Db';
 
 export type Source = CanvasImageSource & { width: number; height: number };
 

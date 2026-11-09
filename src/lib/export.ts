@@ -1,5 +1,5 @@
-import type { Shot } from './db';
-import type { OcrWord } from './ocr';
+import type { Shot } from './Db';
+import type { OcrWord } from './Ocr';
 
 export { copyPng, copyText, downloadBlob, printPage } from '@platform';
 

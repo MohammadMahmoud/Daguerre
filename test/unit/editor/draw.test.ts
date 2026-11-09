@@ -9,8 +9,8 @@ import {
   normRect,
   render,
   resizeRect,
-} from '../../../src/editor/draw';
-import type { Shape } from '../../../src/lib/db';
+} from '../../../src/editor/Draw';
+import type { Shape } from '../../../src/lib/Db';
 
 const shape = (
   kind: Shape['kind'],
