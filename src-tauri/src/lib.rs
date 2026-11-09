@@ -280,6 +280,27 @@ async fn open_editor(app: AppHandle, id: String) -> Result<(), String> {
     Ok(())
 }
 
+fn external_url(url: &str) -> Option<&str> {
+    let bad = |c: char| c.is_whitespace() || c.is_control() || matches!(c, '"' | '\'' | '\\');
+    let valid = url.starts_with("https://") && url.len() > 8 && !url.chars().any(bad);
+    valid.then_some(url)
+}
+
+#[tauri::command]
+fn open_external(url: String) -> Result<(), String> {
+    let target = external_url(&url).ok_or("Invalid external URL.")?;
+    let mut cmd = if cfg!(target_os = "macos") {
+        std::process::Command::new("/usr/bin/open")
+    } else if cfg!(target_os = "windows") {
+        let mut c = std::process::Command::new("rundll32");
+        c.arg("url.dll,FileProtocolHandler");
+        c
+    } else {
+        std::process::Command::new("xdg-open")
+    };
+    cmd.arg(target).spawn().map(|_| ()).map_err(err)
+}
+
 /// Brings the main window forward on a section: capture, history or settings.
 #[tauri::command]
 fn show_main(app: AppHandle, page: String) -> Result<(), String> {
@@ -751,6 +772,7 @@ pub fn run() {
             save_file,
             print,
             open_editor,
+            open_external,
             show_main,
             hide_main,
             platform,
@@ -880,5 +902,18 @@ mod tests {
         assert!(binaries_changed(&watched));
         std::fs::remove_file(&path).unwrap();
         assert!(binaries_changed(&watched));
+    }
+
+    #[test]
+    fn allows_only_clean_https_external_urls() {
+        assert_eq!(
+            external_url("https://buymeacoffee.com/projectra"),
+            Some("https://buymeacoffee.com/projectra")
+        );
+        assert_eq!(external_url("https://"), None);
+        assert_eq!(external_url("http://buymeacoffee.com/projectra"), None);
+        assert_eq!(external_url("javascript:alert(1)"), None);
+        assert_eq!(external_url("https://example.com/a b"), None);
+        assert_eq!(external_url("https://example.com/\"quote\""), None);
     }
 }

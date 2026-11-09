@@ -21,6 +21,7 @@
     "allow-copy-png",
     "allow-save-file",
     "allow-open-editor",
+    "allow-open-external",
     "allow-show-main",
     "allow-hide-main",
     "allow-platform",

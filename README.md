@@ -9,6 +9,7 @@
 [![CI](https://github.com/MohammadMahmoud/Daguerre/actions/workflows/ci.yml/badge.svg)](https://github.com/MohammadMahmoud/Daguerre/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fmohammadmahmoud.github.io%2FDaguerre%2Fcoverage%2Fbadge.json&style=flat-square&logo=vitest&logoColor=white)](https://mohammadmahmoud.github.io/Daguerre/coverage/)
 [![Release](https://img.shields.io/github/v/release/MohammadMahmoud/Daguerre?style=flat-square&color=0b0b0c&logo=github)](https://github.com/MohammadMahmoud/Daguerre/releases/latest)
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/acldkhgnbgbjdcjcjhmgipmimdegmjbc?style=flat-square&logo=googlechrome&logoColor=white&label=Chrome%20Web%20Store&color=0b0b0c)](https://chromewebstore.google.com/detail/daguerre-%E2%80%94-screenshot-stu/acldkhgnbgbjdcjcjhmgipmimdegmjbc)
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-0b0b0c?style=flat-square&logo=googlechrome&logoColor=white)
 ![Chrome 120+](https://img.shields.io/badge/Chrome-120%2B-0b0b0c?style=flat-square&logo=googlechrome&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-0b0b0c?style=flat-square&logo=typescript&logoColor=white)
@@ -16,10 +17,11 @@
 ![Vite](https://img.shields.io/badge/Vite-8-0b0b0c?style=flat-square&logo=vite&logoColor=white)
 ![Local only](https://img.shields.io/badge/data-local%20only-c9ccd2?style=flat-square&logo=shield&logoColor=0b0b0c)
 ![OCR on-device](https://img.shields.io/badge/OCR-on--device-c9ccd2?style=flat-square&logo=googledocs&logoColor=0b0b0c)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/projectra)
 
-<img src="store/desktop/2-editor.png" alt="Current Daguerre editor with persistent tool labels, pixelation, arrows, shapes, text and numbered steps on a disposable sample" width="860">
+<img src="store/desktop/1-capture.png" alt="Current Daguerre editor with persistent tool labels, pixelation, arrows, shapes, text and numbered steps on a disposable sample" width="860">
 
-**[See the interactive showcase →](https://mohammadmahmoud.github.io/Daguerre/)**
+**[Install from the Chrome Web Store →](https://chromewebstore.google.com/detail/daguerre-%E2%80%94-screenshot-stu/acldkhgnbgbjdcjcjhmgipmimdegmjbc)** · **[Download for desktop →](https://github.com/MohammadMahmoud/Daguerre/releases/latest)** · **[See the interactive showcase →](https://mohammadmahmoud.github.io/Daguerre/)**
 
 </div>
 
@@ -56,7 +58,7 @@ Choose **Copy selected area** in the popup, or press **Alt+Shift+C**, to select 
 
 Start a browser capture from the toolbar popup, a capture shortcut or the page's right-click menu. The popup provides capture modes, the delay timer, progress/cancel controls and access to History. The Manifest V3 background service worker injects selection and scrolling functions into the active page on demand; no persistent content script is installed. It stitches full-page or tall-selection captures and opens the shared editor. The direct-copy workflow briefly focuses an extension clipboard frame instead. **All tabs** requests optional site access on first use. Production files, including the manifest, service worker, popup, editor, History and bundled OCR assets, are written to `dist/`.
 
-Every GitHub Release includes `daguerre-extension-dist-vX.Y.Z.zip` alongside desktop installers. Extract it and choose the enclosed `dist/` folder in **Load unpacked**. Desktop and extension work independently; neither needs the other installed.
+Install the browser extension directly from the [Chrome Web Store](https://chromewebstore.google.com/detail/daguerre-%E2%80%94-screenshot-stu/acldkhgnbgbjdcjcjhmgipmimdegmjbc), or from a GitHub Release: every release includes `daguerre-extension-dist-vX.Y.Z.zip` alongside desktop installers. Extract it and choose the enclosed `dist/` folder in **Load unpacked**. Desktop and extension work independently; neither needs the other installed.
 
 ## ⌨️ Shortcuts
 
@@ -169,10 +171,13 @@ test/
 ├── setup.ts         # jsdom polyfills (canvas, ImageBitmap, clipboard, layout)
 └── unit/
     ├── background.test.ts
+    ├── Clipboard.test.ts
     ├── editor.test.tsx
     ├── history.test.tsx
     ├── popup.test.tsx
-    ├── desktop/{Capture,Desktop,Shortcuts}.test.ts, {Editor,Home,Overlay}.test.tsx
+    ├── ReleaseAutomation.test.ts
+    ├── scripts.test.ts
+    ├── desktop/{Capture,Desktop,Shortcuts,Theme,Updater}.test.ts, {Editor,Home,Overlay,ProductTour}.test.tsx
     ├── editor/draw.test.ts
     ├── lib/{db,export,ocr}.test.ts
     └── ui.test.tsx
@@ -184,11 +189,10 @@ The Rust code in `src-tauri/` has its own unit tests (`cargo test`) for coordina
 
 [.github/workflows/ci.yml](.github/workflows/ci.yml) runs checks on `main`, pull requests and manual dispatch, and is reused by the release workflow:
 
-1. **Quality:** typecheck, lint, formatting and Vitest coverage, with an 80% floor for statements, branches, functions and lines.
-2. **Extension:** affected changes build and test `dist/`; `pnpm extension:verify` rejects a missing manifest, stale version or incomplete output. CI preserves the unpacked `extension-dist` artifact and uploads `extension-dist.zip` with the manifest at the archive root.
-3. **Desktop:** affected changes run Rust formatting, Clippy and tests on macOS, Windows and Ubuntu 24.04, plus Linux portal lifecycle tests. Non-PR runs build the platform installers.
-4. **Release:** [.github/workflows/release.yml](.github/workflows/release.yml) prepares one synchronized version on remote `main`, calls CI with that immutable release commit, and attaches desktop installers, `daguerre-extension-dist-vX.Y.Z.zip` and checksums to one GitHub Release. The extension archive preserves the `dist/` directory. Legacy product tags remain historical references, not publishing triggers.
-5. **Pages:** `main` publishes the showcase, privacy policy and coverage report. Set **Settings → Pages → Source** to **GitHub Actions** once.
+1. **Quality and Extension:** typecheck, lint, formatting and Vitest coverage (80% floor), plus building and verifying `dist/` and `daguerre.crx` when extension code changes.
+2. **Desktop:** affected changes run Rust formatting, Clippy and tests on macOS, Windows and Ubuntu 24.04, plus Linux portal lifecycle tests. Release and manual runs build the platform installers.
+3. **Release:** [.github/workflows/release.yml](.github/workflows/release.yml) prepares one synchronized version on remote `main`, calls CI with that immutable release commit, and attaches desktop installers, `daguerre-extension-dist-vX.Y.Z.zip`, `daguerre-extension-vX.Y.Z.crx` and checksums to one GitHub Release. The extension archive preserves the `dist/` directory. Legacy product tags remain historical references, not publishing triggers.
+4. **Pages:** `main` publishes the showcase, privacy policy and coverage report. Set **Settings → Pages → Source** to **GitHub Actions** once.
 
 ## Publishing a Release
 
@@ -214,7 +218,7 @@ pnpm publish:release --version 0.1.0           # explicit version override
 
 ### Automatic Versions and Changelog
 
-[scripts/bump-version.mjs](scripts/bump-version.mjs) fetches tags in CI and uses the nearest reachable unified `vX.Y.Z` tag, falling back to the root package version if none exists. It increments the patch until 9, then increments the minor and resets the patch: `0.0.4 → 0.0.5 → … → 0.0.9 → 0.1.0 → … → 0.1.9 → 0.2.0`. Historical versions with patches above 9 also roll to the next minor. With today's package baseline `1.0.0` and no unified tags, the default first unified version is `1.0.1`.
+[scripts/bump-version.mjs](scripts/bump-version.mjs) fetches tags in CI and uses the nearest reachable unified `vX.Y.Z` tag, falling back to the root package version if none exists. It increments the patch until 9, then increments the minor and resets the patch: `0.0.4 → 0.0.5 → … → 0.0.9 → 0.1.0 → … → 0.1.9 → 0.2.0`. Historical versions with patches above 9 also roll to the next minor. With the current release at `v1.0.2`, the next automatic version is `1.0.3`.
 
 `--version X.Y.Z` or the workflow's `target_version` input selects that exact numeric version. It must be unused and newer than a previous unified release. Do not choose an override below a previously distributed product version if you expect Chrome Web Store updates or desktop updater upgrades to recognize it.
 
@@ -228,7 +232,7 @@ All manifests are validated first, then updated as a single transaction with rol
 2. CI checks out fresh `main`, calculates the version, synchronizes manifests and generates the changelog. It runs checks and a production extension build, rejecting missing or invalid `dist/manifest.json` and incomplete assets.
 3. The bot commits `chore(release): vX.Y.Z [skip ci]`, creates an annotated tag and atomically pushes `main` and the tag. A concurrent ordinary push to `main` makes the push fail safely rather than overwrite work.
 4. Reusable CI builds and tests both targets from that exact commit. The publishing job verifies the extension output again, archives the complete `dist/` folder, collects all installers, optional updater signatures and `latest.json`, and writes `SHA256SUMS.txt`.
-5. Once every required build succeeds, GitHub publishes the release with the exact changelog section and all assets. This does not submit the extension to the Chrome Web Store; that remains a separate [store submission](store/listing.md).
+5. Once every required build succeeds, GitHub publishes the release with the exact changelog section and all assets. This does not submit the extension to the Chrome Web Store automatically.
 
 Follow **Actions → Release** or `gh run list --workflow release.yml`. If preparation fails, fix the reported issue and dispatch again. If a build fails after the tag was pushed, rerun **failed jobs** to reuse the prepared version and commit; rerunning the whole workflow requests another automatic bump. Never silently move a published tag. GitHub concurrency allows one running and one pending run; additional requests may replace the pending run, so check the Actions queue before dispatching repeatedly.
 
@@ -247,10 +251,9 @@ There's no `tabs` permission and no remote code; the OCR engine ships inside the
 
 ## 📦 Publishing
 
-- [store/listing.md](store/listing.md): listing copy, permission justifications and a submission checklist.
 - [store/index.html](store/index.html): the interactive showcase site (served by GitHub Pages).
 - [store/privacy.html](store/privacy.html): the privacy policy to link from the store.
-- `store/`: 1280×800 screenshots and the 440×280 promo tile.
+- `store/`: 1280×800 extension and desktop screenshots, the 440×280 small promo tile, and the promo video ([watch on YouTube](https://www.youtube.com/watch?v=uFcuAJiv4cc)).
 
 ## ⚠️ Known limits
 
@@ -263,5 +266,11 @@ There's no `tabs` permission and no remote code; the OCR engine ships inside the
 ## 🙏 Credits
 
 Text recognition by [Tesseract.js](https://github.com/naptha/tesseract.js) (Apache-2.0).
+
+## Support
+
+Daguerre is 100% free and open-source, with all captures stored locally on your device. If you find it useful and would like to support its ongoing development, [buying me a coffee](https://buymeacoffee.com/projectra) is warmly appreciated!
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/projectra)
 
 Daguerre is licensed under the [MIT License](LICENSE).
