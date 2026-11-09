@@ -20,8 +20,8 @@ New releases synchronize the desktop app and browser extension under one `vX.Y.Z
 
 ### Changed
 
-- Both: consolidated extension build and verification into the CI `test` job, removed duplicate pre-tag release checks in `release.yml`, and updated `pnpm package` to alias `pnpm build`.
-- Desktop: restricted full platform installer builds in CI to release (`workflow_call`) and manual (`workflow_dispatch`) runs.
+- Both: consolidated change detection and extension packaging into the CI `test` job, removed duplicate pre-tag release checks in `release.yml`, and updated `pnpm package` to alias `pnpm build`.
+- Desktop: skipped `desktop-check` during release/manual runs so `desktop-build` starts immediately in parallel with `test` instead of compiling Rust twice across all three OS runners.
 - Both: added author, homepage, and repository metadata to `package.json`, renamed `AGENT.md` to `AGENTS.md` with the post-task verification checklist, and removed obsolete `store/listing.md` and `to-do.md`.
 
 ## [v1.0.2] - 2026-11-06

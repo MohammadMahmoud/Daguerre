@@ -20,11 +20,10 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  changes:
-    name: What changed
+  test:
+    name: Quality, tests and extension build
     runs-on: ubuntu-latest
     outputs:
-      extension: ${{ steps.which.outputs.extension }}
       desktop: ${{ steps.which.outputs.desktop }}
     steps:
       - uses: actions/checkout@v4
@@ -32,7 +31,8 @@ jobs:
           ref: ${{ inputs.release_ref || github.sha }}
           fetch-depth: 0
       # Every desktop/unified release also ships the latest extension build.
-      - id: which
+      - name: Detect changed targets
+        id: which
         env:
           EVENT: ${{ github.event_name }}
           BASE_REF: ${{ github.base_ref }}
@@ -46,15 +46,6 @@ jobs:
           if [ "$EVENT" = pull_request ]; then node scripts/changed.mjs "origin/$BASE_REF"
           elif [ "$EVENT" = push ]; then node scripts/changed.mjs "$BEFORE"
           else printf 'extension=true\ndesktop=true\n' >> "$GITHUB_OUTPUT"; fi
-
-  test:
-    name: Quality, tests and extension build
-    needs: changes
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.release_ref || github.sha }}
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -74,18 +65,18 @@ jobs:
           path: coverage/
           retention-days: 14
       - name: Build and package extension (dist + crx)
-        if: needs.changes.outputs.extension == 'true'
+        if: steps.which.outputs.extension == 'true'
         run: |
           pnpm vite build
           node scripts/package-extension.mjs
       - uses: actions/upload-artifact@v4
-        if: needs.changes.outputs.extension == 'true'
+        if: steps.which.outputs.extension == 'true'
         with:
           name: extension-dist
           path: dist/
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
-        if: needs.changes.outputs.extension == 'true'
+        if: steps.which.outputs.extension == 'true'
         with:
           name: extension-crx
           path: daguerre.crx
@@ -93,8 +84,12 @@ jobs:
 
   desktop-check:
     name: Desktop checks (${{ matrix.os }})
-    needs: [changes, test]
-    if: needs.changes.outputs.desktop == 'true'
+    needs: test
+    # Releases and manual dispatches run desktop-build directly instead of compiling Rust twice.
+    if: >-
+      needs.test.outputs.desktop == 'true' &&
+      github.event_name != 'workflow_call' &&
+      github.event_name != 'workflow_dispatch'
     strategy:
       fail-fast: false
       matrix:
@@ -108,7 +103,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf \
+          sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf \
             pkg-config libclang-dev libxcb1-dev libxrandr-dev libdbus-1-dev libpipewire-0.3-dev libwayland-dev libegl-dev libgbm-dev dbus-daemon
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
@@ -137,9 +132,8 @@ jobs:
 
   desktop-build:
     name: Installers (${{ matrix.name }})
-    # Only build full platform installers during release runs or manual dispatches.
+    # Starts immediately in parallel with test on release runs or manual dispatches.
     if: github.event_name == 'workflow_call' || github.event_name == 'workflow_dispatch'
-    needs: desktop-check
     strategy:
       fail-fast: false
       matrix:
@@ -163,7 +157,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf \
+          sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf \
             pkg-config libclang-dev libxcb1-dev libxrandr-dev libdbus-1-dev libpipewire-0.3-dev libwayland-dev libegl-dev libgbm-dev
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
@@ -177,6 +171,7 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
           key: release
+          cache-all-crates: true
       - run: pnpm install --frozen-lockfile
       # Empty variables would make Tauri try to sign, so only set the ones that exist.
       - name: macOS signing and notarization (when the secrets are set)
