@@ -59,7 +59,7 @@ jobs:
         run: pnpm coverage
       - name: Coverage badge and job summary
         run: pnpm coverage:badge
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: coverage/
@@ -69,13 +69,13 @@ jobs:
         run: |
           pnpm vite build
           node scripts/PackageExtension.mjs
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: steps.which.outputs.extension == 'true'
         with:
           name: extension-dist
           path: dist/
           if-no-files-found: error
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: steps.which.outputs.extension == 'true'
         with:
           name: extension-crx
@@ -200,7 +200,7 @@ jobs:
           updater=()
           [ -n "$TAURI_SIGNING_PRIVATE_KEY" ] && updater=(--config '{"bundle":{"createUpdaterArtifacts":true}}')
           pnpm tauri build ${{ matrix.args }} "${updater[@]}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: daguerre-desktop-${{ matrix.name }}
           path: |
