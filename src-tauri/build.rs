@@ -13,6 +13,7 @@ const COMMANDS: &[&str] = &[
     "save_file",
     "print",
     "open_editor",
+    "open_external",
     "show_main",
     "hide_main",
     "platform",
@@ -24,6 +25,13 @@ const COMMANDS: &[&str] = &[
 ];
 
 fn main() {
+    // Ensure frontendDist exists so `cargo check`, `cargo clippy`, and `cargo test`
+    // can run even if the desktop frontend has not been compiled yet.
+    let dist = std::path::Path::new("../dist-desktop");
+    if !dist.exists() {
+        let _ = std::fs::create_dir_all(dist);
+    }
+
     tauri_build::try_build(
         tauri_build::Attributes::new()
             .app_manifest(tauri_build::AppManifest::new().commands(COMMANDS)),

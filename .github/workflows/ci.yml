@@ -48,7 +48,8 @@ jobs:
           else printf 'extension=true\ndesktop=true\n' >> "$GITHUB_OUTPUT"; fi
 
   test:
-    name: Typecheck and unit tests
+    name: Quality, tests and extension build
+    needs: changes
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -72,41 +73,22 @@ jobs:
           name: coverage-report
           path: coverage/
           retention-days: 14
-
-  package:
-    name: Build extension package
-    needs: [changes, test]
-    if: needs.changes.outputs.extension == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.release_ref || github.sha }}
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Build, test and zip
-        run: pnpm package
-      - name: Verify compiled extension output
-        run: pnpm extension:verify
-      - id: meta
+      - name: Build and package extension (dist + crx)
+        if: needs.changes.outputs.extension == 'true'
         run: |
-          version=$(node -p "require('./public/manifest.json').version")
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
-          mv daguerre.zip extension-dist.zip
+          pnpm vite build
+          node scripts/package-extension.mjs
       - uses: actions/upload-artifact@v4
-        with:
-          name: daguerre-extension-${{ steps.meta.outputs.version }}-${{ steps.meta.outputs.sha }}
-          path: extension-dist.zip
-          if-no-files-found: error
-      - uses: actions/upload-artifact@v4
+        if: needs.changes.outputs.extension == 'true'
         with:
           name: extension-dist
           path: dist/
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: needs.changes.outputs.extension == 'true'
+        with:
+          name: extension-crx
+          path: daguerre.crx
           if-no-files-found: error
 
   desktop-check:
@@ -155,8 +137,8 @@ jobs:
 
   desktop-build:
     name: Installers (${{ matrix.name }})
-    # Pull requests only run the checks; installers build on main, tags and manual runs.
-    if: github.event_name != 'pull_request'
+    # Only build full platform installers during release runs or manual dispatches.
+    if: github.event_name == 'workflow_call' || github.event_name == 'workflow_dispatch'
     needs: desktop-check
     strategy:
       fail-fast: false

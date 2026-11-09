@@ -4,6 +4,26 @@ All notable changes to Daguerre are listed here. The format follows [Keep a Chan
 
 New releases synchronize the desktop app and browser extension under one `vX.Y.Z` tag. Release CI turns the `## [Unreleased]` section below into `## [vX.Y.Z] - YYYY-MM-DD` and uses it verbatim as the GitHub Release body; without one, it generates Added, Fixed and Changed entries from commit messages. Version files are updated on remote main, not by local hooks. Earlier product-specific Desktop and Extension sections remain unchanged as historical records.
 
+## [Unreleased]
+
+### Added
+
+- Both: added a native **Support** (Buy Me a Coffee) section with a monochrome coffee icon in the desktop sidebar (below **Product Tour**), the Chrome extension popup (below **Copy selected area**), and `README.md`.
+- Desktop: added a validated `open_external` Tauri command to open external `https://` links in the system's default browser.
+- Extension: `pnpm build` and `scripts/package-extension.mjs` now generate a signed CRX3 archive (`daguerre.crx`) alongside `dist/` and `daguerre.zip`, and GitHub Releases attach `daguerre-extension-vX.Y.Z.crx`.
+- Extension: added the Chrome Web Store badge and direct store installation links in `README.md` and the interactive showcase (`store/index.html`).
+
+### Fixed
+
+- Extension: Windows packaging in `scripts/package-extension.mjs` uses `tar` when creating `daguerre.zip`.
+- Both: release verification tests handle CRLF line endings when reading `src-tauri/Cargo.lock`.
+
+### Changed
+
+- Both: consolidated extension build and verification into the CI `test` job, removed duplicate pre-tag release checks in `release.yml`, and updated `pnpm package` to alias `pnpm build`.
+- Desktop: restricted full platform installer builds in CI to release (`workflow_call`) and manual (`workflow_dispatch`) runs.
+- Both: added author, homepage, and repository metadata to `package.json`, renamed `AGENT.md` to `AGENTS.md` with the post-task verification checklist, and removed obsolete `store/listing.md` and `to-do.md`.
+
 ## [v1.0.2] - 2026-11-06
 
 ### Added

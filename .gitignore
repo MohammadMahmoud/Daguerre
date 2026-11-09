@@ -4,6 +4,7 @@ dist-desktop
 src-tauri/target
 src-tauri/gen
 *.zip
+*.crx
 .DS_Store
 coverage
 release-notes.md

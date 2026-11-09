@@ -1,14 +1,81 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
 import {
+  createHash,
+  createPrivateKey,
+  createPublicKey,
+  createSign,
+  generateKeyPairSync,
+} from 'node:crypto';
+import {
   existsSync,
   readFileSync,
   readdirSync,
   rmSync,
   statSync,
+  writeFileSync,
 } from 'node:fs';
 import { resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
+
+function encodeVarint(value) {
+  const bytes = [];
+  while (value > 0x7f) {
+    bytes.push((value & 0x7f) | 0x80);
+    value >>>= 7;
+  }
+  bytes.push(value);
+  return Buffer.from(bytes);
+}
+
+function encodeField(fieldNumber, wireType, data) {
+  return Buffer.concat([
+    encodeVarint((fieldNumber << 3) | wireType),
+    encodeVarint(data.length),
+    data,
+  ]);
+}
+
+export function buildCrxBuffer(
+  zipBuffer,
+  keyPem = process.env.CRX_PRIVATE_KEY,
+) {
+  const privateKey = keyPem
+    ? createPrivateKey(keyPem)
+    : generateKeyPairSync('rsa', { modulusLength: 2048 }).privateKey;
+  const publicKeyDer = createPublicKey(privateKey).export({
+    type: 'spki',
+    format: 'der',
+  });
+  const crxId = createHash('sha256')
+    .update(publicKeyDer)
+    .digest()
+    .subarray(0, 16);
+  const signedData = encodeField(1, 2, crxId);
+  const signedLen = Buffer.alloc(4);
+  signedLen.writeUInt32LE(signedData.length, 0);
+
+  const signer = createSign('RSA-SHA256');
+  signer.update(Buffer.from('CRX3 SignedData\0', 'utf8'));
+  signer.update(signedLen);
+  signer.update(signedData);
+  signer.update(zipBuffer);
+  const signature = signer.sign(privateKey);
+
+  const keyProof = Buffer.concat([
+    encodeField(1, 2, publicKeyDer),
+    encodeField(2, 2, signature),
+  ]);
+  const header = Buffer.concat([
+    encodeField(2, 2, keyProof),
+    encodeField(10000, 2, signedData),
+  ]);
+  const prefix = Buffer.alloc(12);
+  prefix.write('Cr24', 0, 4, 'ascii');
+  prefix.writeUInt32LE(3, 4);
+  prefix.writeUInt32LE(header.length, 8);
+  return Buffer.concat([prefix, header, zipBuffer]);
+}
 
 export function verifyExtension(directory = 'dist') {
   if (!existsSync(`${directory}/manifest.json`))
@@ -48,14 +115,27 @@ export function verifyExtension(directory = 'dist') {
   return manifest;
 }
 
-export function packageExtension(out = 'daguerre.zip') {
+export function packageExtension(
+  out = 'daguerre.zip',
+  crxOut = 'daguerre.crx',
+) {
   verifyExtension();
   const archive = resolve(out);
+  const crxArchive = resolve(crxOut);
   rmSync(archive, { force: true });
-  execFileSync('zip', ['-qrX', archive, '.', '-x', '.*'], {
-    cwd: 'dist',
-    stdio: 'inherit',
-  });
+  rmSync(crxArchive, { force: true });
+  if (process.platform === 'win32') {
+    execFileSync('tar', ['-a', '-c', '-f', archive, '--exclude', '.*', '*'], {
+      cwd: 'dist',
+      stdio: 'inherit',
+    });
+  } else {
+    execFileSync('zip', ['-qrX', archive, '.', '-x', '.*'], {
+      cwd: 'dist',
+      stdio: 'inherit',
+    });
+  }
+  writeFileSync(crxArchive, buildCrxBuffer(readFileSync(archive)));
 }
 
 if (
@@ -64,7 +144,7 @@ if (
 ) {
   try {
     if (process.argv.includes('--verify')) verifyExtension();
-    else packageExtension(process.argv[2]);
+    else packageExtension(process.argv[2], process.argv[3]);
   } catch (error) {
     console.error(`extension package: ${error.message}`);
     process.exitCode = 1;

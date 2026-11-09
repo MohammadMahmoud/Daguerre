@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, test } from 'vitest';
 import { readVersions } from '../../scripts/bump-version.mjs';
 import { classify } from '../../scripts/changed.mjs';
+import { buildCrxBuffer } from '../../scripts/package-extension.mjs';
 import { readVersion, releaseNotes } from '../../scripts/release-notes.mjs';
 import { getReleaseSection } from '../../scripts/update-changelog.mjs';
 import { updaterManifest } from '../../scripts/updater-manifest.mjs';
@@ -78,7 +79,7 @@ describe('release notes', () => {
     const desktop = readVersion('desktop');
     expect(desktop).toMatch(/^\d+\.\d+\.\d+$/);
     const lockVersion = readFileSync('src-tauri/Cargo.lock', 'utf8').match(
-      /name = "daguerre"\nversion = "([^"]+)"/,
+      /name = "daguerre"\r?\nversion = "([^"]+)"/,
     )?.[1];
     expect(lockVersion).toBe(desktop);
     const changelog = readFileSync('CHANGELOG.md', 'utf8');
@@ -180,5 +181,15 @@ describe('updater manifest', () => {
         'windows-x86_64': windows,
       },
     });
+  });
+
+  test('builds a valid CRX3 archive wrapping the extension zip payload', () => {
+    const zipPayload = Buffer.from('PK\x03\x04mock-zip-data', 'binary');
+    const crx = buildCrxBuffer(zipPayload);
+    expect(crx.subarray(0, 4).toString('ascii')).toBe('Cr24');
+    expect(crx.readUInt32LE(4)).toBe(3);
+    const headerLen = crx.readUInt32LE(8);
+    expect(headerLen).toBeGreaterThan(256);
+    expect(crx.subarray(12 + headerLen).equals(zipPayload)).toBe(true);
   });
 });

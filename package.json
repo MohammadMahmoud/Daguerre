@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "vite build --watch --mode development",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && node scripts/package-extension.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "coverage": "vitest run --coverage",
@@ -21,7 +21,7 @@
     "release": "node scripts/publish-release.mjs",
     "extension:verify": "node scripts/package-extension.mjs --verify",
     "icons": "node scripts/icons.mjs",
-    "package": "pnpm build && pnpm coverage && node scripts/package-extension.mjs",
+    "package": "pnpm build",
     "desktop:dev": "vite build --mode desktop && tauri dev",
     "desktop:build": "tsc --noEmit && id=$(security find-identity -v -p codesigning 2>/dev/null | sed -n 's/.*\"\\(.*\\)\"/\\1/p' | head -n 1); APPLE_SIGNING_IDENTITY=\"${APPLE_SIGNING_IDENTITY:-${id:--}}\" tauri build",
     "lint": "eslint --max-warnings 0 .",
@@ -74,6 +74,11 @@
   },
   "main": "index.js",
   "keywords": [],
-  "author": "",
+  "author": "Mohammed Mahmoud",
+  "homepage": "https://mohammadmahmoud.github.io/Daguerre/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MohammadMahmoud/Daguerre"
+  },
   "license": "MIT"
 }

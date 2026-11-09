@@ -1028,3 +1028,24 @@ test('switches between the adaptive and app tray icons and remembers the choice'
     payload: { icon: 'app' },
   });
 });
+
+test('renders Support below Product Tour and opens Buy Me a Coffee externally', async () => {
+  await renderHome();
+  const support = nav('Support Daguerre on Buy Me a Coffee');
+  expect(support.textContent).toBe('Support');
+  expect(support.closest('li')?.previousElementSibling?.textContent).toBe(
+    'Product Tour',
+  );
+  expect(
+    screen.getByText(
+      "Daguerre is 100% free. If you'd like to support its development, buying a coffee is warmly appreciated.",
+    ),
+  ).toBeTruthy();
+  fireEvent.click(support);
+  await waitFor(() =>
+    expect(calls).toContainEqual({
+      cmd: 'open_external',
+      payload: { url: 'https://buymeacoffee.com/projectra' },
+    }),
+  );
+});

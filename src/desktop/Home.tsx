@@ -10,7 +10,16 @@ import { listShots, type Shot } from '../lib/db';
 import { formatBytes } from '../lib/export';
 import { copyPng, type Action } from '../platform/Desktop';
 import '../styles.css';
-import { Icon, Logo, Toast, useToast, type IconName } from '../ui';
+import {
+  Icon,
+  Logo,
+  SUPPORT_LABEL,
+  SUPPORT_TEXT,
+  SUPPORT_URL,
+  Toast,
+  useToast,
+  type IconName,
+} from '../ui';
 import { runCapture } from './Capture';
 import { CapturePage } from './CapturePage';
 import { ProductTour } from './ProductTour';
@@ -27,6 +36,7 @@ const PAGES: { id: Page; label: string; icon: IconName }[] = [
 ];
 
 const openEditor = (id: string) => void invoke('open_editor', { id });
+const openExternal = (url: string) => void invoke('open_external', { url });
 
 function loadThemeBlend() {
   const saved = localStorage.getItem('themeBlend');
@@ -334,6 +344,20 @@ export function Home() {
               <Icon name='visible' size={17} />
               Product Tour
             </button>
+          </li>
+          <li className='nav-support'>
+            <button
+              className='nav-item'
+              aria-label={SUPPORT_LABEL}
+              aria-describedby='nav-support-hint'
+              onClick={() => openExternal(SUPPORT_URL)}
+            >
+              <Icon name='coffee' size={17} />
+              Support
+            </button>
+            <p className='nav-support-hint' id='nav-support-hint'>
+              {SUPPORT_TEXT}
+            </p>
           </li>
         </ul>
         <div className='nav-foot'>

@@ -7,7 +7,14 @@ import {
   type Shot,
 } from './lib/db';
 import './styles.css';
-import { Icon, Logo, type IconName } from './ui';
+import {
+  Icon,
+  Logo,
+  SUPPORT_LABEL,
+  SUPPORT_TEXT,
+  SUPPORT_URL,
+  type IconName,
+} from './ui';
 
 const ACTIONS: {
   mode: CaptureMode;
@@ -299,6 +306,19 @@ export function Popup() {
       <p className='field-hint' id='copy-selection-hint'>
         Copies your selection without opening the editor. Saved in History for
         editing later.
+      </p>
+
+      <button
+        className='btn'
+        onClick={() => openPage(SUPPORT_URL)}
+        aria-label={SUPPORT_LABEL}
+        aria-describedby='support-hint'
+      >
+        <Icon name='coffee' size={16} />
+        Support
+      </button>
+      <p className='field-hint' id='support-hint'>
+        {SUPPORT_TEXT}
       </p>
 
       {recent.length > 0 && (

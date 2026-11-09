@@ -223,3 +223,22 @@ test('lists recent screenshots and opens pages', async () => {
   });
   expect(close).toHaveBeenCalledTimes(4);
 });
+
+test('renders Support below Copy selected area and opens Buy Me a Coffee in a new tab', () => {
+  render(<Popup />);
+  const support = screen.getByRole('button', {
+    name: 'Support Daguerre on Buy Me a Coffee',
+  });
+  expect(support.textContent).toBe('Support');
+  expect(support.previousElementSibling?.id).toBe('copy-selection-hint');
+  expect(
+    screen.getByText(
+      "Daguerre is 100% free. If you'd like to support its development, buying a coffee is warmly appreciated.",
+    ),
+  ).toBeTruthy();
+  fireEvent.click(support);
+  expect(chrome.tabs.create).toHaveBeenCalledWith({
+    url: 'https://buymeacoffee.com/projectra',
+  });
+  expect(close).toHaveBeenCalledOnce();
+});
