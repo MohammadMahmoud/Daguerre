@@ -1,5 +1,5 @@
-import { getShot } from './lib/db';
-import { copyPng } from './lib/export';
+import { getShot } from './lib/Db';
+import { copyPng } from './lib/Export';
 
 chrome.runtime.onMessage.addListener((message, sender, respond) => {
   if (

@@ -46,7 +46,7 @@ test('creates one local worker and reads tall canvases in bands', async () => {
     .mockResolvedValueOnce(page('', []))
     .mockResolvedValueOnce({ data: { text: 'End', blocks: null } });
 
-  const { recognize } = await import('../../../src/lib/ocr');
+  const { recognize } = await import('../../../src/lib/Ocr');
   const canvas = document.createElement('canvas');
   canvas.width = 50;
   canvas.height = 9000;
@@ -86,7 +86,7 @@ test('offsets words from later bands', async () => {
     .mockResolvedValueOnce(
       page('b', [{ text: 'b', bbox: { x0: 0, y0: 10, x1: 5, y1: 20 } }]),
     );
-  const { recognize } = await import('../../../src/lib/ocr');
+  const { recognize } = await import('../../../src/lib/Ocr');
   const canvas = document.createElement('canvas');
   canvas.height = 4500;
   expect((await recognize(canvas)).words[0]).toMatchObject({
@@ -100,7 +100,7 @@ test('retries worker creation after a failure', async () => {
     .mockRejectedValueOnce(new Error('wasm blocked'))
     .mockResolvedValue(worker);
   worker.recognize.mockResolvedValue(page('ok', []));
-  const { recognize } = await import('../../../src/lib/ocr');
+  const { recognize } = await import('../../../src/lib/Ocr');
   const canvas = document.createElement('canvas');
   await expect(recognize(canvas)).rejects.toThrow('wasm blocked');
   await expect(recognize(canvas)).resolves.toMatchObject({ text: 'ok' });

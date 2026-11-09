@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { applyTheme } from '../desktop/Theme';
-import type { CaptureMode } from '../lib/db';
+import type { CaptureMode } from '../lib/Db';
 
 applyTheme();
 addEventListener('storage', (event) => {

@@ -90,7 +90,7 @@ export default defineConfig(({ mode }): UserConfig => {
               editor: 'editor.html',
               history: 'history.html',
               clipboard: 'clipboard.html',
-              background: 'src/background.ts',
+              background: 'src/Background.ts',
             },
             output: {
               // The manifest points at a fixed service worker path.
@@ -104,7 +104,7 @@ export default defineConfig(({ mode }): UserConfig => {
     test: {
       environment: 'jsdom',
       include: ['test/unit/**/*.test.{ts,tsx}'],
-      setupFiles: ['test/setup.ts'],
+      setupFiles: ['test/Setup.ts'],
       restoreMocks: true,
       coverage: {
         provider: 'v8',

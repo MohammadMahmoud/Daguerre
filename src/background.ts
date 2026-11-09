@@ -1,4 +1,4 @@
-import { addShot, type CaptureMode, type Progress } from './lib/db';
+import { addShot, type CaptureMode, type Progress } from './lib/Db';
 
 const MODES = ['visible', 'full', 'selection', 'tabs'] as const;
 const MENU: Record<(typeof MODES)[number], string> = {

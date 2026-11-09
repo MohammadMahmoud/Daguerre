@@ -1,4 +1,4 @@
-import type { CaptureMode } from '../lib/db';
+import type { CaptureMode } from '../lib/Db';
 
 export const CAPTURE_MODES: CaptureMode[] = [
   'visible',

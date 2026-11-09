@@ -13,8 +13,8 @@ import { driver } from 'driver.js';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { Home } from '../../../src/desktop/Home';
 import * as updater from '../../../src/desktop/Updater';
-import { addShot, clearShots, listShots } from '../../../src/lib/db';
-import { imageBlob } from '../../setup';
+import { addShot, clearShots, listShots } from '../../../src/lib/Db';
+import { imageBlob } from '../../Setup';
 
 const runCapture = vi.fn();
 vi.mock('driver.js', () => ({

@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo } from 'react';
-import type { Shot } from '../lib/db';
+import type { Shot } from '../lib/Db';
 import type { Action } from '../platform/Desktop';
-import { Icon, MODE_LABEL, type IconName } from '../ui';
+import { Icon, MODE_LABEL, type IconName } from '../Ui';
 import { formatShortcut, type Shortcuts } from './Shortcuts';
 
 const MODES: {

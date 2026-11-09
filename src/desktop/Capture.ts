@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { addShot } from '../lib/db';
+import { addShot } from '../lib/Db';
 import { copyPng, type Action } from '../platform/Desktop';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));

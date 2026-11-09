@@ -46,12 +46,12 @@ jobs:
         run: |
           args=(--fetch)
           if [ -n "$TARGET_VERSION" ]; then args+=(--version "$TARGET_VERSION"); fi
-          node scripts/bump-version.mjs "${args[@]}"
+          node scripts/BumpVersion.mjs "${args[@]}"
       - name: Generate changelog and exact release body
         run: |
-          node scripts/update-changelog.mjs
+          node scripts/UpdateChangelog.mjs
           git diff --name-only -z -- '*.json' '*.md' | xargs -0 -r pnpm exec prettier --write
-          node scripts/release-notes.mjs all
+          node scripts/ReleaseNotes.mjs all
       - name: Commit and atomically push main and annotated tag
         id: commit
         env:
@@ -93,7 +93,7 @@ jobs:
         with:
           node-version-file: .nvmrc
       - name: Extract release body from committed changelog
-        run: node scripts/release-notes.mjs all
+        run: node scripts/ReleaseNotes.mjs all
       - uses: actions/download-artifact@v4
         with:
           pattern: daguerre-desktop-*
@@ -117,7 +117,7 @@ jobs:
           test -n "$(find out -name '*.dmg' -print -quit)"
           test -n "$(find out -name '*.exe' -print -quit)"
           test -n "$(find out -name '*.AppImage' -print -quit)"
-          node scripts/updater-manifest.mjs out "$VERSION" \
+          node scripts/UpdaterManifest.mjs out "$VERSION" \
             "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/v$VERSION" .release-notes.md
           cd out && sha256sum * > SHA256SUMS.txt
       - uses: softprops/action-gh-release@v2

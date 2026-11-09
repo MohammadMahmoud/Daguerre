@@ -1,7 +1,7 @@
 import { beforeEach, expect, test, vi } from 'vitest';
-import { addShot, clearShots } from '../../src/lib/db';
-import type { ChromeMock } from '../chrome';
-import { imageBlob } from '../setup';
+import { addShot, clearShots } from '../../src/lib/Db';
+import type { ChromeMock } from '../Chrome';
+import { imageBlob } from '../Setup';
 
 let extension: ChromeMock;
 

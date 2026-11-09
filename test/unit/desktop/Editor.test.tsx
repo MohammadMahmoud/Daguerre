@@ -6,9 +6,9 @@ import {
   within,
 } from '@testing-library/react';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { Editor } from '../../../src/editor';
-import { addShot, clearShots } from '../../../src/lib/db';
-import { defaultBitmap, imageBlob } from '../../setup';
+import { Editor } from '../../../src/Editor';
+import { addShot, clearShots } from '../../../src/lib/Db';
+import { defaultBitmap, imageBlob } from '../../Setup';
 
 // The editor as built for the desktop app: native save dialog, editor windows and a close guard.
 const platform = vi.hoisted(() => ({
@@ -27,7 +27,7 @@ vi.mock('@platform', async () => ({
     return () => undefined;
   },
 }));
-vi.mock('../../../src/lib/ocr', () => ({ recognize: vi.fn() }));
+vi.mock('../../../src/lib/Ocr', () => ({ recognize: vi.fn() }));
 
 beforeEach(async () => {
   await clearShots();

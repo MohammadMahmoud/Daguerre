@@ -7,8 +7,8 @@ import {
   listShots,
   makeThumb,
   putShots,
-} from '../../../src/lib/db';
-import { imageBlob } from '../../setup';
+} from '../../../src/lib/Db';
+import { imageBlob } from '../../Setup';
 
 beforeEach(() => clearShots());
 

@@ -6,8 +6,8 @@
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Desktop App             | `home.html` mounts `src/desktop/Home.tsx`; CapturePage, SettingsPage, Shortcuts and Updater own capture controls, preferences, shortcuts and update checks. `overlay.html` hosts the selection overlay. Desktop frontend output is `dist-desktop/`.                                                                                                              |
 | Tauri Backend           | `src-tauri/src/lib.rs` owns windows, tray, IPC commands and plugin setup. `capture.rs` captures screens/windows; `selection.rs` handles regions; Linux `portal.rs` owns Wayland screenshots. Capabilities in `src-tauri/capabilities/` restrict each window. Rust/Tauri produces native installers under `src-tauri/target/**/release/bundle/`.                  |
-| Browser Extension       | `public/manifest.json` configures Chrome MV3 permissions and commands. `src/background.ts` handles capture triggers, progress and on-demand selection/scrolling injection. `src/popup.tsx` owns popup actions and recent shots; `src/Clipboard.ts` handles the focused clipboard frame. Production output is `dist/`. No persistent content script is installed. |
-| Shared UI and Storage   | `src/editor.tsx`, `src/editor/draw.ts`, `src/history.tsx`, `src/ui.tsx`, `src/styles.css` and `src/lib/` provide editing, local IndexedDB storage, export and offline English OCR. Vite's `@platform` alias selects `src/platform/Chrome.ts` or `Desktop.ts`. Both targets work independently and keep separate histories.                                       |
+| Browser Extension       | `public/manifest.json` configures Chrome MV3 permissions and commands. `src/Background.ts` handles capture triggers, progress and on-demand selection/scrolling injection. `src/Popup.tsx` owns popup actions and recent shots; `src/Clipboard.ts` handles the focused clipboard frame. Production output is `dist/`. No persistent content script is installed. |
+| Shared UI and Storage   | `src/Editor.tsx`, `src/editor/Draw.ts`, `src/History.tsx`, `src/Ui.tsx`, `src/Styles.css` and `src/lib/` provide editing, local IndexedDB storage, export and offline English OCR. Vite's `@platform` alias selects `src/platform/Chrome.ts` or `Desktop.ts`. Both targets work independently and keep separate histories.                                       |
 | Theming                 | `src/desktop/Theme.ts`, Home and Settings apply OS-adaptive appearance. Liquid Glass is macOS-only; Windows/Linux offer Light, Dark and System. Solid theme settings also apply to editor windows. Native effects require Tauri; browser previews cannot verify macOS material rendering.                                                                        |
 | Onboarding Tour         | `src/desktop/ProductTour.tsx` uses driver.js for 14 stages across all four capture workflows, an in-memory editor sample, tool toggling, export previews and live appearance previews. Product Tour sits below Settings in the sidebar. Exit restores view and appearance without persisting samples, clipboard operations or preferences.                       |
 | Showcase                | `store/index.html` contains the interactive browser/desktop showcase; `store/desktop/` and `store/screenshots/` contain product screenshots. Keep showcase descriptions, images and README synchronized with actual product behavior.                                                                                                                            |
@@ -16,10 +16,10 @@
 ## Release Ownership
 
 - `CHANGELOG.md` is the single source of release history. Preserve historical sections. Do not introduce a second permanent release-notes document.
-- `scripts/bump-version.mjs` reads a reachable unified `vX.Y.Z` tag, or root package metadata if none exists. It applies patch rollover at 9 or an explicit override and validates all manifests before transactional writes. It synchronizes workspace packages, Tauri config, Cargo manifest/lock and extension manifest.
-- `scripts/update-changelog.mjs` converts a curated `## [Unreleased]` section, when it has entries, into the dated version section verbatim. Otherwise it turns commits since the previous unified tag (or the newest legacy tag before the first unified release) into Added/Fixed/Changed entries, always emitting all three headings. `.release-notes.md` is ignored, temporary output copied verbatim from that section by `scripts/release-notes.mjs`.
-- `scripts/package-extension.mjs` verifies the compiled extension manifest, entry points and bundled OCR, and produces both `daguerre.zip` and a CRX3 `daguerre.crx` alongside `dist/`. Release CI publishes `daguerre-extension-dist-vX.Y.Z.zip` and `daguerre-extension-vX.Y.Z.crx`.
-- `scripts/publish-release.mjs` only dispatches release.yml on remote main through GitHub CLI. It accepts `--version X.Y.Z` and `--dry-run`, never changes local files, and does not include unmerged feature-branch work.
+- `scripts/BumpVersion.mjs` reads a reachable unified `vX.Y.Z` tag, or root package metadata if none exists. It applies patch rollover at 9 or an explicit override and validates all manifests before transactional writes. It synchronizes workspace packages, Tauri config, Cargo manifest/lock and extension manifest.
+- `scripts/UpdateChangelog.mjs` converts a curated `## [Unreleased]` section, when it has entries, into the dated version section verbatim. Otherwise it turns commits since the previous unified tag (or the newest legacy tag before the first unified release) into Added/Fixed/Changed entries, always emitting all three headings. `.release-notes.md` is ignored, temporary output copied verbatim from that section by `scripts/ReleaseNotes.mjs`.
+- `scripts/PackageExtension.mjs` verifies the compiled extension manifest, entry points and bundled OCR, and produces both `daguerre.zip` and a CRX3 `daguerre.crx` alongside `dist/`. Release CI publishes `daguerre-extension-dist-vX.Y.Z.zip` and `daguerre-extension-vX.Y.Z.crx`.
+- `scripts/PublishRelease.mjs` only dispatches release.yml on remote main through GitHub CLI. It accepts `--version X.Y.Z` and `--dry-run`, never changes local files, and does not include unmerged feature-branch work.
 - Existing Husky pre-commit/pre-push hooks run quality checks only. Do not add post-commit/post-merge changelog writes, automatic amendments or local version bumps. CI uses HUSKY=0 for its explicit bot release commit.
 - The release workflow atomically pushes main and its annotated tag using the bot identity and `chore(release): vX.Y.Z [skip ci]`. Normal concurrent main pushes fail safely rather than being overwritten. Builds use the exact prepared SHA; GitHub Release publication waits for all required jobs and dist verification.
 
@@ -32,7 +32,9 @@
 
 ## Architecture Ledger
 
-- 2026-11-09 | Desktop App, Browser Extension, Shared UI | Added monochrome `coffee` icon and shared Buy Me a Coffee constants in `src/ui.tsx`, native Support sections in `src/desktop/Home.tsx` (using Tauri `open_external` command in `src-tauri/src/lib.rs`) and `src/popup.tsx`, and Support badges/section in `README.md`.
+- 2026-11-09 | Architecture, Repository | Unified all modules, utilities, components, scripts, and tests to strict PascalCase naming convention.
+- 2026-11-09 | Desktop App, Pipeline | Replaced macOS/bash-only `desktop:build` script with cross-platform `scripts/DesktopBuild.mjs` handling automatic Cargo PATH resolution and safe Apple code signing identity detection.
+- 2026-11-09 | Desktop App, Browser Extension, Shared UI | Added monochrome `coffee` icon and shared Buy Me a Coffee constants in `src/Ui.tsx`, native Support sections in `src/desktop/Home.tsx` (using Tauri `open_external` command in `src-tauri/src/lib.rs`) and `src/Popup.tsx`, and Support badges/section in `README.md`.
 - 2026-11-08 | Pipeline, Browser Extension | Consolidated change detection, extension build and verification into the CI `test` job, skipped `desktop-check` on release/manual runs so `desktop-build` runs in parallel with `test`, removed redundant pre-tag release checks and `store/listing.md`, and added CRX3 (`daguerre.crx`) generation alongside `dist/`.
 - 2026-11-06 | Pipeline | Replaced the initial local release-note/hook design with CI-only release preparation. Removed duplicate permanent notes and documentation-mutating hooks. Added deterministic rollover, a single-source changelog generator, a dispatch-only publisher and serialized remote-main releases using immutable build refs.
 - 2026-11-06 | Showcase | Synchronized browser/desktop capture descriptions, persistent editor labels, OCR/clipboard/export workflows, onboarding stages and OS-adaptive appearance; aligned README and Web Store instructions with dist-in-release distribution. Regenerated Capture, Editor, History, Settings, Product Tour and popup screenshots in an isolated browser with mocked native APIs.
@@ -41,24 +43,33 @@
 
 ## Definition of Done (Mandatory Post-Task Checklist)
 
-Before declaring any build, bug fix, or code modification finished across the Desktop Application or Chrome Extension, you MUST complete all four steps below:
+Before declaring any build, bug fix, or code modification finished across the Desktop Application or Chrome Extension, you MUST complete all six steps below:
 
-1. **Test Coverage & Verification**
+1. **PascalCase File Naming Convention**
+   - Ensure all newly created or renamed files across the repository (components, modules, utilities, test files, and screenshot assets) strictly use `PascalCase` (e.g., `SupportCard.tsx`, `BuyMeACoffeeIcon.tsx`, `DesktopSidebar.png`).
+   - Do not introduce `kebab-case`, `snake_case`, or `camelCase` filenames unless strictly required by a tool or framework configuration file (such as `package.json` or `tsconfig.json`).
+
+2. **Test Coverage & Verification**
    - Add or update unit/integration tests covering every new feature, bug fix, or modified behavior.
    - Run the full test suite and ensure 100% of existing and new tests pass.
    - Never delete or skip failing tests to make a build pass; fix the root cause.
 
-2. **Post-Task Workspace Cleanup**
+3. **Post-Task Workspace Cleanup**
    - Remove all temporary files, debug logs (`console.log`, trace outputs), commented-out code, and unused imports/variables introduced during the task.
    - Stop any background dev servers or orphaned test processes started during verification.
-   - Run `git status` and `git diff` to confirm only intended, production-ready files remain modified.
+   - Run `git status` and `git diff` to confirm only intended, production-ready files remain modified and all new files follow `PascalCase`.
 
-3. **Build, Run & Hook Verification (`pre-commit` / `pre-push`)**
+4. **Build, Run & Hook Verification (`pre-commit` / `pre-push`)**
    - Verify that both the Desktop Application and Chrome Extension compile and bundle with zero TypeScript, linter, or build errors.
    - Explicitly run the repository's `pre-commit` and `pre-push` checks (linting, type-checking, formatting, tests, and builds) and resolve all issues.
    - Leave the working tree in a clean, runnable, and immediately pushable state.
 
-4. **Changelog Update (`CHANGELOG.md`)**
+5. **UI Screenshots & `README.md` Sync (When UI or Features Change)**
+   - Whenever a change adds, modifies, or rearranges any UI element in the Desktop Application or Chrome Extension, launch the updated view and capture fresh screenshots matching the existing resolution and framing.
+   - Save or update screenshot files in the assets directory using `PascalCase` filenames and verify all image paths in `README.md` render properly.
+   - Update the features list and descriptions in `README.md` so documentation and visuals stay 100% in sync with the current application state.
+
+6. **Changelog Update (`CHANGELOG.md`)**
    - Log every user-facing or architectural change in `CHANGELOG.md` under `## [Unreleased]` (or the active version header).
    - Categorize entries strictly under `### Added`, `### Fixed`, or `### Changed`.
    - Write concise bullet points noting what changed and its scope (`Desktop`, `Extension`, or `Both`).

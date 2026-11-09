@@ -163,24 +163,24 @@ The Rust side lives in `src-tauri/` (`capture.rs`, `selection.rs`, `lib.rs`); ea
 
 ## 🧪 Tests
 
-Unit and component tests live in `test/unit/`, mirroring `src/`. Shared setup is in `test/setup.ts`, and `test/chrome.ts` is an in-memory stand-in for the extension APIs. They run in Vitest with jsdom, fake IndexedDB and a canvas mock, and coverage must stay at or above 80% for statements, branches, functions and lines.
+Unit and component tests live in `test/unit/`, mirroring `src/`. Shared setup is in `test/Setup.ts`, and `test/Chrome.ts` is an in-memory stand-in for the extension APIs. They run in Vitest with jsdom, fake IndexedDB and a canvas mock, and coverage must stay at or above 80% for statements, branches, functions and lines.
 
 ```
 test/
-├── chrome.ts        # chrome.* API mock
-├── setup.ts         # jsdom polyfills (canvas, ImageBitmap, clipboard, layout)
+├── Chrome.ts        # chrome.* API mock
+├── Setup.ts         # jsdom polyfills (canvas, ImageBitmap, clipboard, layout)
 └── unit/
-    ├── background.test.ts
+    ├── Background.test.ts
     ├── Clipboard.test.ts
-    ├── editor.test.tsx
-    ├── history.test.tsx
-    ├── popup.test.tsx
+    ├── Editor.test.tsx
+    ├── History.test.tsx
+    ├── Popup.test.tsx
     ├── ReleaseAutomation.test.ts
-    ├── scripts.test.ts
+    ├── Scripts.test.ts
     ├── desktop/{Capture,Desktop,Shortcuts,Theme,Updater}.test.ts, {Editor,Home,Overlay,ProductTour}.test.tsx
-    ├── editor/draw.test.ts
-    ├── lib/{db,export,ocr}.test.ts
-    └── ui.test.tsx
+    ├── editor/Draw.test.ts
+    ├── lib/{Db,Export,Ocr}.test.ts
+    └── Ui.test.tsx
 ```
 
 The Rust code in `src-tauri/` has its own unit tests (`cargo test`) for coordinate mapping, window picking, command-line arguments, shortcut filtering and editor window labels.
@@ -218,13 +218,13 @@ pnpm publish:release --version 0.1.0           # explicit version override
 
 ### Automatic Versions and Changelog
 
-[scripts/bump-version.mjs](scripts/bump-version.mjs) fetches tags in CI and uses the nearest reachable unified `vX.Y.Z` tag, falling back to the root package version if none exists. It increments the patch until 9, then increments the minor and resets the patch: `0.0.4 → 0.0.5 → … → 0.0.9 → 0.1.0 → … → 0.1.9 → 0.2.0`. Historical versions with patches above 9 also roll to the next minor. With the current release at `v1.0.2`, the next automatic version is `1.0.3`.
+[scripts/BumpVersion.mjs](scripts/BumpVersion.mjs) fetches tags in CI and uses the nearest reachable unified `vX.Y.Z` tag, falling back to the root package version if none exists. It increments the patch until 9, then increments the minor and resets the patch: `0.0.4 → 0.0.5 → … → 0.0.9 → 0.1.0 → … → 0.1.9 → 0.2.0`. Historical versions with patches above 9 also roll to the next minor. With the current release at `v1.0.2`, the next automatic version is `1.0.3`.
 
 `--version X.Y.Z` or the workflow's `target_version` input selects that exact numeric version. It must be unused and newer than a previous unified release. Do not choose an override below a previously distributed product version if you expect Chrome Web Store updates or desktop updater upgrades to recognize it.
 
 All manifests are validated first, then updated as a single transaction with rollback on write failure: root and workspace package files, Tauri config, Cargo manifest/lock and extension manifest. No developer needs to bump them on a feature branch.
 
-[scripts/update-changelog.mjs](scripts/update-changelog.mjs) first looks for a curated `## [Unreleased]` section in CHANGELOG.md. If it has entries, CI renames it to `## [vX.Y.Z] - YYYY-MM-DD` and uses it verbatim. Otherwise it groups commit summaries since the previous unified tag (or, before the first one, the newest legacy tag) into **Added**, **Fixed**, and **Changed**, deduplicates identical entries, and prepends the section above existing history. It writes that exact section to ignored `.release-notes.md`; after formatting, CI extracts it again so the GitHub Release body matches the committed changelog verbatim. Existing historical entries are preserved. Fill the Unreleased section just before releasing, or keep commit subjects clear for the generated fallback.
+[scripts/UpdateChangelog.mjs](scripts/UpdateChangelog.mjs) first looks for a curated `## [Unreleased]` section in CHANGELOG.md. If it has entries, CI renames it to `## [vX.Y.Z] - YYYY-MM-DD` and uses it verbatim. Otherwise it groups commit summaries since the previous unified tag (or, before the first one, the newest legacy tag) into **Added**, **Fixed**, and **Changed**, deduplicates identical entries, and prepends the section above existing history. It writes that exact section to ignored `.release-notes.md`; after formatting, CI extracts it again so the GitHub Release body matches the committed changelog verbatim. Existing historical entries are preserved. Fill the Unreleased section just before releasing, or keep commit subjects clear for the generated fallback.
 
 ### Pipeline Sequence
 

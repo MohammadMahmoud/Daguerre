@@ -15,16 +15,16 @@ import {
   putShots,
   type CaptureMode,
   type Shot,
-} from './lib/db';
+} from './lib/Db';
 import {
   copyPng,
   downloadBlob,
   fileName,
   formatBytes,
   hostOf,
-} from './lib/export';
-import './styles.css';
-import { ConfirmDialog, Icon, Logo, MODE_LABEL, Toast, useToast } from './ui';
+} from './lib/Export';
+import './Styles.css';
+import { ConfirmDialog, Icon, Logo, MODE_LABEL, Toast, useToast } from './Ui';
 
 const FILTERS: (CaptureMode | 'all')[] = ['all', ...CAPTURE_MODES];
 
