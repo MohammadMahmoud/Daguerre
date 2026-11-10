@@ -85,6 +85,7 @@ jobs:
       contents: write
     env:
       VERSION: ${{ needs.prepare.outputs.version }}
+      CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -111,6 +112,7 @@ jobs:
         run: |
           mkdir out
           zip -qrX "out/daguerre-extension-dist-v$VERSION.zip" dist -x '*/.*'
+          (cd dist && zip -qrX ../daguerre-webstore.zip . -x '*/.*')
           mv daguerre.crx "out/daguerre-extension-v$VERSION.crx"
           find installers -type f \( -name '*.dmg' -o -name '*.exe' -o -name '*.msi' \
             -o -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' -o -name '*.app.tar.gz' -o -name '*.sig' \) -exec mv {} out/ \;
@@ -129,3 +131,13 @@ jobs:
           files: out/*
           fail_on_unmatched_files: true
           make_latest: true
+      - name: Upload and publish to Chrome Web Store
+        if: env.CHROME_EXTENSION_ID != ''
+        uses: mnao305/chrome-extension-upload@v2.2.0
+        with:
+          file-path: daguerre-webstore.zip
+          extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
+          client-id: ${{ secrets.CHROME_CLIENT_ID }}
+          client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          publish: true
