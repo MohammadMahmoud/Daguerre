@@ -1,6 +1,6 @@
 {
   "name": "daguerre",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "private": true,
   "description": "Daguerre: a Chrome extension and desktop app to capture, annotate and export screenshots. Everything stays on your device.",
   "type": "module",
