@@ -1,12 +1,23 @@
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { applyTheme } from '../desktop/Theme';
+import { watchEditorGlass } from '../desktop/EditorGlass';
+import { applyTheme, onMac } from '../desktop/Theme';
 import type { CaptureMode } from '../lib/Db';
 
 applyTheme();
 addEventListener('storage', (event) => {
   if (event.key === 'theme' || event.key === null) applyTheme();
 });
+// Editor windows follow the main window's Window design on macOS.
+if (onMac() && isEditorWindow()) watchEditorGlass();
+
+function isEditorWindow() {
+  try {
+    return getCurrentWindow().label.startsWith('editor-');
+  } catch {
+    return false;
+  }
+}
 
 export const CAPTURE_MODES: CaptureMode[] = ['selection', 'screen', 'window'];
 

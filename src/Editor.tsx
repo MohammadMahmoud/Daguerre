@@ -8,6 +8,7 @@ import {
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
+import { createPortal } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import {
   bounds,
@@ -43,12 +44,14 @@ import {
   printPage,
 } from './lib/Export';
 import { recognize } from './lib/Ocr';
+import { OcrService, type RecognizedTextBlock } from './lib/OcrService';
 import './Styles.css';
 import {
   ConfirmDialog,
   Icon,
   MODE_LABEL,
   Toast,
+  Tooltip,
   useToast,
   type IconName,
 } from './Ui';
@@ -152,11 +155,23 @@ export function Editor({
   const [confirmClose, setConfirmClose] =
     useState<(discard: boolean) => void>();
   const [toast, showToast] = useToast();
+  const [liveTextActive, setLiveTextActive] = useState(false);
+  const [liveTextBlocks, setLiveTextBlocks] = useState<
+    RecognizedTextBlock[] | null
+  >(null);
+  const [ocrLoading, setOcrLoading] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLElement>(null);
   const exportRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [menuPos, setMenuPos] = useState({ top: 0, right: 12 });
+  const [osDark, setOsDark] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia
+      ? window.matchMedia('(prefers-color-scheme: dark)').matches
+      : false,
+  );
   const drag = useRef<Drag | null>(null);
   const pointer = useRef({ x: 0, y: 0, shift: false, raf: 0 });
   const [cropCursor, setCropCursor] = useState('crosshair');
@@ -208,6 +223,12 @@ export function Editor({
       active = false;
     };
   }, [id, sample]);
+
+  useEffect(() => {
+    setLiveTextBlocks(null);
+    setLiveTextActive(false);
+    setOcrLoading(false);
+  }, [id, sample, doc.crop]);
 
   useEffect(() => () => img?.close(), [img]);
 
@@ -406,9 +427,44 @@ export function Editor({
   }, [exportOpen, img, doc, quality, halfSize]);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const update = (e: MediaQueryListEvent) => setOsDark(e.matches);
+    mq.addEventListener?.('change', update);
+    return () => mq.removeEventListener?.('change', update);
+  }, []);
+
+  useEffect(() => {
+    if (!exportOpen) return;
+    const updatePos = () => {
+      if (exportRef.current) {
+        const rect = exportRef.current.getBoundingClientRect();
+        setMenuPos({
+          top: rect.bottom + 8,
+          right: Math.max(12, window.innerWidth - rect.right),
+        });
+      }
+    };
+    updatePos();
+    window.addEventListener('resize', updatePos);
+    window.addEventListener('scroll', updatePos, true);
+    return () => {
+      window.removeEventListener('resize', updatePos);
+      window.removeEventListener('scroll', updatePos, true);
+    };
+  }, [exportOpen]);
+
+  useEffect(() => {
     if (!exportOpen || sample) return;
-    const onDown = (e: PointerEvent) =>
-      !exportRef.current?.contains(e.target as Node) && setExportOpen(false);
+    const onDown = (e: PointerEvent) => {
+      const target = e.target as Node;
+      if (
+        !exportRef.current?.contains(target) &&
+        !menuRef.current?.contains(target)
+      ) {
+        setExportOpen(false);
+      }
+    };
     document.addEventListener('pointerdown', onDown);
     return () => document.removeEventListener('pointerdown', onDown);
   }, [exportOpen, sample]);
@@ -427,6 +483,7 @@ export function Editor({
     const onKey = (e: KeyboardEvent) => {
       if (sample) return;
       if ((e.target as HTMLElement).closest('input, textarea, select')) return;
+      if (window.getSelection()?.toString()) return;
       const mod = e.metaKey || e.ctrlKey;
       const key = e.key.toLowerCase();
       if (mod) {
@@ -860,6 +917,41 @@ export function Editor({
     );
   }
 
+  async function toggleLiveText() {
+    if (ocrLoading) return;
+    if (liveTextBlocks !== null) {
+      const next = !liveTextActive;
+      setLiveTextActive(next);
+      if (next && tool !== 'select') selectTool('select');
+      showToast(next ? 'Text recognition active' : 'Text recognition hidden');
+      return;
+    }
+
+    setOcrLoading(true);
+    try {
+      showToast('Reading text…', 60_000);
+      const canvas = renderFinal();
+      const result = await OcrService.recognize(canvas, ocrProgress);
+      setLiveTextBlocks(result.blocks);
+      if (result.blocks.length === 0) {
+        setLiveTextActive(false);
+        showToast('No text found in this screenshot.');
+      } else {
+        setLiveTextActive(true);
+        if (tool !== 'select') selectTool('select');
+        const count = result.blocks.length;
+        showToast(`Recognized ${count} text region${count === 1 ? '' : 's'}`);
+      }
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : 'Something went wrong',
+        4000,
+      );
+    } finally {
+      setOcrLoading(false);
+    }
+  }
+
   function download(type: 'png' | Compressed) {
     if (sample) return;
     setExportOpen(false);
@@ -952,7 +1044,7 @@ export function Editor({
             : undefined
         }
       >
-        <header className='topbar'>
+        <header className='topbar' data-tauri-drag-region>
           {!sample && (
             <a
               className='icon-btn'
@@ -1070,6 +1162,27 @@ export function Editor({
               Copy Text
             </button>
           </div>
+          <button
+            className={`btn live-text-btn${liveTextActive ? ' active' : ''}`}
+            aria-pressed={liveTextActive}
+            aria-label='Recognize Text'
+            disabled={ocrLoading || (!liveTextBlocks && (busy || !!sample))}
+            onClick={() => void toggleLiveText()}
+            title={
+              liveTextActive
+                ? 'Hide recognized text overlay'
+                : liveTextBlocks
+                  ? 'Show recognized text overlay'
+                  : 'Recognize selectable text on image (Live Text)'
+            }
+          >
+            {ocrLoading ? (
+              <span className='spinner' aria-hidden='true' />
+            ) : (
+              <Icon name='scanText' size={16} />
+            )}
+            <span>{ocrLoading ? 'Recognizing…' : 'Recognize Text'}</span>
+          </button>
           <div className='export' ref={exportRef} data-tour='export-control'>
             <button
               className='btn'
@@ -1082,78 +1195,88 @@ export function Editor({
               Export
               <Icon name='chevron' size={14} />
             </button>
-            {exportOpen && (
-              <div
-                className='menu'
-                role='dialog'
-                aria-label='Export'
-                data-tour='export-menu'
-              >
-                <p className='menu-title'>Full quality</p>
-                <MenuItem
-                  icon='image'
-                  label='PNG'
-                  detail='Lossless'
-                  size={estimates.png}
-                  onClick={() => void download('png')}
-                />
-                <MenuItem
-                  icon='pdf'
-                  label='PDF'
-                  detail='A4 pages'
-                  onClick={() => void exportPdf()}
-                />
-                <MenuItem
-                  icon='scanText'
-                  label='Searchable PDF'
-                  detail='Selectable English text (OCR, on-device)'
-                  onClick={() => void exportPdf(true)}
-                />
-                <MenuItem
-                  icon='print'
-                  label='Print'
-                  detail='⌘P'
-                  onClick={() => void print()}
-                />
-                <hr />
-                <p className='menu-title'>Compressed</p>
-                <label className='slider'>
-                  <span>Quality</span>
-                  <input
-                    type='range'
-                    min={0.3}
-                    max={0.95}
-                    step={0.05}
-                    value={quality}
-                    onChange={(e) => changeQuality(Number(e.target.value))}
+            {exportOpen &&
+              createPortal(
+                <div
+                  ref={menuRef}
+                  className='menu'
+                  role='dialog'
+                  aria-label='Export'
+                  data-tour='export-menu'
+                  style={{
+                    position: 'fixed',
+                    top: menuPos.top,
+                    right: menuPos.right,
+                    zIndex: 1000,
+                    pointerEvents: 'auto',
+                  }}
+                >
+                  <p className='menu-title'>Full quality</p>
+                  <MenuItem
+                    icon='image'
+                    label='PNG'
+                    detail='Lossless'
+                    size={estimates.png}
+                    onClick={() => void download('png')}
                   />
-                  <output>{Math.round(quality * 100)}%</output>
-                </label>
-                <label className='check'>
-                  <input
-                    type='checkbox'
-                    checked={halfSize}
-                    onChange={(e) => setHalfSize(e.target.checked)}
+                  <MenuItem
+                    icon='pdf'
+                    label='PDF'
+                    detail='A4 pages'
+                    onClick={() => void exportPdf()}
                   />
-                  Half resolution ({Math.round(out.w / 2)} ×{' '}
-                  {Math.round(out.h / 2)})
-                </label>
-                <MenuItem
-                  icon='image'
-                  label='JPEG'
-                  detail='Smallest, widely supported'
-                  size={estimates.jpeg}
-                  onClick={() => void download('jpeg')}
-                />
-                <MenuItem
-                  icon='image'
-                  label='WebP'
-                  detail='Smaller, modern'
-                  size={estimates.webp}
-                  onClick={() => void download('webp')}
-                />
-              </div>
-            )}
+                  <MenuItem
+                    icon='scanText'
+                    label='Searchable PDF'
+                    detail='Selectable English text (OCR, on-device)'
+                    onClick={() => void exportPdf(true)}
+                  />
+                  <MenuItem
+                    icon='print'
+                    label='Print'
+                    detail='⌘P'
+                    onClick={() => void print()}
+                  />
+                  <hr />
+                  <p className='menu-title'>Compressed</p>
+                  <label className='slider'>
+                    <span>Quality</span>
+                    <input
+                      type='range'
+                      min={0.3}
+                      max={0.95}
+                      step={0.05}
+                      value={quality}
+                      onChange={(e) => changeQuality(Number(e.target.value))}
+                    />
+                    <output>{Math.round(quality * 100)}%</output>
+                  </label>
+                  <label className='check'>
+                    <input
+                      type='checkbox'
+                      checked={halfSize}
+                      onChange={(e) => setHalfSize(e.target.checked)}
+                    />
+                    Half resolution ({Math.round(out.w / 2)} ×{' '}
+                    {Math.round(out.h / 2)})
+                  </label>
+                  <MenuItem
+                    icon='image'
+                    label='JPEG'
+                    detail='Smallest, widely supported'
+                    size={estimates.jpeg}
+                    onClick={() => void download('jpeg')}
+                  />
+                  <MenuItem
+                    icon='image'
+                    label='WebP'
+                    detail='Smaller, modern'
+                    size={estimates.webp}
+                    onClick={() => void download('webp')}
+                  />
+                </div>,
+                document.body,
+              )}
           </div>
           <button
             className='btn primary'
@@ -1175,20 +1298,40 @@ export function Editor({
             aria-label='Tools'
             data-tour='editor-tools'
           >
-            {TOOLS.map((t) => (
-              <button
-                key={t.id}
-                data-tour={`tool-${t.id}`}
-                className='tool'
-                aria-pressed={tool === t.id}
-                aria-label={t.label}
-                title={t.key.toUpperCase()}
-                onClick={() => selectTool(t.id)}
-              >
-                <Icon name={t.id as IconName} />
-                <span>{t.short ?? t.label}</span>
-              </button>
-            ))}
+            {TOOLS.map((t) => {
+              const shortcut = t.key.toUpperCase();
+              const tooltipLabel = `${t.label} (${shortcut})`;
+              return (
+                <Tooltip key={t.id} content={tooltipLabel} position='right'>
+                  <button
+                    data-tour={`tool-${t.id}`}
+                    className='tool'
+                    aria-pressed={tool === t.id}
+                    aria-label={t.label}
+                    title={shortcut}
+                    data-tooltip={tooltipLabel}
+                    data-tooltip-pos='right'
+                    onMouseEnter={(e) => {
+                      const btn = e.currentTarget;
+                      if (btn.title) {
+                        btn.dataset.title = btn.title;
+                        btn.removeAttribute('title');
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      const btn = e.currentTarget;
+                      if (btn.dataset.title) {
+                        btn.title = btn.dataset.title;
+                      }
+                    }}
+                    onClick={() => selectTool(t.id)}
+                  >
+                    <Icon name={t.id as IconName} />
+                    <span>{t.short ?? t.label}</span>
+                  </button>
+                </Tooltip>
+              );
+            })}
             <hr />
             {COLORS.map((c) => (
               <button
@@ -1236,7 +1379,7 @@ export function Editor({
           </nav>
         )}
 
-        <StageElement className='stage' ref={stageRef}>
+        <StageElement className='stage' ref={stageRef} data-os-dark={osDark}>
           <div
             className='canvas-wrap'
             ref={wrapRef}
@@ -1253,6 +1396,32 @@ export function Editor({
               onPointerCancel={onPointerUp}
               onDoubleClick={onDoubleClick}
             />
+            {liveTextActive && liveTextBlocks && liveTextBlocks.length > 0 && (
+              <div
+                className='live-text-overlay'
+                aria-label='Recognized text overlay'
+                data-tool={tool}
+              >
+                {liveTextBlocks.map((block, i) => (
+                  <span
+                    key={i}
+                    className='live-text-block'
+                    tabIndex={0}
+                    style={{
+                      left: `${block.bbox.x * 100}%`,
+                      top: `${block.bbox.y * 100}%`,
+                      width: `${block.bbox.width * 100}%`,
+                      height: `${block.bbox.height * 100}%`,
+                      fontSize: `${Math.max(10, block.bbox.height * view.h * scale * 0.75)}px`,
+                      lineHeight: `${block.bbox.height * view.h * scale}px`,
+                    }}
+                    title={block.text}
+                  >
+                    {block.text}
+                  </span>
+                ))}
+              </div>
+            )}
             {editing && (
               <textarea
                 className='text-input'

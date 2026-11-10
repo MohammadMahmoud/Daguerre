@@ -31,17 +31,19 @@
 
 The extension captures web pages; the desktop app captures other applications and displays. Both provide the annotation, OCR, export and History features below. Scrolling and all-tab capture are extension-only.
 
-|                            |                                                                                                                                                                              |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 📸 **Four capture modes**  | Visible area, entire page (scrolls and stitches, hiding repeated sticky headers), a selected area, or every tab in the window.                                               |
-| ↕️ **Scrolling selection** | Drag to the top or bottom edge, or scroll, while selecting. Areas taller than the screen are stitched automatically.                                                         |
-| ✏️ **Editor**              | Crop with drag handles, arrows, shapes, pen, highlighter, text, numbered steps, and pixelate for hiding sensitive details. Drag past the edge of the view to keep scrolling. |
-| 🔁 **Re-editable**         | The original capture and your edits are stored separately. Undo, redo or reset at any time.                                                                                  |
-| 📤 **Export**              | Lossless PNG; compressed JPEG or WebP with a quality slider and live size estimates; multi-page PDF; clipboard; print.                                                       |
-| 🔤 **Text recognition**    | **Copy Text** from any screenshot and export **Searchable PDFs**, all offline (English).                                                                                     |
-| 🗂️ **History**             | Grouped by day, with search, filters, bulk delete with undo, and a storage meter.                                                                                            |
-| ⏱️ **Delay timer**         | 3, 5 or 10 seconds, to open menus or hover states before the capture.                                                                                                        |
-| 🔒 **Private by design**   | No servers, analytics or tracking. Everything lives in your browser's IndexedDB.                                                                                             |
+|                            |                                                                                                                                                                                                               |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 📸 **Four capture modes**  | Visible area, entire page (scrolls and stitches, hiding repeated sticky headers), a selected area, or every tab in the window.                                                                                |
+| ↕️ **Scrolling selection** | Drag to the top or bottom edge, or scroll, while selecting. Areas taller than the screen are stitched automatically.                                                                                          |
+| ✏️ **Editor**              | Crop with drag handles, arrows, shapes, pen, highlighter, text, numbered steps, and pixelate for hiding sensitive details. Drag past the edge of the view to keep scrolling.                                  |
+| 🔁 **Re-editable**         | The original capture and your edits are stored separately. Undo, redo or reset at any time.                                                                                                                   |
+| 📤 **Export**              | Lossless PNG; compressed JPEG or WebP with a quality slider and live size estimates; multi-page PDF; clipboard; print.                                                                                        |
+| 🔤 **Text recognition**    | Interactive **Live Text** selection directly on the image, **Copy Text** from any screenshot, and export **Searchable PDFs**, all offline (universal Latin script & diacritics including English and German). |
+| 🗂️ **History**             | Grouped by day, with search, filters, bulk delete with undo, and a storage meter.                                                                                                                             |
+| ⏱️ **Delay timer**         | 3, 5 or 10 seconds, to open menus or hover states before the capture.                                                                                                                                         |
+| 💫 **Apple-grade motion**  | Damped spring curves, hover elevation with dynamic shadow bloom, active tactile compression, micro-interactions, and view transitions across Light, Dark, and Liquid Glass.                                   |
+| 💫 **Apple-grade motion**  | Damped spring curves, hover elevation with dynamic shadow bloom, active tactile compression, micro-interactions, and view transitions across Light, Dark, and Liquid Glass.                                   |
+| 🔒 **Private by design**   | No servers, analytics or tracking. Everything lives in your browser's IndexedDB.                                                                                                                              |
 
 <table>
   <tr>
@@ -114,7 +116,7 @@ The four desktop capture workflows are **Select area**, **Window**, **Screen**, 
 | Screen             | Capture the display under the pointer; Wayland captures the whole desktop through its portal.           |
 | Copy selected area | Drag a region and immediately copy the image, without opening the editor; keep it in History for later. |
 
-The shared editing suite includes **Pixelate**, **Numbered Steps**, **Text**, **Arrows**, rectangles, ellipses, lines, pen, highlighter, crop, undo and redo. **Copy Text** extracts English text locally. Copy the edited image instantly or export PNG, JPEG, WebP, multi-page PDF and **Searchable PDF**, with compression controls, size estimates and printing.
+The shared editing suite includes **Pixelate**, **Numbered Steps**, **Text**, **Arrows**, rectangles, ellipses, lines, pen, highlighter, crop, undo and redo. **Recognize Text** enables interactive Live Text selection directly on the image, while **Copy Text** extracts text locally, preserving all universal Latin diacritics and special characters offline with UTF-8 NFC normalization. Copy the edited image instantly or export PNG, JPEG, WebP, multi-page PDF and **Searchable PDF**, with compression controls, size estimates and printing.
 
 Each annotation tool has a persistent sub-label beneath its icon: you can identify tools immediately without hovering. The tour simulates toggling those tools, previews the export menu and changes themes live, without committing edits or exports.
 

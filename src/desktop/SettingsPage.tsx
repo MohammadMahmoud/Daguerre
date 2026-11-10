@@ -36,53 +36,55 @@ export function Appearance({
       data-tour='appearance'
     >
       <h2 id={`${id}-appearance-title`}>Appearance</h2>
-      {mac ? (
-        <div className='setting-row appearance-row'>
-          <label htmlFor={`${id}-window-design`}>Window design</label>
-          <div className='appearance-control'>
-            <input
-              id={`${id}-window-design`}
-              className='appearance-slider'
-              type='range'
-              min='0'
-              max='100'
-              step='1'
-              value={strength}
-              aria-valuetext={`${strength}% Liquid Glass`}
-              onChange={(event) => {
-                const value = event.target.valueAsNumber;
-                setStrength(value);
-                onBlend(value);
-              }}
-            />
-            <div className='appearance-labels' aria-hidden='true'>
-              <span>Current</span>
-              <output htmlFor={`${id}-window-design`}>{strength}%</output>
-              <span>Liquid Glass</span>
+      <div className='settings-group'>
+        {mac ? (
+          <div className='setting-row appearance-row'>
+            <label htmlFor={`${id}-window-design`}>Window design</label>
+            <div className='appearance-control'>
+              <input
+                id={`${id}-window-design`}
+                className='appearance-slider'
+                type='range'
+                min='0'
+                max='100'
+                step='1'
+                value={strength}
+                aria-valuetext={`${strength}% Liquid Glass`}
+                onChange={(event) => {
+                  const value = event.target.valueAsNumber;
+                  setStrength(value);
+                  onBlend(value);
+                }}
+              />
+              <div className='appearance-labels' aria-hidden='true'>
+                <span>Current</span>
+                <output htmlFor={`${id}-window-design`}>{strength}%</output>
+                <span>Liquid Glass</span>
+              </div>
             </div>
           </div>
-        </div>
-      ) : (
-        <div className='setting-row'>
-          <strong id={`${id}-theme-label`}>Theme</strong>
-          <div
-            className='segmented'
-            role='radiogroup'
-            aria-labelledby={`${id}-theme-label`}
-          >
-            {(['light', 'dark', 'system'] as const).map((option) => (
-              <button
-                key={option}
-                role='radio'
-                aria-checked={theme === option}
-                onClick={() => onTheme(option)}
-              >
-                {option.charAt(0).toUpperCase() + option.slice(1)}
-              </button>
-            ))}
+        ) : (
+          <div className='setting-row'>
+            <strong id={`${id}-theme-label`}>Theme</strong>
+            <div
+              className='segmented'
+              role='radiogroup'
+              aria-labelledby={`${id}-theme-label`}
+            >
+              {(['light', 'dark', 'system'] as const).map((option) => (
+                <button
+                  key={option}
+                  role='radio'
+                  aria-checked={theme === option}
+                  onClick={() => onTheme(option)}
+                >
+                  {option.charAt(0).toUpperCase() + option.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </section>
   );
 }
@@ -284,54 +286,58 @@ export function SettingsPage({
 
       <section className='panel' aria-labelledby='general-title'>
         <h2 id='general-title'>General</h2>
-        <div className='setting-row'>
-          <div>
-            <label htmlFor='autostart'>Open at login</label>
-            <p className='meta'>Starts quietly in the {tray}.</p>
+        <div className='settings-group'>
+          <div className='setting-row'>
+            <div>
+              <label htmlFor='autostart'>Open at login</label>
+              <p className='meta'>Starts quietly in the {tray}.</p>
+            </div>
+            <input
+              id='autostart'
+              type='checkbox'
+              role='switch'
+              className='switch'
+              checked={autostart}
+              onChange={(e) => onAutostart(e.target.checked)}
+            />
           </div>
-          <input
-            id='autostart'
-            type='checkbox'
-            role='switch'
-            className='switch'
-            checked={autostart}
-            onChange={(e) => onAutostart(e.target.checked)}
-          />
-        </div>
-        <div className='setting-row'>
-          <div>
-            <strong id='tray-icon-label'>
-              {mac ? 'Menu bar icon' : 'System tray icon'}
-            </strong>
-            <p className='meta' id='tray-icon-hint'>
-              {mac
-                ? 'Adaptive turns black or white to match the menu bar.'
-                : `Choose how Daguerre appears in the ${tray}.`}
-            </p>
-          </div>
-          <div
-            className='segmented'
-            role='radiogroup'
-            aria-labelledby='tray-icon-label'
-            aria-describedby='tray-icon-hint'
-          >
-            {TRAY_ICONS.map((opt) => (
-              <button
-                key={opt.id}
-                role='radio'
-                aria-checked={trayIcon === opt.id}
-                onClick={() => onTrayIcon(opt.id)}
-              >
-                <span
-                  className={
-                    opt.mono ? 'tray-preview tray-preview-mono' : 'tray-preview'
-                  }
+          <div className='setting-row'>
+            <div>
+              <strong id='tray-icon-label'>
+                {mac ? 'Menu bar icon' : 'System tray icon'}
+              </strong>
+              <p className='meta' id='tray-icon-hint'>
+                {mac
+                  ? 'Adaptive turns black or white to match the menu bar.'
+                  : `Choose how Daguerre appears in the ${tray}.`}
+              </p>
+            </div>
+            <div
+              className='segmented'
+              role='radiogroup'
+              aria-labelledby='tray-icon-label'
+              aria-describedby='tray-icon-hint'
+            >
+              {TRAY_ICONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  role='radio'
+                  aria-checked={trayIcon === opt.id}
+                  onClick={() => onTrayIcon(opt.id)}
                 >
-                  <Logo size={opt.mono ? 16 : 18} mono={opt.mono} />
-                </span>
-                {mac && opt.mono ? 'Adaptive' : opt.label}
-              </button>
-            ))}
+                  <span
+                    className={
+                      opt.mono
+                        ? 'tray-preview tray-preview-mono'
+                        : 'tray-preview'
+                    }
+                  >
+                    <Logo size={opt.mono ? 16 : 18} mono={opt.mono} />
+                  </span>
+                  {mac && opt.mono ? 'Adaptive' : opt.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -339,56 +345,60 @@ export function SettingsPage({
       {mac && (
         <section className='panel' aria-labelledby='permissions-title'>
           <h2 id='permissions-title'>Permissions</h2>
-          <div className='setting-row'>
-            <div>
-              <strong>Screen Recording</strong>
-              <p className='meta'>
-                {screenAccess
-                  ? 'Allowed. Daguerre can capture other apps.'
-                  : 'Needed to capture other apps. After allowing it, quit and reopen Daguerre.'}
-              </p>
+          <div className='settings-group'>
+            <div className='setting-row'>
+              <div>
+                <strong>Screen Recording</strong>
+                <p className='meta'>
+                  {screenAccess
+                    ? 'Allowed. Daguerre can capture other apps.'
+                    : 'Needed to capture other apps. After allowing it, quit and reopen Daguerre.'}
+                </p>
+              </div>
+              {screenAccess ? (
+                <span className='status-ok'>
+                  <Icon name='check' size={15} />
+                  Allowed
+                </span>
+              ) : (
+                <button className='btn primary' onClick={onRequestAccess}>
+                  Allow
+                </button>
+              )}
             </div>
-            {screenAccess ? (
-              <span className='status-ok'>
-                <Icon name='check' size={15} />
-                Allowed
-              </span>
-            ) : (
-              <button className='btn primary' onClick={onRequestAccess}>
-                Allow
-              </button>
-            )}
           </div>
         </section>
       )}
 
       <section className='panel' aria-labelledby='updates-title'>
         <h2 id='updates-title'>Updates</h2>
-        <div className='setting-row'>
-          <div>
-            <label htmlFor='auto-update'>Update automatically</label>
-            <p className='meta'>
-              Checks GitHub when Daguerre opens and once a day, and installs new
-              versions.
-            </p>
+        <div className='settings-group'>
+          <div className='setting-row'>
+            <div>
+              <label htmlFor='auto-update'>Update automatically</label>
+              <p className='meta'>
+                Checks GitHub when Daguerre opens and once a day, and installs
+                new versions.
+              </p>
+            </div>
+            <input
+              id='auto-update'
+              type='checkbox'
+              role='switch'
+              className='switch'
+              checked={updater.auto}
+              onChange={(e) => updater.changeAuto(e.target.checked)}
+            />
           </div>
-          <input
-            id='auto-update'
-            type='checkbox'
-            role='switch'
-            className='switch'
-            checked={updater.auto}
-            onChange={(e) => updater.changeAuto(e.target.checked)}
-          />
-        </div>
-        <div className='setting-row'>
-          <div>
-            <strong>Check for updates</strong>
-            <p className='meta' role='status'>
-              {updateMessage(updater.state)}
-            </p>
+          <div className='setting-row'>
+            <div>
+              <strong>Check for updates</strong>
+              <p className='meta' role='status'>
+                {updateMessage(updater.state)}
+              </p>
+            </div>
+            <UpdateButton {...updater} />
           </div>
-          <UpdateButton {...updater} />
         </div>
       </section>
 

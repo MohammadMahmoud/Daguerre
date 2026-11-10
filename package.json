@@ -41,6 +41,7 @@
     "@tauri-apps/plugin-autostart": "^2.7.0",
     "@tauri-apps/plugin-process": "^2.4.0",
     "@tauri-apps/plugin-updater": "^2.14.1",
+    "@tesseract.js-data/deu": "^1.0.0",
     "@tesseract.js-data/eng": "^1.0.0",
     "driver.js": "^1.10.2",
     "react": "^19.3.1",

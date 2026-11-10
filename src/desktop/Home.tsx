@@ -428,6 +428,7 @@ export function Home() {
           )}
           {page === 'capture' && (
             <CapturePage
+              key='capture'
               shortcuts={shortcuts}
               mac={mac}
               wayland={platform.wayland}
@@ -440,7 +441,9 @@ export function Home() {
               onViewAll={() => setPage('history')}
             />
           )}
-          {page === 'history' && <History embedded onOpen={openEditor} />}
+          {page === 'history' && (
+            <History key='history' embedded onOpen={openEditor} />
+          )}
           {page === 'settings' && (
             <SettingsPage
               key={blendSource}

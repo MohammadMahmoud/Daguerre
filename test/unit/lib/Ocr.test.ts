@@ -54,7 +54,7 @@ test('creates one local worker and reads tall canvases in bands', async () => {
   const result = await recognize(canvas, progress);
 
   expect(createWorker).toHaveBeenCalledWith(
-    'eng',
+    ['eng', 'deu'],
     1,
     expect.objectContaining({
       workerPath: new URL('ocr/worker.min.js', location.href).href,
@@ -63,6 +63,7 @@ test('creates one local worker and reads tall canvases in bands', async () => {
       langPath: new URL('ocr', location.href).href,
       workerBlobURL: false,
       cacheMethod: 'none',
+      gzip: true,
     }),
   );
   expect(worker.recognize).toHaveBeenCalledTimes(3);
@@ -70,7 +71,7 @@ test('creates one local worker and reads tall canvases in bands', async () => {
   expect(result.text).toBe('Hello world\n\nEnd');
   expect(result.words).toEqual([{ text: 'Hello', x0: 1, y0: 2, x1: 3, y1: 4 }]);
 
-  // Second call reuses the worker; words in later bands are offset by the band top.
+  /** Second call reuses the worker; words in later bands are offset by the band top. */
   worker.recognize.mockResolvedValueOnce(
     page('x', [{ text: 'x', bbox: { x0: 0, y0: 5, x1: 1, y1: 6 } }]),
   );
@@ -105,4 +106,33 @@ test('retries worker creation after a failure', async () => {
   await expect(recognize(canvas)).rejects.toThrow('wasm blocked');
   await expect(recognize(canvas)).resolves.toMatchObject({ text: 'ok' });
   expect(createWorker).toHaveBeenCalledTimes(2);
+});
+
+test('recognizes mixed English and German text preserving umlauts in NFC', async () => {
+  createWorker.mockResolvedValue(worker);
+  const germanText = 'Grüße aus Köln: Über 100 Äpfel!';
+  const decomposed = 'Gru\u0308ße aus Ko\u0308ln: U\u0308ber 100 A\u0308pfel!';
+  worker.recognize.mockResolvedValueOnce(
+    page(decomposed, [
+      { text: 'Gru\u0308ße', bbox: { x0: 0, y0: 0, x1: 50, y1: 20 } },
+      { text: 'aus', bbox: { x0: 60, y0: 0, x1: 90, y1: 20 } },
+      { text: 'Ko\u0308ln:', bbox: { x0: 100, y0: 0, x1: 150, y1: 20 } },
+      { text: 'U\u0308ber', bbox: { x0: 160, y0: 0, x1: 210, y1: 20 } },
+      { text: '100', bbox: { x0: 220, y0: 0, x1: 250, y1: 20 } },
+      { text: 'A\u0308pfel!', bbox: { x0: 260, y0: 0, x1: 320, y1: 20 } },
+    ]),
+  );
+  const { recognize } = await import('../../../src/lib/Ocr');
+  const canvas = document.createElement('canvas');
+  canvas.width = 400;
+  canvas.height = 100;
+  const result = await recognize(canvas);
+
+  expect(result.text).toBe(germanText);
+  expect(result.text).toBe(result.text.normalize('NFC'));
+  expect(result.words[0].text).toBe('Grüße');
+  expect(result.words[2].text).toBe('Köln:');
+  expect(result.words[3].text).toBe('Über');
+  expect(result.words[5].text).toBe('Äpfel!');
+  expect(result.blocks?.[0].text).toBe(germanText);
 });
