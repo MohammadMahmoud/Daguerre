@@ -14,7 +14,7 @@ const pkgDir = (name: string, from = require) =>
 const stripCdn = (code: string) =>
   code.replace(/https:\/\/cdn\.jsdelivr\.net\/npm\/[^"'`$]*/g, '');
 
-/** Ships the OCR worker, WASM core and English model inside the extension under ocr/. */
+/** Ships the OCR worker, WASM core and English/German models inside the extension under ocr/. */
 function ocrAssets(): Plugin {
   return {
     name: 'ocr-assets',
@@ -28,7 +28,8 @@ function ocrAssets(): Plugin {
         'tesseract.js-core',
         createRequire(join(tess, 'package.json')),
       );
-      const lang = pkgDir('@tesseract.js-data/eng');
+      const langEng = pkgDir('@tesseract.js-data/eng');
+      const langDeu = pkgDir('@tesseract.js-data/deu');
       writeFileSync(
         join(out, 'worker.min.js'),
         stripCdn(readFileSync(join(tess, 'dist/worker.min.js'), 'utf8')),
@@ -42,7 +43,14 @@ function ocrAssets(): Plugin {
           join(core, 'tesseract-core-simd-lstm.wasm.js'),
           'tesseract-core-simd-lstm.wasm.js',
         ],
-        [join(lang, '4.0.0_best_int/eng.traineddata.gz'), 'eng.traineddata.gz'],
+        [
+          join(langEng, '4.0.0_best_int/eng.traineddata.gz'),
+          'eng.traineddata.gz',
+        ],
+        [
+          join(langDeu, '4.0.0_best_int/deu.traineddata.gz'),
+          'deu.traineddata.gz',
+        ],
         [join(tess, 'LICENSE.md'), 'LICENSE-tesseract.js.txt'],
         [join(core, 'LICENSE'), 'LICENSE-tesseract.js-core.txt'],
       ];

@@ -5,6 +5,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { createPortal } from 'react-dom';
 import type { CaptureMode } from './lib/Db';
 
 // Static, trusted SVG markup (24×24, stroked).
@@ -251,6 +252,97 @@ export function ConfirmDialog({
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function Tooltip({
+  content,
+  children,
+  position = 'top',
+}: {
+  content: string;
+  children: ReactNode;
+  position?: 'top' | 'bottom' | 'right' | 'left';
+}) {
+  const [visible, setVisible] = useState(false);
+  const [coords, setCoords] = useState<{ top: number; left: number }>({
+    top: 0,
+    left: 0,
+  });
+  const triggerRef = useRef<HTMLDivElement>(null);
+
+  const show = () => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    if (position === 'right') {
+      setCoords({
+        top: rect.top + rect.height / 2,
+        left: rect.right + 8,
+      });
+    } else if (position === 'bottom') {
+      setCoords({
+        top: rect.bottom + 8,
+        left: rect.left + rect.width / 2,
+      });
+    } else if (position === 'left') {
+      setCoords({
+        top: rect.top + rect.height / 2,
+        left: rect.left - 8,
+      });
+    } else {
+      setCoords({
+        top: rect.top - 8,
+        left: rect.left + rect.width / 2,
+      });
+    }
+    setVisible(true);
+  };
+
+  const hide = () => setVisible(false);
+
+  return (
+    <div
+      ref={triggerRef}
+      className='tooltip-wrapper'
+      onPointerEnter={show}
+      onPointerLeave={hide}
+      onMouseEnter={show}
+      onMouseLeave={hide}
+      onFocus={show}
+      onBlur={hide}
+      style={{
+        display: 'inline-flex',
+        overflow: 'visible',
+        position: 'relative',
+      }}
+    >
+      {children}
+      {visible &&
+        createPortal(
+          <div
+            className={`tooltip-pill tooltip-${position}`}
+            role='tooltip'
+            style={{
+              position: 'fixed',
+              top: coords.top,
+              left: coords.left,
+              transform:
+                position === 'right'
+                  ? 'translateY(-50%)'
+                  : position === 'left'
+                    ? 'translate(-100%, -50%)'
+                    : position === 'bottom'
+                      ? 'translateX(-50%)'
+                      : 'translate(-50%, -100%)',
+              zIndex: 9999,
+              pointerEvents: 'none',
+            }}
+          >
+            {content}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

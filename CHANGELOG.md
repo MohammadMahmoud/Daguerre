@@ -4,6 +4,35 @@ All notable changes to Daguerre are listed here. The format follows [Keep a Chan
 
 New releases synchronize the desktop app and browser extension under one `vX.Y.Z` tag. Release CI turns the `## [Unreleased]` section below into `## [vX.Y.Z] - YYYY-MM-DD` and uses it verbatim as the GitHub Release body; without one, it generates Added, Fixed and Changed entries from commit messages. Version files are updated on remote main, not by local hooks. Earlier product-specific Desktop and Extension sections remain unchanged as historical records.
 
+## [Unreleased]
+
+### Added
+
+- Both: standardized Apple-grade motion tokens with damped spring curves, physical card hover elevation, dynamic multi-layered shadow bloom, tactile active compression, and smooth view entrance transitions across Light, Dark, and Liquid Glass.
+- Both: interactive Live Text OCR recognition in the Editor View with normalized bounding boxes, selectable text overlay on canvas, and toolbar toggle button between Copy and Export.
+- Both: bilingual English and German (`eng+deu`) OCR support with 100% offline bundling, full preservation of German umlauts (`ä`, `ö`, `ü`, `Ä`, `Ö`, `Ü`, `ß`), and UTF-8 NFC normalization.
+- Both: universal Latin-alphabet script and diacritic offline OCR support across European languages with strict UTF-8 NFC composition.
+- Both: unified 3-mode design token system with structured semantic elevations, spring transitions, and tabular numeral typography across Light, Dark, and Liquid Glass.
+
+### Changed
+
+- Both: calibrated Apple fluid motion tokens to luxurious glide timings (`280ms` fast color/border shifts, `420ms` card elevation, `380ms` page entrance) using deceleration curves (`cubic-bezier(0.16, 1, 0.3, 1)`) for smooth hover glide and settle.
+- Desktop: native macOS toggle switches with vibrant `#2E7CF6` active tracks, wide pure white knobs, contact drop shadows, subtle inactive backdrops, and active press stretch physics.
+- Both: native macOS typography hierarchy with medium-weight `#F2F2F7` / `#1D1D1F` headlines, regular-weight `#98989D` / `#6E6E73` sublines, and indented settings hairline dividers.
+
+### Fixed
+
+- Both: replaced single-letter truncated tooltips with high-contrast Apple macOS floating pills (`rgba(28, 28, 32, 0.96)` with 16px blur) showing full readable labels with keyboard shortcuts (`Crop (C)`) and suppressed browser native tooltips on hover.
+- Both: fixed Export dropdown menu clipping behind the edit canvas by portaling the menu directly to `document.body` with `z-index: 1000`, `pointer-events: auto`, and elevating the toolbar stacking context to `z-index: 100`.
+- Desktop: prevented editing eye strain in Liquid Glass mode by strictly scoping a solid Light/Dark matte background (`#161618` / `#F0F0F3`) to the `.stage` canvas workspace dynamically synchronized with the OS color scheme, leaving the rest of the application's glass vibrancy untouched.
+- Desktop: enforced minimum window dimensions (`860x600`) in Tauri configuration and window builder to prevent broken layouts on shrinking viewports.
+- Desktop: refactored Capture Page header into a non-wrapping flex layout with independent title truncation to prevent collision and overlapping with the Delay timer controls.
+- Both: locked Editor toolbar into an isolated non-wrapping horizontal track with responsive compact adaptations (`@media (max-width: 1024px)`) so buttons never wrap onto a second line or bleed over the editing canvas.
+- Both: redesigned destructive buttons (`.btn.danger` / "Discard") with high-contrast Apple system red surface, specular top highlight, and crisp pure `#ffffff` text across all theme modes.
+- Desktop: editor windows on macOS now use the main window's dark appearance and Window design (including Liquid Glass and live slider changes) instead of following the system theme. Windows and Linux editors keep sharing the main window's Light/Dark/System theme.
+- Both: notifications and primary buttons (like Save) no longer render as glaring white elements in dark and Liquid Glass modes; they now consistently use dark surfaces with crisp light text.
+- Desktop: Window design changes now glide smoothly, and the editor's confirmation dialog is frosted glass at higher strengths.
+
 ## [v1.0.5] - 2026-11-10
 
 ### Added

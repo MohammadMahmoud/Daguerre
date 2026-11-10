@@ -192,6 +192,7 @@ const EDITOR_STATES: EditorTourState[] = Array.from(
 
 function getTarget(step: TourStep) {
   if (step.screen === 'replay') return '[data-tour="replay"]';
+  if (step.target === 'export-menu') return '[data-tour="export-menu"]';
   return `[data-tour="walkthrough"] [data-tour="${step.target}"]`;
 }
 

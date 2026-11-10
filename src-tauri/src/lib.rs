@@ -247,16 +247,24 @@ async fn open_editor(app: AppHandle, id: String) -> Result<(), String> {
     let window = match app.get_webview_window(&label) {
         Some(w) => w,
         None => {
-            let w = WebviewWindowBuilder::new(
+            let builder = WebviewWindowBuilder::new(
                 &app,
                 &label,
                 WebviewUrl::App(format!("editor.html?id={id}").into()),
             )
             .title("Daguerre Editor")
             .inner_size(1280.0, 820.0)
-            .min_inner_size(820.0, 520.0)
-            .build()
-            .map_err(err)?;
+            .min_inner_size(860.0, 600.0);
+            // Transparent, with the title bar overlaid, so the page shows the same Liquid Glass as the main window.
+            #[cfg(target_os = "macos")]
+            let builder = builder
+                .transparent(true)
+                .title_bar_style(tauri::TitleBarStyle::Overlay)
+                .hidden_title(true);
+            let w = builder.build().map_err(err)?;
+            // Match the main window, which is always dark on macOS.
+            #[cfg(target_os = "macos")]
+            w.set_theme(Some(tauri::Theme::Dark)).map_err(err)?;
             // Editors share one remembered position; cascade so a new one doesn't cover the last.
             let furthest = app
                 .webview_windows()

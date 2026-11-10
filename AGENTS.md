@@ -32,6 +32,12 @@
 
 ## Architecture Ledger
 
+- 2026-11-10 | Desktop App, Shared UI, Browser Extension | Resolved Editor tooltips with high-contrast Apple macOS floating pills displaying full labels and shortcuts while suppressing single-letter browser tooltips; portaled Export dropdown menu to document.body with z-index 1000 to escape toolbar overflow clipping; strictly isolated the .stage canvas background to solid Light/Dark matte (#161618/#F0F0F3) dynamically matching OS scheme in Liquid Glass mode without altering surrounding window vibrancy.
+- 2026-11-10 | Desktop App, Shared UI, Browser Extension | Calibrated fluid Apple motion tokens to 280ms/420ms/380ms with silky deceleration curves, native macOS System Settings toggle styling (#2E7CF6 track, wide white knob, active stretch), medium-weight headline (#F2F2F7/#1D1D1F) and regular subline (#98989D/#6E6E73) typography, and rounded settings groups with indented hairline dividers.
+- 2026-11-10 | Shared UI and Storage, Desktop App, Browser Extension | Added refined Apple-grade spring and easing tokens, physical hover elevation with dynamic shadow bloom, active tactile compression, micro-interactions, input focus rings, and view entrance transitions.
+- 2026-11-10 | Desktop App, Shared UI, Browser Extension | Enforced minimum window constraints (860x600), fixed Capture Page header delay collision, isolated Editor toolbar from canvas track with non-wrapping overflow scroll, redesigned high-contrast danger buttons, and enabled universal Latin-script diacritics offline.
+- 2026-11-10 | Shared UI and Storage, Desktop App, Browser Extension | Upgraded OCR engine to mixed English and German (`eng+deu`) with 100% offline `deu.traineddata` bundling, German umlaut preservation, and UTF-8 NFC normalization.
+- 2026-11-10 | Shared UI and Storage, Desktop App, Browser Extension | Added interactive Apple Live Text OCR feature in Editor View with OcrService abstraction, normalized bounding boxes, and canvas selectable text overlay.
 - 2026-11-10 | CI and Release Pipeline, Browser Extension | Added Chrome Web Store Publish API deployment step to `release.yml` for automated extension updates and store publication.
 - 2026-11-09 | Architecture, Repository | Unified all modules, utilities, components, scripts, and tests to strict PascalCase naming convention.
 - 2026-11-09 | Desktop App, Pipeline | Replaced macOS/bash-only `desktop:build` script with cross-platform `scripts/DesktopBuild.mjs` handling automatic Cargo PATH resolution and safe Apple code signing identity detection.

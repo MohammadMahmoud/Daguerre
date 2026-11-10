@@ -96,6 +96,7 @@ export function verifyExtension(directory = 'dist') {
     'clipboard.html',
     'ocr/worker.min.js',
     'ocr/eng.traineddata.gz',
+    'ocr/deu.traineddata.gz',
   ]) {
     if (
       !file ||

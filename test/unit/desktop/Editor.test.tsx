@@ -105,3 +105,60 @@ test('the not-found page also goes back through the main window', async () => {
   fireEvent.click(await screen.findByRole('link', { name: 'Open history' }));
   expect(platform.leave).toHaveBeenCalledOnce();
 });
+
+test('toolbar buttons render readable Apple tooltips and suppress native single-letter titles on hover', async () => {
+  await open();
+  const cropBtn = screen.getByRole('button', { name: 'Crop' });
+  expect(cropBtn.title).toBe('C');
+  expect(cropBtn.getAttribute('data-tooltip')).toBe('Crop (C)');
+
+  // Mouse enter suppresses native title to prevent single-letter browser tooltips and mounts rich pill
+  fireEvent.mouseEnter(cropBtn);
+  expect(cropBtn.title).toBe('');
+  expect(cropBtn.getAttribute('data-title')).toBe('C');
+
+  fireEvent.mouseEnter(cropBtn.parentElement!);
+  const tooltipPill = await screen.findByRole('tooltip');
+  expect(tooltipPill.textContent).toBe('Crop (C)');
+  expect(tooltipPill.className).toContain('tooltip-pill');
+
+  // Mouse leave restores title for keyboard / DOM accessibility
+  fireEvent.mouseLeave(cropBtn.parentElement!);
+  fireEvent.mouseLeave(cropBtn);
+  expect(cropBtn.title).toBe('C');
+  await waitFor(() => expect(screen.queryByRole('tooltip')).toBeNull());
+});
+
+test('export dropdown menu is portaled to body with top stacking context to escape toolbar clipping', async () => {
+  await open();
+  const exportBtn = screen.getByRole('button', { name: /Export/ });
+  fireEvent.click(exportBtn);
+
+  const menu = screen.getByRole('dialog', { name: 'Export' });
+  expect(menu.parentElement).toBe(document.body);
+  expect(menu.style.zIndex).toBe('1000');
+  expect(menu.style.pointerEvents).toBe('auto');
+
+  // Clicking inside portaled menu keeps it open
+  fireEvent.pointerDown(menu);
+  expect(screen.queryByRole('dialog', { name: 'Export' })).toBeTruthy();
+
+  // Outside click closes it
+  fireEvent.pointerDown(document.body);
+  expect(screen.queryByRole('dialog', { name: 'Export' })).toBeNull();
+});
+
+test('canvas stage workspace has dynamic OS dark attribute and solid background tokens in Styles.css', async () => {
+  await open();
+  const stage = document.querySelector('.stage');
+  expect(stage).toBeTruthy();
+  expect(stage?.hasAttribute('data-os-dark')).toBe(true);
+
+  const { readFileSync } = await import('node:fs');
+  const css = readFileSync('src/Styles.css', 'utf8');
+  expect(css).toContain('--canvas-bg-dark: #161618');
+  expect(css).toContain('--canvas-bg-light: #f0f0f3');
+  expect(css).toMatch(
+    /:root\[data-appearance='glass'\] \.stage[^}]*background-color:\s*var\(--canvas-bg-dark\)\s*!important/,
+  );
+});

@@ -92,7 +92,7 @@ export function CapturePage({
   return (
     <div className='page'>
       <header className='page-head' data-tauri-drag-region>
-        <div>
+        <div className='page-head-title'>
           <h1>Capture</h1>
           <p>Screenshots open in the editor and are kept in History.</p>
         </div>

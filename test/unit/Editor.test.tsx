@@ -574,6 +574,116 @@ describe('clipboard', () => {
     fireEvent.click(button(/Copy Text/));
     await waitFor(() => expect(status()).toBe('Something went wrong'));
   });
+
+  test('recognize text button is placed between copy actions and export', async () => {
+    await open();
+    const copyBtn = button(/Copy Text/);
+    const recognizeBtn = button(/^Recognize Text/);
+    const exportBtn = button(/Export/);
+
+    expect(
+      copyBtn.compareDocumentPosition(recognizeBtn) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      recognizeBtn.compareDocumentPosition(exportBtn) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  test('recognize text button toggles live text overlay without re-running OCR', async () => {
+    vi.mocked(recognize).mockResolvedValue({
+      text: 'Sample recognized text',
+      words: [{ text: 'Sample', x0: 10, y0: 20, x1: 90, y1: 40 }],
+    });
+    await open();
+    const recognizeBtn = button(/^Recognize Text/);
+    expect(recognizeBtn.getAttribute('aria-pressed')).toBe('false');
+    expect(screen.queryByLabelText('Recognized text overlay')).toBeNull();
+
+    // 1. First click: runs OCR and shows active state and text overlay
+    fireEvent.click(recognizeBtn);
+    await waitFor(() =>
+      expect(recognizeBtn.getAttribute('aria-pressed')).toBe('true'),
+    );
+    expect(recognize).toHaveBeenCalledTimes(1);
+    const overlay = screen.getByLabelText('Recognized text overlay');
+    expect(overlay).toBeDefined();
+    expect(within(overlay).getByText('Sample')).toBeDefined();
+
+    // 2. Second click: hides overlay without re-running OCR
+    fireEvent.click(recognizeBtn);
+    await waitFor(() =>
+      expect(recognizeBtn.getAttribute('aria-pressed')).toBe('false'),
+    );
+    expect(screen.queryByLabelText('Recognized text overlay')).toBeNull();
+    expect(recognize).toHaveBeenCalledTimes(1);
+
+    // 3. Third click: re-shows overlay without re-running OCR
+    fireEvent.click(recognizeBtn);
+    await waitFor(() =>
+      expect(recognizeBtn.getAttribute('aria-pressed')).toBe('true'),
+    );
+    expect(screen.getByLabelText('Recognized text overlay')).toBeDefined();
+    expect(recognize).toHaveBeenCalledTimes(1);
+  });
+
+  test('recognize text reports when no text is found in image', async () => {
+    vi.mocked(recognize).mockResolvedValueOnce({ text: '', words: [] });
+    await open();
+    fireEvent.click(button(/^Recognize Text/));
+    await waitFor(() =>
+      expect(status()).toBe('No text found in this screenshot.'),
+    );
+    expect(button(/^Recognize Text/).getAttribute('aria-pressed')).toBe(
+      'false',
+    );
+    expect(screen.queryByLabelText('Recognized text overlay')).toBeNull();
+  });
+
+  test('recognizes and copies mixed English and German text with umlauts in NFC', async () => {
+    const write = vi.spyOn(navigator.clipboard, 'write');
+    const germanSample = 'München & Köln: Über 100 Äpfel!';
+    vi.mocked(recognize).mockResolvedValueOnce({
+      text: germanSample,
+      words: [
+        { text: 'München', x0: 10, y0: 10, x1: 60, y1: 30 },
+        { text: '&', x0: 70, y0: 10, x1: 80, y1: 30 },
+        { text: 'Köln:', x0: 90, y0: 10, x1: 130, y1: 30 },
+        { text: 'Über', x0: 140, y0: 10, x1: 180, y1: 30 },
+        { text: '100', x0: 190, y0: 10, x1: 220, y1: 30 },
+        { text: 'Äpfel!', x0: 230, y0: 10, x1: 280, y1: 30 },
+      ],
+      blocks: [
+        {
+          text: germanSample,
+          bbox: { x: 0.05, y: 0.05, width: 0.8, height: 0.1 },
+        },
+      ],
+    });
+
+    await open();
+    fireEvent.click(button(/^Recognize Text/));
+    await waitFor(() =>
+      expect(button(/^Recognize Text/).getAttribute('aria-pressed')).toBe(
+        'true',
+      ),
+    );
+    const overlay = screen.getByLabelText('Recognized text overlay');
+    expect(within(overlay).getByText(germanSample)).toBeDefined();
+
+    /** Verify Copy Text writes the exact NFC German string to clipboard */
+    vi.mocked(recognize).mockResolvedValueOnce({
+      text: germanSample,
+      words: [{ text: 'München', x0: 0, y0: 0, x1: 10, y1: 10 }],
+    });
+    fireEvent.click(button(/Copy Text/));
+    await waitFor(() => expect(status()).toBe('Copied 1 word to clipboard'));
+    const item = write.mock.calls.at(-1)![0][0] as unknown as {
+      items: Record<string, Promise<Blob>>;
+    };
+    expect(await (await item.items['text/plain']).text()).toBe(germanSample);
+  });
 });
 
 test('warns before leaving with unsaved edits and ignores keys while typing', async () => {
