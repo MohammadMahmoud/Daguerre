@@ -1,6 +1,6 @@
 [package]
 name = "daguerre"
-version = "1.0.6"
+version = "1.0.7"
 description = "Daguerre desktop: capture, annotate and export screenshots on your device."
 license = "MIT"
 edition = "2021"
