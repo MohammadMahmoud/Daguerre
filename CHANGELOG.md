@@ -4,6 +4,20 @@ All notable changes to Daguerre are listed here. The format follows [Keep a Chan
 
 New releases synchronize the desktop app and browser extension under one `vX.Y.Z` tag. Release CI turns the `## [Unreleased]` section below into `## [vX.Y.Z] - YYYY-MM-DD` and uses it verbatim as the GitHub Release body; without one, it generates Added, Fixed and Changed entries from commit messages. Version files are updated on remote main, not by local hooks. Earlier product-specific Desktop and Extension sections remain unchanged as historical records.
 
+## [Unreleased]
+
+### Added
+
+- Both: boosted comprehensive unit test coverage to 98.02% across desktop and extension suites, adding dedicated specifications for ProductTour walkthroughs, Desktop Updater events, CapturePage interactions, Chrome MV3 platform bindings, and Remotion motion sequence rendering.
+
+- Both: eliminated unwanted horizontal scrollbar in the editor annotation toolbar when vertical scrolling is active by enforcing `overflow-x: hidden`, thin scrollbar styling, and max-width containment on tool wrappers.
+
+### Changed
+
+### Fixed
+
+- Both: eliminated unwanted horizontal scrollbar in the editor annotation toolbar when vertical scrolling is active by enforcing `overflow-x: hidden`, thin scrollbar styling, and max-width containment on tool wrappers.
+
 ## [v1.0.7] - 2026-11-12
 
 ### Added

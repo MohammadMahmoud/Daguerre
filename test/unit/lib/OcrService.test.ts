@@ -180,4 +180,23 @@ describe('OcrService', () => {
     expect(result.blocks[0].text).toBe(expectedNfc);
     expect(result.words[0].text).toBe('café');
   });
+
+  test('falls back to word-level blocks when blocks are empty or omitted', async () => {
+    const { recognize } = await import('../../../src/lib/Ocr');
+    vi.mocked(recognize).mockResolvedValueOnce({
+      text: 'Fallback text',
+      words: [{ text: 'Fallback', x0: 10, y0: 10, x1: 50, y1: 30 }],
+      blocks: [],
+    });
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 100;
+    canvas.height = 50;
+
+    const result = await OcrService.recognize(canvas);
+    expect(result.text).toBe('Fallback text');
+    expect(result.blocks).toHaveLength(1);
+    expect(result.blocks[0].text).toBe('Fallback');
+    expect(result.words).toHaveLength(1);
+  });
 });

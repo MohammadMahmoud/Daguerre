@@ -1,4 +1,4 @@
-import { beforeEach, expect, test } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 import {
   addShot,
   clearShots,
@@ -67,4 +67,79 @@ test('list, update, delete and clear', async () => {
   expect((await listShots()).map((s) => s.id)).toEqual([b]);
   await clearShots();
   expect(await listShots()).toEqual([]);
+});
+
+test('handles openDb error', async () => {
+  vi.resetModules();
+  const openSpy = vi.spyOn(indexedDB, 'open').mockImplementationOnce(() => {
+    const req = {} as any;
+    setTimeout(() => {
+      req.error = new Error('IndexedDB open failure');
+      req.onerror?.();
+    }, 0);
+    return req;
+  });
+  const { getShot: freshGetShot } = await import('../../../src/lib/Db');
+  await expect(freshGetShot('id')).rejects.toThrow('IndexedDB open failure');
+  openSpy.mockRestore();
+});
+
+test('handles transaction onabort and onerror in run', async () => {
+  vi.resetModules();
+  const mockTx = {
+    objectStore: vi.fn(() => ({
+      get: vi.fn(),
+    })),
+    oncomplete: null as any,
+    onerror: null as any,
+    onabort: null as any,
+    error: new Error('Transaction aborted by user'),
+  };
+  const mockDb = {
+    transaction: vi.fn(() => {
+      setTimeout(() => mockTx.onabort?.(), 0);
+      return mockTx;
+    }),
+  };
+  vi.spyOn(indexedDB, 'open').mockImplementationOnce(() => {
+    const req = {} as any;
+    setTimeout(() => {
+      req.result = mockDb;
+      req.onsuccess?.();
+    }, 0);
+    return req;
+  });
+  const { getShot: abortGetShot } = await import('../../../src/lib/Db');
+  await expect(abortGetShot('id')).rejects.toThrow(
+    'Transaction aborted by user',
+  );
+
+  vi.resetModules();
+  const mockTxError = {
+    objectStore: vi.fn(() => ({
+      get: vi.fn(),
+    })),
+    oncomplete: null as any,
+    onerror: null as any,
+    onabort: null as any,
+    error: new Error('Database transaction failed'),
+  };
+  const mockDbError = {
+    transaction: vi.fn(() => {
+      setTimeout(() => mockTxError.onerror?.(), 0);
+      return mockTxError;
+    }),
+  };
+  vi.spyOn(indexedDB, 'open').mockImplementationOnce(() => {
+    const req = {} as any;
+    setTimeout(() => {
+      req.result = mockDbError;
+      req.onsuccess?.();
+    }, 0);
+    return req;
+  });
+  const { getShot: errorGetShot } = await import('../../../src/lib/Db');
+  await expect(errorGetShot('id')).rejects.toThrow(
+    'Database transaction failed',
+  );
 });

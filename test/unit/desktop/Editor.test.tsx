@@ -1,4 +1,5 @@
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -161,4 +162,31 @@ test('canvas stage workspace has dynamic OS dark attribute and solid background 
   expect(css).toMatch(
     /:root\[data-appearance='glass'\] \.stage[^}]*background-color:\s*var\(--canvas-bg-dark\)\s*!important/,
   );
+});
+
+test('clicking Print in export menu invokes print and handles OCR failure gracefully', async () => {
+  await open();
+  const exportBtn = screen.getByRole('button', { name: /Export/ });
+  fireEvent.click(exportBtn);
+
+  const printBtn = screen.getByRole('button', { name: /Print/ });
+  fireEvent.click(printBtn);
+  await waitFor(() =>
+    expect(document.querySelector('img.print-only')).not.toBeNull(),
+  );
+  act(() => void dispatchEvent(new Event('afterprint')));
+  await waitFor(() =>
+    expect(document.querySelector('img.print-only')).toBeNull(),
+  );
+
+  // Live text OCR error toast test
+  const { recognize } = await import('../../../src/lib/Ocr');
+  vi.mocked(recognize).mockRejectedValueOnce(new Error('OCR Engine Failed'));
+  const liveTextBtn = screen.getByRole('button', { name: /Recognize Text/i });
+  fireEvent.click(liveTextBtn);
+  await waitFor(() => {
+    expect(screen.getByRole('status').textContent).toContain(
+      'OCR Engine Failed',
+    );
+  });
 });

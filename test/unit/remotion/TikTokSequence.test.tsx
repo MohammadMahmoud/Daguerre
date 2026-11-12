@@ -71,15 +71,24 @@ describe('TikTok & Reels Vertical Motion Graphics Specification', () => {
   });
 
   it('verifies Scene 1 (Hook) copy and safe zone containment', () => {
-    const { getByText } = render(<SceneHook />);
+    mockFrame = 20;
+    const { getByText, rerender } = render(<SceneHook />);
     expect(getByText(/Stop retyping text/i)).toBeDefined();
     expect(getByText(/One shortcut\. Done\./i)).toBeDefined();
+    expect(getByText(/Instant Region Capture/i)).toBeDefined();
+
+    mockFrame = 60;
+    rerender(<SceneHook />);
     expect(getByText(/Instant Region Capture/i)).toBeDefined();
   });
 
   it('verifies Scene 2 (Live Text OCR) copy and Apple blue highlight', () => {
+    mockFrame = 20;
+    const { getByText, rerender } = render(<SceneOcrDemo />);
+    expect(getByText(/Instant OCR right/i)).toBeDefined();
+
     mockFrame = 130;
-    const { getByText } = render(<SceneOcrDemo />);
+    rerender(<SceneOcrDemo />);
     expect(getByText(/Instant OCR right/i)).toBeDefined();
     expect(getByText(/Select\. Copy\. Paste\./i)).toBeDefined();
     expect(getByText(/Copied as plain text/i)).toBeDefined();
@@ -101,9 +110,14 @@ describe('TikTok & Reels Vertical Motion Graphics Specification', () => {
   });
 
   it('verifies Scene 4 (Outro) copy, branding, and CTA button', () => {
-    const { getByText } = render(<SceneOutro />);
+    mockFrame = 30;
+    const { getByText, rerender } = render(<SceneOutro />);
     expect(getByText('Daguerre for Chrome')).toBeDefined();
     expect(getByText('Free & Open Source')).toBeDefined();
+    expect(getByText(/Add to Chrome — Link in bio/i)).toBeDefined();
+
+    mockFrame = 95;
+    rerender(<SceneOutro />);
     expect(getByText(/Add to Chrome — Link in bio/i)).toBeDefined();
   });
 });

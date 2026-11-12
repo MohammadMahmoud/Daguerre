@@ -25,7 +25,10 @@ vi.mock('remotion', async (importOriginal) => {
   };
 });
 
-import { DesktopPromoSequence } from '../../../src/remotion/DesktopPromo/DesktopPromoSequence';
+import {
+  DesktopPromo,
+  DesktopPromoSequence,
+} from '../../../src/remotion/DesktopPromo';
 import { DesktopSceneReveal } from '../../../src/remotion/DesktopPromo/DesktopSceneReveal';
 import { DesktopSceneFeatures } from '../../../src/remotion/DesktopPromo/DesktopSceneFeatures';
 import { DesktopScenePillars } from '../../../src/remotion/DesktopPromo/DesktopScenePillars';
@@ -60,6 +63,8 @@ describe('DesktopPromo 600-Frame Motion Graphics Sequence', () => {
     const { container, getAllByTestId } = render(<DesktopPromoSequence />);
     expect(container).toBeDefined();
     expect(getAllByTestId('sequence').length).toBe(4);
+    const { container: promoContainer } = render(<DesktopPromo />);
+    expect(promoContainer).toBeDefined();
   });
 
   it('renders Scene 1 (Reveal) with authentic branding, title, and cross-platform tags', () => {

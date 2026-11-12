@@ -174,10 +174,25 @@ test('copy-selection removes the temporary clipboard frame after copying', async
   chrome.tabs.get.mockResolvedValue(page());
   await send({ type: 'copy-selection', tabId: 7 });
   await settle();
-  expect(chrome.scripting.executeScript).toHaveBeenLastCalledWith({
-    target: { tabId: 7 },
-    func: expect.any(Function),
-  });
+  const mountCall = chrome.scripting.executeScript.mock.calls.find(
+    (c) => c[0].func?.name === 'mountClipboardFrame',
+  )![0];
+  const removeCall = chrome.scripting.executeScript.mock.calls.find(
+    (c) => c[0].func?.name === 'removeClipboardFrame',
+  )![0];
+
+  expect(mountCall.args).toBeDefined();
+  const mountPromise = mountCall.func!(mountCall.args![0]);
+  const frame = document.getElementById(
+    'daguerre-clipboard',
+  ) as HTMLIFrameElement;
+  expect(frame).toBeDefined();
+  if (frame.contentWindow) frame.contentWindow.focus = vi.fn();
+  frame.onload!(new Event('load') as any);
+  await mountPromise;
+
+  removeCall.func!();
+  expect(document.getElementById('daguerre-clipboard')).toBeNull();
   expect(chrome.tabs.create).not.toHaveBeenCalled();
 });
 

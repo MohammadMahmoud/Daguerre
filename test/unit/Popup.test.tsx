@@ -242,3 +242,11 @@ test('renders Support below Copy selected area and opens Buy Me a Coffee in a ne
   });
   expect(close).toHaveBeenCalledOnce();
 });
+
+test('handles commands with missing names or shortcuts', async () => {
+  chrome.commands.getAll.mockResolvedValueOnce([
+    { name: undefined, shortcut: undefined } as any,
+  ]);
+  render(<Popup />);
+  expect(await screen.findByRole('heading', { name: 'Daguerre' })).toBeTruthy();
+});

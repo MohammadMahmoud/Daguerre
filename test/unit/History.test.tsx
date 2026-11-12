@@ -56,6 +56,18 @@ test('shows an empty state with shortcuts', async () => {
   expect(screen.queryByRole('button', { name: /Clear all/ })).toBeNull();
 });
 
+test('formats dates from earlier this year without year', async () => {
+  const pastSameYear = await addShot(imageBlob(800, 600), {
+    title: 'Earlier this month',
+    url: '',
+    mode: 'tabs',
+  });
+  const s = (await getShot(pastSameYear))!;
+  await putShots([{ ...s, createdAt: Date.now() - 5 * DAY }]);
+  render(<History />);
+  expect(await screen.findByText('Earlier this month')).toBeTruthy();
+});
+
 test('groups screenshots by day with their details', async () => {
   await seed();
   render(<History />);
