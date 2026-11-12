@@ -743,6 +743,29 @@ test('History opens screenshots in the editor window', async () => {
   );
 });
 
+test('clearing all history in History tab clears Recent in Capture tab', async () => {
+  await addShot(imageBlob(800, 600), {
+    title: 'Note to clear',
+    url: '',
+    mode: 'window',
+  });
+  await renderHome();
+  expect(
+    await screen.findByRole('button', { name: 'Edit Note to clear' }),
+  ).toBeTruthy();
+  fireEvent.click(nav('History'));
+  fireEvent.click(await screen.findByRole('button', { name: /Clear all/ }));
+  fireEvent.click(await screen.findByRole('button', { name: 'Delete all' }));
+  expect(await screen.findByText('No screenshots yet')).toBeTruthy();
+  fireEvent.click(nav('Capture'));
+  expect(
+    await screen.findByText('Your screenshots will appear here.'),
+  ).toBeTruthy();
+  expect(
+    screen.queryByRole('button', { name: 'Edit Note to clear' }),
+  ).toBeNull();
+});
+
 test('shows capture errors in a dismissible banner and brings the window back', async () => {
   runCapture.mockRejectedValue('No display found.');
   await renderHome();

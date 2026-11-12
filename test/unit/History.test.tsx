@@ -204,3 +204,49 @@ test('reloads when the tab becomes visible again', async () => {
     await screen.findByRole('link', { name: 'Edit New one' }),
   ).toBeTruthy();
 });
+
+test('calls onChange when clearing all, removing, and restoring screenshots', async () => {
+  await seed();
+  const onChange = vi.fn();
+  render(<History onChange={onChange} />);
+  await screen.findByText('Today');
+  fireEvent.click(within(card('Docs')).getByRole('button', { name: 'Delete' }));
+  await waitFor(() => expect(onChange).toHaveBeenCalledTimes(1));
+  fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+  await waitFor(() => expect(onChange).toHaveBeenCalledTimes(2));
+  fireEvent.click(screen.getByRole('button', { name: /Clear all/ }));
+  fireEvent.click(screen.getByRole('button', { name: 'Delete all' }));
+  await waitFor(() => expect(onChange).toHaveBeenCalledTimes(3));
+});
+
+test('provides complete accessible names and roles across search, filters, and cards', async () => {
+  await seed();
+  render(<History />);
+  await screen.findByText('Today');
+
+  // Search input accessible name
+  expect(
+    screen.getByRole('searchbox', { name: 'Search screenshots' }),
+  ).toBeTruthy();
+
+  // Filter radiogroup
+  const radiogroup = screen.getByRole('radiogroup', {
+    name: 'Filter by capture type',
+  });
+  expect(radiogroup).toBeTruthy();
+  const radios = within(radiogroup).getAllByRole('radio');
+  expect(radios.length).toBeGreaterThanOrEqual(4);
+  const allRadio = within(radiogroup).getByRole('radio', { name: 'All' });
+  expect(allRadio.getAttribute('aria-checked')).toBe('true');
+
+  // Card interactive elements
+  const docsCard = card('Docs');
+  expect(
+    within(docsCard).getByRole('checkbox', { name: 'Select Docs' }),
+  ).toBeTruthy();
+  expect(
+    within(docsCard).getByRole('button', { name: 'Copy image' }),
+  ).toBeTruthy();
+  expect(within(docsCard).getByRole('button', { name: /PNG/ })).toBeTruthy();
+  expect(within(docsCard).getByRole('button', { name: 'Delete' })).toBeTruthy();
+});

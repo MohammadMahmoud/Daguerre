@@ -188,6 +188,10 @@ export function Home() {
     setUsage((await navigator.storage?.estimate?.())?.usage);
   }, []);
 
+  useEffect(() => {
+    if (page === 'capture') void refresh();
+  }, [page, refresh]);
+
   const register = async (next: Shortcuts) => {
     if (!platformInfo.current || platformInfo.current.wayland) return;
     setFailed(await invoke('set_shortcuts', { shortcuts: next }));
@@ -442,7 +446,12 @@ export function Home() {
             />
           )}
           {page === 'history' && (
-            <History key='history' embedded onOpen={openEditor} />
+            <History
+              key='history'
+              embedded
+              onOpen={openEditor}
+              onChange={refresh}
+            />
           )}
           {page === 'settings' && (
             <SettingsPage

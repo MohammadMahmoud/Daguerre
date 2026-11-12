@@ -128,10 +128,14 @@ export function CapturePage({
         {MODES.map((m) => (
           <button
             key={m.action}
+            type='button'
             className='mode-card'
             data-tour={`capture-${m.action}`}
             aria-pressed={previewMode ? previewMode === m.action : undefined}
             disabled={wayland && m.action === 'window'}
+            aria-disabled={
+              wayland && m.action === 'window' ? 'true' : undefined
+            }
             title={
               wayland && m.action === 'window'
                 ? 'Window picking requires X11.'

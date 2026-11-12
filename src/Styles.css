@@ -31,17 +31,16 @@
   --shadow: 0 16px 40px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.4);
   --radius: 12px;
   --font:
-    ui-sans-serif, -apple-system, BlinkMacSystemFont, 'SF Pro Text',
-    'SF Pro Display', Inter, 'Segoe UI Variable Text', 'Segoe UI', Roboto,
-    'Helvetica Neue', sans-serif;
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', Inter,
+    system-ui, sans-serif;
   --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-apple-spring: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-apple-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
-  --duration-fast: 680ms;
-  --duration-normal: 820ms;
-  --duration-page: 780ms;
+  --duration-fast: 280ms;
+  --duration-normal: 420ms;
+  --duration-page: 380ms;
   --canvas-bg-dark: #161618;
   --canvas-bg-light: #f0f0f3;
   --text-primary: var(--text);
@@ -54,37 +53,6 @@
   --shadow-active:
     inset 0 1px 1px 0 rgba(255, 255, 255, 0.25),
     inset 0 -1px 0.5px 0 rgba(0, 0, 0, 0.2), 0 6px 14px -4px rgba(0, 0, 0, 0.4);
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']) {
-    color-scheme: light;
-    --bg: #f4f4f5;
-    --panel: #ffffff;
-    --panel-2: #f0f0f2;
-    --panel-3: #e4e4e7;
-    --line: #e2e2e6;
-    --line-strong: #cdcdd3;
-    --text: #1d1d1f;
-    --muted: #6e6e73;
-    --accent: #0b0b0c;
-    --accent-ink: #f4f5f7;
-    --accent-soft: rgba(11, 11, 12, 0.06);
-    --accent-text: #0b0b0c;
-    --accent-grad: linear-gradient(180deg, #2c2c31 0%, #0b0b0c 100%);
-    --accent-sheen:
-      inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 1px 2px rgba(0, 0, 0, 0.25);
-    --danger: #c9372a;
-    --danger-soft: rgba(201, 55, 42, 0.08);
-    --stage: #e4e4e7;
-    --check: #dadade;
-    --shadow:
-      0 16px 40px rgba(10, 10, 20, 0.12), 0 2px 8px rgba(10, 10, 20, 0.08);
-    --shadow-hover:
-      0 14px 28px -6px rgba(0, 0, 0, 0.1), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
-    --shadow-active:
-      0 4px 10px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-  }
 }
 
 :root[data-theme='light'] {
@@ -256,8 +224,10 @@
 }
 
 .app-tour button:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--panel),
+    0 0 0 4px var(--accent);
 }
 
 html[data-platform='macos']:has(.app[data-appearance='glass']) .app-tour {
@@ -281,24 +251,39 @@ html:is([data-platform='windows'], [data-platform='linux'])
 }
 
 html,
-body {
+body,
+#app,
+#root,
+dialog,
+.menu,
+.dialog,
+.modal,
+[role='dialog'],
+[role='menu'],
+.driver-popover {
   margin: 0;
   background: var(--bg);
   color: var(--text);
   font: 14px/1.45 var(--font);
+  font-family: var(--font);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1,
 h2,
 p {
   margin: 0;
+  font-family: var(--font);
 }
 
 button,
 input,
-textarea {
+select,
+textarea,
+optgroup {
   font: inherit;
+  font-family: inherit;
   color: inherit;
 }
 
@@ -307,8 +292,113 @@ button {
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--panel),
+    0 0 0 4px var(--accent);
+}
+
+.btn:focus-visible,
+.icon-btn:focus-visible,
+.tool:focus-visible,
+.swatch:focus-visible,
+.swatch.custom:focus-within,
+.size:focus-visible,
+.mode-card:focus-visible,
+.quick-action:focus-visible,
+.switch:focus-visible,
+.link:focus-visible,
+.card-thumb:focus-visible,
+.card-title:focus-visible,
+.shot-open:focus-visible,
+.nav-item:focus-visible,
+.menu-item:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--panel),
+    0 0 0 4px var(--accent);
+}
+
+.segmented button:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--panel),
+    0 0 0 4px var(--accent);
+  position: relative;
+  z-index: 2;
+}
+
+/* Accessible minimum 44×44px touch/click boundaries (WCAG 2.5.5 / 2.5.8) */
+.btn,
+.icon-btn,
+.segmented button,
+.swatch,
+.size,
+.card-check,
+.switch,
+.link {
+  position: relative;
+}
+
+.btn::before,
+.segmented button::before,
+.link::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-height: 44px;
+  width: 100%;
+}
+
+.icon-btn::before,
+.swatch::before,
+.size::before,
+.card-check::before,
+.switch::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+  width: 100%;
+  height: 100%;
+}
+
+/* 8-state coverage: loading, disabled, error states */
+.btn.loading,
+.btn[aria-busy='true'],
+button[aria-busy='true'] {
+  cursor: wait;
+  opacity: 0.8;
+}
+
+.btn:disabled,
+.icon-btn:disabled,
+.tool:disabled,
+.size:disabled,
+.swatch:disabled,
+.switch:disabled,
+.segmented button:disabled,
+.segmented button[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+:is(input, textarea, select)[aria-invalid='true'] {
+  border-color: var(--danger) !important;
+}
+
+:is(input, textarea, select)[aria-invalid='true']:focus,
+:is(input, textarea, select)[aria-invalid='true']:focus-visible {
+  outline: none;
+  border-color: var(--danger) !important;
+  box-shadow:
+    0 0 0 2px var(--panel),
+    0 0 0 4px var(--danger) !important;
 }
 
 kbd {
@@ -482,8 +572,10 @@ hr {
 
 .btn.danger:focus-visible,
 .btn-danger:focus-visible {
-  outline: 2px solid #ff453a;
-  outline-offset: 2px;
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--panel),
+    0 0 0 4px #ff453a;
 }
 
 .icon-btn {
@@ -930,7 +1022,6 @@ hr {
   height: 100%;
   border-radius: inherit;
   background: var(--accent-grad);
-  transition: width 0.35s var(--ease);
 }
 
 .capture-foot {
@@ -1812,6 +1903,7 @@ html[data-platform='macos'] .history.embedded .history-head {
 }
 
 .mode-label {
+  font-family: var(--font);
   font-size: 15px;
   font-weight: 500;
   letter-spacing: -0.01em;
@@ -1821,6 +1913,7 @@ html[data-platform='macos'] .history.embedded .history-head {
 }
 
 .mode-desc {
+  font-family: var(--font);
   color: var(--muted);
   font-size: 13px;
   font-weight: 400;
@@ -2119,12 +2212,6 @@ html[data-platform='macos'] .history.embedded .history-head {
   background: rgba(0, 0, 0, 0.03);
 }
 
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']) .settings-group {
-    background: rgba(0, 0, 0, 0.03);
-  }
-}
-
 .setting-row {
   display: flex;
   align-items: center;
@@ -2143,12 +2230,6 @@ html[data-platform='macos'] .history.embedded .history-head {
 
 :root[data-theme='light'] .settings-group .setting-row {
   border-bottom-color: rgba(0, 0, 0, 0.07);
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']) .settings-group .setting-row {
-    border-bottom-color: rgba(0, 0, 0, 0.07);
-  }
 }
 
 .setting-row label,
@@ -2182,13 +2263,6 @@ html[data-platform='macos'] .history.embedded .history-head {
 :root[data-theme='light'] .switch {
   background: rgba(0, 0, 0, 0.12);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']) .switch {
-    background: rgba(0, 0, 0, 0.12);
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
-  }
 }
 
 .switch::after {
@@ -2586,6 +2660,7 @@ html[data-platform='macos'] .history.embedded .history-head {
   box-shadow: var(--shadow);
   z-index: 1000;
   pointer-events: auto;
+  font-family: var(--font);
   animation: pop 0.16s var(--ease);
 }
 
@@ -2610,6 +2685,7 @@ html[data-platform='macos'] .history.embedded .history-head {
 
 .menu-title {
   padding: 6px 8px 4px;
+  font-family: var(--font);
   font-size: 11px;
   font-weight: 650;
   text-transform: uppercase;
@@ -2621,15 +2697,28 @@ html[data-platform='macos'] .history.embedded .history-head {
   display: flex;
   align-items: center;
   gap: 11px;
+  min-height: 44px;
   padding: 8px;
   border: 0;
   border-radius: 9px;
   background: transparent;
   text-align: left;
+  font-family: var(--font);
 }
 
 .menu-item:hover {
   background: var(--panel-2);
+}
+
+.menu-item:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--panel),
+    0 0 0 4px var(--accent);
+}
+
+.menu-item:active {
+  transform: scale(0.98);
 }
 
 .menu-item svg {
@@ -2639,14 +2728,18 @@ html[data-platform='macos'] .history.embedded .history-head {
 .menu-label {
   flex: 1;
   display: grid;
+  font-family: var(--font);
   font-weight: 600;
   font-size: 13px;
+  letter-spacing: -0.01em;
 }
 
 .menu-label small {
   color: var(--muted);
+  font-family: var(--font);
   font-weight: 450;
   font-size: 11.5px;
+  letter-spacing: -0.005em;
 }
 
 .menu-size {
@@ -2660,7 +2753,19 @@ html[data-platform='macos'] .history.embedded .history-head {
   align-items: center;
   gap: 10px;
   padding: 6px 8px;
+  font-family: var(--font);
   font-size: 12.5px;
+  font-weight: 500;
+}
+
+.slider span,
+.check span {
+  font-family: inherit;
+}
+
+.slider input,
+.check input {
+  font-family: inherit;
 }
 
 .slider input {
@@ -2760,17 +2865,6 @@ html[data-platform='macos'] .history.embedded .history-head {
   color: #1d1d1f;
   border: 1px solid rgba(0, 0, 0, 0.12);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']) .tooltip-pill,
-  :root:not([data-theme='dark']) [data-tooltip]::after,
-  :root:not([data-theme='dark']) .tooltip::after {
-    background: rgba(255, 255, 255, 0.98);
-    color: #1d1d1f;
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-  }
 }
 
 :root[data-appearance='glass'] .tooltip-pill,
@@ -2944,8 +3038,10 @@ html[data-platform='macos'] .history.embedded .history-head {
 }
 
 .swatch.custom:focus-within {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--panel),
+    0 0 0 4px var(--accent);
 }
 
 .size {
@@ -2997,12 +3093,6 @@ html[data-platform='macos'] .history.embedded .history-head {
 
 :root[data-theme='light'] .stage {
   background-color: var(--canvas-bg-light);
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']) .stage {
-    background-color: var(--canvas-bg-light);
-  }
 }
 
 /* Liquid Glass mode override: strictly solid canvas workspace surface matching OS theme */
@@ -3118,8 +3208,10 @@ html[data-platform='macos'] .history.embedded .history-head {
 }
 
 .live-text-block:focus-visible {
-  outline: 1.5px solid var(--accent);
-  outline-offset: 1px;
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--panel),
+    0 0 0 4px var(--accent);
 }
 
 .live-text-block::selection {
@@ -3522,6 +3614,12 @@ html[data-platform='macos'] .history.embedded .history-head {
   .btn,
   .btn:hover,
   .btn:active,
+  .btn.danger,
+  .btn.danger:hover,
+  .btn.danger:active,
+  .btn-danger,
+  .btn-danger:hover,
+  .btn-danger:active,
   .icon-btn,
   .icon-btn:hover,
   .icon-btn:active,
@@ -3552,12 +3650,17 @@ html[data-platform='macos'] .history.embedded .history-head {
   .shot,
   .shot:hover,
   .shot:active,
+  .recent-item,
+  .recent-item:hover,
+  .recent-item:active,
   .tile,
   .tile:hover,
   .tile:active,
   .panel,
   .panel:hover,
   .panel:active,
+  .shortcut-input,
+  .shortcut-input:hover,
   .segmented button,
   .segmented button:hover,
   .segmented button:active,
@@ -3567,13 +3670,18 @@ html[data-platform='macos'] .history.embedded .history-head {
   .shot:hover .shot-open img,
   .recent-item img,
   .recent-item:hover img,
-  .floating-bar:hover,
   .mode-icon,
   .mode-card:not(:disabled):hover .mode-icon,
   .quick-action:hover .mode-icon,
   .tile-icon,
-  .tile:not(:disabled):hover .tile-icon {
+  .tile:not(:disabled):hover .tile-icon,
+  .app[data-appearance]
+    :is(.mode-card, .quick-action, .shot, .panel, .card):is(:hover, :active) {
     transform: none !important;
+  }
+
+  .floating-bar:hover {
+    transform: translateX(-50%) !important;
   }
 
   .switch,
@@ -3581,6 +3689,20 @@ html[data-platform='macos'] .history.embedded .history-head {
   .switch:active::after,
   .switch:checked:active::after {
     transition: none !important;
+  }
+
+  .coffee-steam,
+  .icon-coffee,
+  :is(.nav-item, .btn, button):hover .icon-coffee,
+  :is(.nav-item, .btn, button):focus-visible .icon-coffee,
+  :is(.nav-item, .btn, button):hover .icon-coffee .coffee-steam,
+  :is(.nav-item, .btn, button):focus-visible .icon-coffee .coffee-steam,
+  :is(.nav-item, .btn, button):hover .icon-coffee .coffee-cup,
+  :is(.nav-item, .btn, button):focus-visible .icon-coffee .coffee-cup,
+  :is(.nav-item, .btn, button):hover .icon-coffee .coffee-handle,
+  :is(.nav-item, .btn, button):focus-visible .icon-coffee .coffee-handle,
+  .menu {
+    animation: none !important;
   }
 
   .page,
