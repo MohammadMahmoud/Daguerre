@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { expect, test, vi } from 'vitest';
-import { ConfirmDialog, Icon } from '../../src/Ui';
+import { ConfirmDialog, Icon, Toast, Tooltip } from '../../src/Ui';
 
 function renderDialog() {
   const onConfirm = vi.fn();
@@ -85,4 +85,41 @@ test('coffee Icon renders structured steam and cup paths for animation', () => {
   expect(container.querySelector('.coffee-steam-1')).not.toBeNull();
   expect(container.querySelector('.coffee-steam-2')).not.toBeNull();
   expect(container.querySelector('.coffee-steam-3')).not.toBeNull();
+});
+
+test('ConfirmDialog buttons are explicitly typed as button', () => {
+  renderDialog();
+  const buttons = within(screen.getByRole('alertdialog')).getAllByRole(
+    'button',
+  );
+  expect(buttons).toHaveLength(2);
+  for (const btn of buttons) {
+    expect(btn.getAttribute('type')).toBe('button');
+  }
+});
+
+test('Toast has accessible status role and polite live region', () => {
+  const { rerender } = render(<Toast message='Screenshot copied' />);
+  const toast = screen.getByRole('status');
+  expect(toast.getAttribute('aria-live')).toBe('polite');
+  expect(toast.getAttribute('data-show')).toBe('');
+  expect(toast.textContent).toBe('Screenshot copied');
+
+  rerender(<Toast message={undefined} />);
+  expect(toast.getAttribute('data-show')).toBeNull();
+});
+
+test('Tooltip displays accessible tooltip on hover and focus', () => {
+  render(
+    <Tooltip content='Undo action'>
+      <button>Action</button>
+    </Tooltip>,
+  );
+  expect(screen.queryByRole('tooltip')).toBeNull();
+  const trigger = screen.getByRole('button', { name: 'Action' });
+  fireEvent.focus(trigger);
+  const tooltip = screen.getByRole('tooltip');
+  expect(tooltip.textContent).toBe('Undo action');
+  fireEvent.blur(trigger);
+  expect(screen.queryByRole('tooltip')).toBeNull();
 });

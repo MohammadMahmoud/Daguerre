@@ -7,6 +7,9 @@ src-tauri/gen
 *.crx
 .DS_Store
 coverage
+out
+public/assets/
+src/remotion/Assets/
 release-notes.md
 .release-notes.md
 *.release-tmp

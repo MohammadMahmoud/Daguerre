@@ -46,9 +46,11 @@ function dayLabel(ts: number) {
 export function History({
   embedded = false,
   onOpen,
+  onChange,
 }: {
   embedded?: boolean;
   onOpen?: (id: string) => void;
+  onChange?: () => void;
 } = {}) {
   const root = useRef<HTMLDivElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -125,6 +127,7 @@ export function History({
     await deleteShots(ids);
     setSelected(new Set());
     await load();
+    onChange?.();
     showToast(
       <>
         Deleted{' '}
@@ -134,6 +137,7 @@ export function History({
           onClick={async () => {
             await putShots(removed);
             await load();
+            onChange?.();
             showToast('Restored');
           }}
         >
@@ -149,6 +153,7 @@ export function History({
     await clearShots();
     setSelected(new Set());
     await load();
+    onChange?.();
   }
 
   const openProps = (id: string) =>

@@ -120,21 +120,23 @@ export function updateMessage(state: UpdateState) {
 function UpdateButton({ state, check, install, restart }: Updater) {
   if (state.status === 'available')
     return (
-      <button className='btn primary' onClick={install}>
+      <button type='button' className='btn primary' onClick={install}>
         Install {state.version}
       </button>
     );
   if (state.status === 'ready')
     return (
-      <button className='btn primary' onClick={restart}>
+      <button type='button' className='btn primary' onClick={restart}>
         Restart
       </button>
     );
   return (
     <button
+      type='button'
       className='btn'
       onClick={check}
       disabled={state.status === 'checking' || state.status === 'downloading'}
+      aria-busy={state.status === 'checking' || state.status === 'downloading'}
     >
       Check now
     </button>

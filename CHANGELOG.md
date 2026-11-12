@@ -4,6 +4,29 @@ All notable changes to Daguerre are listed here. The format follows [Keep a Chan
 
 New releases synchronize the desktop app and browser extension under one `vX.Y.Z` tag. Release CI turns the `## [Unreleased]` section below into `## [vX.Y.Z] - YYYY-MM-DD` and uses it verbatim as the GitHub Release body; without one, it generates Added, Fixed and Changed entries from commit messages. Version files are updated on remote main, not by local hooks. Earlier product-specific Desktop and Extension sections remain unchanged as historical records.
 
+## [Unreleased]
+
+### Added
+
+- Motion Graphics: Configured optional promotional media resolution and on-demand asset generator (`scripts/GenerateAssets.mjs`), keeping heavy binary media assets out of the Git index while seamlessly resolving virtual fallbacks in Vite/Vitest.
+- Motion Graphics: Built 600-frame 60fps horizontal desktop promo video (16:9, 1920x1080) under `src/remotion/DesktopPromo/` showcasing authentic solid dark desktop captures across 4 scenes: 3D window settling and headline reveal, multi-mode capture walkthrough (Area Selection, Window Snapping, Live Text OCR text selection, Searchable PDF export dialog), staggered trust pillars, and official GitHub and Chrome Web Store outro badges.
+- Extension: 15-second vertical (9:16, 1080x1920, 60fps) TikTok/Reels product video sequence under `src/remotion/TikTok/` featuring Emil Kowalski damped spring physics, TikTok safe zone margins (840x1420 track), 4 sequenced scenes (The Hook, Live Text in Action, Trust Pillars Speed-Run, Outro CTA), and automated Brave browser promotional asset captures.
+- Both: Apple-grade 60-second 60fps Remotion launch motion graphics sequence (7 scenes across 3600 frames) highlighting Daguerre v1.0.6, multi-mode capture, creative annotation & privacy redaction, interactive offline Live Text OCR, private client-side history, core trust pillars (100% Private & Local, Free with No Ads, Open-Source), and official GitHub and Chrome Web Store vector brand marks.
+- Both: complete 8-state interaction coverage (default, hover, focus-visible, active, disabled, loading, empty, error) and minimum 44×44px accessible touch and click boundaries across buttons, segmented tabs, and form controls.
+- Both: comprehensive prefers-reduced-motion protection covering thumbnail zooms, card elevation transforms, icon hover animations, and decorative elements.
+
+### Changed
+
+- Motion Graphics: Updated 60-second Remotion launch sequence to authentic Solid Dark Theme, using user-provided production screenshots, solid capture mode & trust pillar cards, clean proportional cross-platform subheadline typography, and streamlined on-device OCR presentation.
+- Both: standardized high-visibility dual keyboard focus rings (`0 0 0 2px var(--panel), 0 0 0 4px var(--accent)`) across interactive buttons, segmented tabs, swatches, switches, and form inputs.
+- Both: calibrated micro-interaction motion tokens back to snappy Apple physics (`--duration-fast: 280ms`, `--duration-normal: 420ms`, `--duration-page: 380ms`) and enforced strict GPU exclusivity.
+- Both: consolidated semantic color tokens by eliminating redundant media query duplication and establishing `:root[data-theme='light']` as the single source of truth.
+
+### Fixed
+
+- Both: harmonized global typography tokens to eliminate generic browser fallback fonts across root containers, dialogs, popovers, capture mode cards, Searchable PDF export menus, sliders, and form elements using system font stack (`-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Inter, system-ui, sans-serif`).
+- Desktop: synchronized Capture tab Recent screenshots and storage usage when clearing all history or deleting screenshots in the History tab.
+
 ## [v1.0.6] - 2026-11-10
 
 ### Added

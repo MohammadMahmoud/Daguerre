@@ -9,6 +9,7 @@ export default defineConfig(
     'coverage',
     'dist',
     'dist-desktop',
+    'out',
     'src-tauri/target',
     'src-tauri/gen',
   ]),

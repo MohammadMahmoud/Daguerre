@@ -156,10 +156,14 @@ Change them in **Settings** (shortcuts pause while you record a new one). Select
 
 Build from source with Rust 1.90 or newer ([rustup](https://rustup.rs); make sure `cargo` is on your `PATH`). On Linux, use Ubuntu 24.04 or equivalent and install the [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/#linux) plus `libxcb1-dev libxrandr-dev libdbus-1-dev libpipewire-0.3-dev libwayland-dev libegl-dev libgbm-dev libclang-dev`.
 
-| Script               | What it does                                                          |
-| -------------------- | --------------------------------------------------------------------- |
-| `pnpm desktop:dev`   | Build the UI and run the app, rebuilding the UI on change             |
-| `pnpm desktop:build` | Typecheck and build installers into `src-tauri/target/release/bundle` |
+| Script                 | What it does                                                               |
+| ---------------------- | -------------------------------------------------------------------------- |
+| `pnpm desktop:dev`     | Build the UI and run the app, rebuilding the UI on change                  |
+| `pnpm desktop:build`   | Typecheck and build installers into `src-tauri/target/release/bundle`      |
+| `pnpm assets:generate` | Generate on-demand dark theme placeholder assets for Remotion videos       |
+| `pnpm remotion:render` | Render the 10-second 60fps Apple-grade launch sequence to `out/launch.mp4` |
+| `pnpm remotion:studio` | Launch Remotion Studio to preview and inspect launch motion graphics       |
+| `pnpm remotion:still`  | Render a preview still frame from the launch sequence                      |
 
 The Rust side lives in `src-tauri/` (`capture.rs`, `selection.rs`, `lib.rs`); each window only gets the commands listed in `src-tauri/capabilities/`. Run its checks with `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings` and `cargo test` inside `src-tauri/`.
 

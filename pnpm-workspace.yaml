@@ -1,3 +1,4 @@
 allowBuilds:
   # Its only install script is an opencollective donation banner.
+  esbuild: set this to true or false
   tesseract.js: false

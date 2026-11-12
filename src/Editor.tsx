@@ -1113,6 +1113,7 @@ export function Editor({
             </button>
             <button
               className='zoom-value'
+              aria-label='Toggle fit or actual size'
               onClick={() => setZoom(zoom === 'fit' ? 1 / DPR : 'fit')}
               title='Toggle fit / actual size (0)'
             >
@@ -1145,6 +1146,7 @@ export function Editor({
               className='btn'
               onClick={() => void copy()}
               disabled={busy || !!sample}
+              aria-busy={busy}
               data-tour='copy-image'
               title='Copy to clipboard (⌘C)'
             >
@@ -1155,6 +1157,7 @@ export function Editor({
               className='btn'
               onClick={() => void copyText()}
               disabled={busy || !!sample}
+              aria-busy={busy}
               data-tour='copy-text'
               title='Copy the text in this screenshot, read on your device (⇧⌘C)'
             >
@@ -1165,6 +1168,7 @@ export function Editor({
           <button
             className={`btn live-text-btn${liveTextActive ? ' active' : ''}`}
             aria-pressed={liveTextActive}
+            aria-busy={ocrLoading}
             aria-label='Recognize Text'
             disabled={ocrLoading || (!liveTextBlocks && (busy || !!sample))}
             onClick={() => void toggleLiveText()}
@@ -1282,6 +1286,7 @@ export function Editor({
             className='btn primary'
             onClick={() => void save()}
             disabled={!dirty || busy}
+            aria-busy={busy}
             title='Save to history (⌘S)'
           >
             <Icon name='check' size={16} />

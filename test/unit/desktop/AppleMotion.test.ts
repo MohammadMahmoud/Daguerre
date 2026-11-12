@@ -29,9 +29,9 @@ describe('Apple motion & design tokens', () => {
     expect(rootBody).toContain(
       '--ease-apple-smooth: cubic-bezier(0.25, 0.1, 0.25, 1)',
     );
-    expect(rootBody).toMatch(/--duration-fast:\s*(?:280|680)ms/);
-    expect(rootBody).toMatch(/--duration-normal:\s*(?:420|820)ms/);
-    expect(rootBody).toMatch(/--duration-page:\s*(?:380|780)ms/);
+    expect(rootBody).toContain('--duration-fast: 280ms;');
+    expect(rootBody).toContain('--duration-normal: 420ms;');
+    expect(rootBody).toContain('--duration-page: 380ms;');
   });
 
   test('defines dynamic elevation shadow bloom across Dark, Light, and Glass modes', () => {
@@ -307,5 +307,39 @@ describe('View transitions & accessibility safeguards', () => {
     expect(css).toMatch(
       /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?transform: none !important;[\s\S]*?animation: view-enter-reduced var\(--duration-page\) var\(--ease-apple-smooth\)/,
     );
+  });
+
+  test('comprehensively disables card elevation zooms, thumbnail zooms, and animations in reduced motion', () => {
+    const reducedBlock = css.slice(
+      css.indexOf('@media (prefers-reduced-motion: reduce) {'),
+    );
+    expect(reducedBlock).toContain('.card-thumb img');
+    expect(reducedBlock).toContain('.shot-open img');
+    expect(reducedBlock).toContain('.recent-item img');
+    expect(reducedBlock).toContain('.mode-icon');
+    expect(reducedBlock).toContain('.tile-icon');
+    expect(reducedBlock).toContain('.recent-item');
+    expect(reducedBlock).toContain('.shortcut-input');
+    expect(reducedBlock).toContain('.coffee-steam');
+    expect(reducedBlock).toContain('animation: none !important;');
+  });
+
+  test('ensures GPU exclusivity across keyframe animations', () => {
+    // Keyframe animations must not animate layout triggers (top, left, margin, padding, width, height)
+    const keyframeMatches = [
+      ...css.matchAll(
+        /@keyframes\s+([^{\s]+)\s*\{([^}]+(?:\{[^}]+\}[^}]*)*)\}/g,
+      ),
+    ];
+    for (const match of keyframeMatches) {
+      const name = match[1];
+      const body = match[2];
+      expect(
+        body,
+        `Keyframe animation "${name}" must not animate layout triggers`,
+      ).not.toMatch(
+        /(?:^|[^-\w])(?:top|left|right|bottom|margin|padding|width|height)\s*:/,
+      );
+    }
   });
 });

@@ -1,6 +1,12 @@
 /// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react';
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -59,10 +65,35 @@ function ocrAssets(): Plugin {
   };
 }
 
+/** Resolves optional Remotion media assets to virtual fallback placeholders if not generated on disk. */
+function optionalAssets(): Plugin {
+  return {
+    name: 'optional-assets',
+    enforce: 'pre',
+    resolveId(source, importer) {
+      if (source.includes('Assets') && source.endsWith('.png') && importer) {
+        const resolved = join(dirname(importer), source);
+        if (!existsSync(resolved)) {
+          return '\0virtual-asset:' + source;
+        }
+      }
+      return null;
+    },
+    load(id) {
+      if (id.startsWith('\0virtual-asset:')) {
+        const fallback =
+          'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900"%3E%3Crect width="1440" height="900" fill="%2314151B"/%3E%3C/svg%3E';
+        return `export default ${JSON.stringify(fallback)};`;
+      }
+      return null;
+    },
+  };
+}
+
 export default defineConfig(({ mode }): UserConfig => {
   const desktop = mode === 'desktop';
   return {
-    plugins: [react(), ocrAssets()],
+    plugins: [react(), ocrAssets(), optionalAssets()],
     base: './',
     // The manifest and extension icons don't belong in the desktop app.
     publicDir: desktop ? false : 'public',
