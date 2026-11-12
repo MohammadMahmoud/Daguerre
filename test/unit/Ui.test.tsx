@@ -123,3 +123,29 @@ test('Tooltip displays accessible tooltip on hover and focus', () => {
   fireEvent.blur(trigger);
   expect(screen.queryByRole('tooltip')).toBeNull();
 });
+
+test('Tooltip supports right, bottom, and left positioning', () => {
+  const { rerender } = render(
+    <Tooltip content='Right tip' position='right'>
+      <button>Right</button>
+    </Tooltip>,
+  );
+  fireEvent.focus(screen.getByRole('button', { name: 'Right' }));
+  expect(screen.getByRole('tooltip').textContent).toBe('Right tip');
+
+  rerender(
+    <Tooltip content='Bottom tip' position='bottom'>
+      <button>Bottom</button>
+    </Tooltip>,
+  );
+  fireEvent.focus(screen.getByRole('button', { name: 'Bottom' }));
+  expect(screen.getByRole('tooltip').textContent).toBe('Bottom tip');
+
+  rerender(
+    <Tooltip content='Left tip' position='left'>
+      <button>Left</button>
+    </Tooltip>,
+  );
+  fireEvent.focus(screen.getByRole('button', { name: 'Left' }));
+  expect(screen.getByRole('tooltip').textContent).toBe('Left tip');
+});

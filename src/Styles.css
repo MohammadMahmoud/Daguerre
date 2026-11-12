@@ -2795,7 +2795,28 @@ html[data-platform='macos'] .history.embedded .history-head {
   padding: 10px 0;
   border-right: 1px solid var(--line);
   background: var(--panel);
+  overflow-x: hidden;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+.toolbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.toolbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.toolbar::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 3px;
+}
+
+.toolbar .tooltip-wrapper {
+  max-width: 100%;
+  justify-content: center;
 }
 
 .toolbar hr {

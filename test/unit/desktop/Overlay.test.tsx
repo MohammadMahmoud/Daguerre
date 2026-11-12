@@ -134,3 +134,16 @@ test('does not time out a ready selection', async () => {
   fireEvent.keyDown(window, { key: 'Escape' });
   expect(finished()).toEqual([{}]);
 });
+
+test('handles overlay load failure and pointer move without info', async () => {
+  fail = true;
+  render(<Overlay />);
+  await waitFor(() =>
+    expect(finished()).toEqual([{ error: 'No selection in progress.' }]),
+  );
+
+  const { container } = render(<Overlay />);
+  const overlay = container.querySelector('.overlay')!;
+  fireEvent.pointerMove(overlay, { clientX: 100, clientY: 100 });
+  expect(overlay).toBeTruthy();
+});

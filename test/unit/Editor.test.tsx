@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import {
   act,
   fireEvent,
@@ -117,6 +118,20 @@ test('the annotation toolbar can be collapsed and expanded', async () => {
   expect(toggle.getAttribute('aria-expanded')).toBe('false');
   fireEvent.click(toggle);
   expect(screen.getByRole('toolbar', { name: 'Tools' })).toBeTruthy();
+});
+
+test('the annotation toolbar suppresses horizontal scrolling while permitting vertical scrolling', () => {
+  const css = readFileSync('src/Styles.css', 'utf8');
+  const toolbarBlock = css.slice(
+    css.indexOf('.toolbar {'),
+    css.indexOf('\n}', css.indexOf('.toolbar {')),
+  );
+  expect(toolbarBlock).toContain('overflow-x: hidden');
+  expect(toolbarBlock).toContain('overflow-y: auto');
+  expect(toolbarBlock).toContain('scrollbar-width: thin');
+  expect(toolbarBlock).toContain(
+    'scrollbar-color: var(--line-strong) transparent',
+  );
 });
 
 test('an in-memory editor preview never renames or saves the real capture', async () => {

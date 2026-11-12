@@ -1,6 +1,10 @@
 import { clearMocks, mockIPC, mockWindows } from '@tauri-apps/api/mocks';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { applyEditorGlass } from '../../../src/desktop/EditorGlass';
+import {
+  applyEditorGlass,
+  loadBlend,
+  watchEditorGlass,
+} from '../../../src/desktop/EditorGlass';
 
 let calls: { cmd: string; payload: unknown }[];
 let blend: number | null;
@@ -78,6 +82,46 @@ test('uses the local setting when the saved file is missing', async () => {
   localStorage.setItem('themeBlend', '100');
   await applyEditorGlass();
   expect(root.dataset.appearance).toBe('glass');
+});
+
+test('loadBlend clamps saved and fallback values, catching IPC errors', async () => {
+  mockIPC((cmd) => {
+    if (cmd === 'theme_blend') throw new Error('IPC failed');
+  });
+  localStorage.setItem('themeBlend', '150');
+  expect(await loadBlend()).toBe(100);
+
+  localStorage.setItem('themeBlend', '-20');
+  expect(await loadBlend()).toBe(0);
+
+  localStorage.setItem('themeBlend', 'invalid-nan');
+  expect(await loadBlend()).toBe(0);
+});
+
+test('applyEditorGlass handles native IPC exceptions gracefully', async () => {
+  blend = 50;
+  mockIPC((cmd) => {
+    if (cmd === 'theme_blend') return 50;
+    if (cmd === 'set_liquid_glass') throw new Error('Native glass unsupported');
+  });
+  await applyEditorGlass();
+  expect(root.dataset.appearance).toBe('glass');
+  expect(root.dataset.nativeGlass).toBe('false');
+});
+
+test('watchEditorGlass responds to storage events', async () => {
+  blend = null;
+  localStorage.setItem('themeBlend', '40');
+  watchEditorGlass();
+  await vi.waitFor(() => expect(root.dataset.appearance).toBe('glass'));
+
+  localStorage.setItem('themeBlend', '0');
+  window.dispatchEvent(new StorageEvent('storage', { key: 'themeBlend' }));
+  await vi.waitFor(() => expect(root.dataset.appearance).toBe('mac'));
+
+  localStorage.setItem('themeBlend', '80');
+  window.dispatchEvent(new StorageEvent('storage', { key: null }));
+  await vi.waitFor(() => expect(root.dataset.appearance).toBe('glass'));
 });
 
 test('glass design styles dialogs, the top bar and the overlaid title bar', async () => {

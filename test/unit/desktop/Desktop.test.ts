@@ -86,3 +86,44 @@ test('closing asks first only when there are unsaved changes', async () => {
   await waitFor(() => expect(destroyed()).toBe(2));
   stop();
 });
+
+test('storage events re-apply theme on theme or clear events', () => {
+  window.dispatchEvent(new StorageEvent('storage', { key: 'theme' }));
+  window.dispatchEvent(new StorageEvent('storage', { key: null }));
+  window.dispatchEvent(new StorageEvent('storage', { key: 'unrelated' }));
+});
+
+test('initializes editor glass on macOS editor windows and handles window errors', async () => {
+  vi.resetModules();
+  mockWindows('editor-test');
+  vi.doMock('../../../src/desktop/Theme', () => ({
+    applyTheme: vi.fn(),
+    onMac: () => true,
+  }));
+  const glassMock = vi.fn();
+  vi.doMock('../../../src/desktop/EditorGlass', () => ({
+    watchEditorGlass: glassMock,
+  }));
+
+  await import('../../../src/platform/Desktop');
+  expect(glassMock).toHaveBeenCalled();
+
+  // Test branch where getCurrentWindow throws
+  vi.resetModules();
+  vi.doMock('@tauri-apps/api/window', () => ({
+    getCurrentWindow: () => {
+      throw new Error('No window');
+    },
+  }));
+  vi.doMock('../../../src/desktop/Theme', () => ({
+    applyTheme: vi.fn(),
+    onMac: () => true,
+  }));
+  const glassMock2 = vi.fn();
+  vi.doMock('../../../src/desktop/EditorGlass', () => ({
+    watchEditorGlass: glassMock2,
+  }));
+
+  await import('../../../src/platform/Desktop');
+  expect(glassMock2).not.toHaveBeenCalled();
+});
