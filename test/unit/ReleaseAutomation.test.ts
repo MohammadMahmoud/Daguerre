@@ -22,6 +22,8 @@ function createRepository(version = '0.0.4') {
   git(cwd, 'config', 'user.email', 'test@example.com');
   git(cwd, 'config', 'user.name', 'Release Test');
   git(cwd, 'config', 'core.hooksPath', '/dev/null');
+  git(cwd, 'config', 'commit.gpgsign', 'false');
+  git(cwd, 'config', 'tag.gpgsign', 'false');
   mkdirSync(join(cwd, 'public'));
   mkdirSync(join(cwd, 'src-tauri'));
   mkdirSync(join(cwd, 'packages/example'), { recursive: true });

@@ -4,6 +4,22 @@ All notable changes to Daguerre are listed here. The format follows [Keep a Chan
 
 New releases synchronize the desktop app and browser extension under one `vX.Y.Z` tag. Release CI turns the `## [Unreleased]` section below into `## [vX.Y.Z] - YYYY-MM-DD` and uses it verbatim as the GitHub Release body; without one, it generates Added, Fixed and Changed entries from commit messages. Version files are updated on remote main, not by local hooks. Earlier product-specific Desktop and Extension sections remain unchanged as historical records.
 
+## [Unreleased]
+
+### Added
+
+- Desktop: added unit test coverage in `Overlay.test.tsx` for initial cursor window auto-selection, frontmost window fallback, and direct single-click window picking.
+- Both: integrated Graphify knowledge graph tooling, generating repository architecture reports (`graphify-out/GRAPH_REPORT.md`), structural/semantic graph dataset (`graphify-out/graph.json`), union merge driver in `.gitattributes`, and automated Husky git hooks for change-driven graph synchronization.
+
+### Changed
+
+- Both: configured `.gitignore` to preserve Graphify summary reports and graph definitions while ignoring heavy browser visualizations and temporary extraction caches.
+
+### Fixed
+
+- Desktop: fixed macOS window capture and auto-selection in the selection overlay by enumerating visible layer-0 windows directly from CoreGraphics (falling back to app names when `kCGWindowName` is absent), filtering out `WindowManager` and `UserNotificationCenter` system overlays, auto-highlighting the window under the initial cursor or frontmost window on open, activating the overlay for immediate pointer events, and falling back to cropping from the frozen monitor frame when standalone window capture is unavailable.
+- Both: isolated release automation test harness from host Git GPG/SSH commit and tag signing configurations.
+
 ## [v1.0.8] - 2026-11-13
 
 ### Added
