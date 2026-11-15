@@ -48,6 +48,19 @@
       "source_location": "L134"
     },
     {
+      "id": "test_chrome_listener",
+      "label": "Listener",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "listener",
+      "source_file": "test/Chrome.ts",
+      "source_location": "L3"
+    },
+    {
       "id": "test_setup_fakepointerevent",
       "label": "FakePointerEvent",
       "_callable": true,
@@ -243,45 +256,6 @@
       "source_location": "L412"
     },
     {
-      "id": "src_desktop_home_page",
-      "label": "Page",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "Desktop Home Control",
-      "file_type": "code",
-      "norm_label": "page",
-      "source_file": "src/desktop/Home.tsx",
-      "source_location": "L31"
-    },
-    {
-      "id": "src_desktop_settingspage_trayicon",
-      "label": "TrayIcon",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "Desktop Home Control",
-      "file_type": "code",
-      "norm_label": "trayicon",
-      "source_file": "src/desktop/SettingsPage.tsx",
-      "source_location": "L14"
-    },
-    {
-      "id": "src_desktop_theme_theme",
-      "label": "Theme",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "Desktop Home Control",
-      "file_type": "code",
-      "norm_label": "theme",
-      "source_file": "src/desktop/Theme.ts",
-      "source_location": "L1"
-    },
-    {
       "id": "src_platform_desktop_action",
       "label": "Action",
       "_callable": true,
@@ -293,6 +267,19 @@
       "norm_label": "action",
       "source_file": "src/platform/Desktop.ts",
       "source_location": "L24"
+    },
+    {
+      "id": "src_desktop_settingspage_trayicon",
+      "label": "TrayIcon",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 15,
+      "community_name": "Desktop Settings and Shortcuts",
+      "file_type": "code",
+      "norm_label": "trayicon",
+      "source_file": "src/desktop/SettingsPage.tsx",
+      "source_location": "L14"
     },
     {
       "id": "src_desktop_producttour_preview",
@@ -425,17 +412,17 @@
       "source_location": "L5"
     },
     {
-      "id": "src_lib_db_capturemode",
-      "label": "CaptureMode",
+      "id": "src_desktop_home_page",
+      "label": "Page",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 26,
       "community_name": "Popup Html Host Module",
       "file_type": "code",
-      "norm_label": "capturemode",
-      "source_file": "src/lib/Db.ts",
-      "source_location": "L1"
+      "norm_label": "page",
+      "source_file": "src/desktop/Home.tsx",
+      "source_location": "L31"
     },
     {
       "id": "src_lib_db_progress",
@@ -449,6 +436,19 @@
       "norm_label": "progress",
       "source_file": "src/lib/Db.ts",
       "source_location": "L5"
+    },
+    {
+      "id": "src_lib_db_shot",
+      "label": "Shot",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "Popup Html Host Module",
+      "file_type": "code",
+      "norm_label": "shot",
+      "source_file": "src/lib/Db.ts",
+      "source_location": "L42"
     },
     {
       "id": "src_ui_iconname",
@@ -555,42 +555,78 @@
       "source_location": "L18"
     },
     {
-      "id": "test_chrome_listener",
-      "label": "Listener",
+      "id": "src_desktop_theme_theme",
+      "label": "Theme",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 7,
-      "community_name": "Background.test.ts",
+      "community": 82,
+      "community_name": "desktop/Theme.ts",
       "file_type": "code",
-      "norm_label": "listener",
-      "source_file": "test/Chrome.ts",
-      "source_location": "L3"
+      "norm_label": "theme",
+      "source_file": "src/desktop/Theme.ts",
+      "source_location": "L1"
     },
     {
-      "id": "src_lib_db_shot",
-      "label": "Shot",
+      "id": "src_lib_db_capturemode",
+      "label": "CaptureMode",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 9,
       "community_name": "History.tsx",
       "file_type": "code",
-      "norm_label": "shot",
+      "norm_label": "capturemode",
       "source_file": "src/lib/Db.ts",
-      "source_location": "L42"
+      "source_location": "L1"
     },
     {
-      "id": "src_editor_editor_rename",
-      "label": "rename()",
+      "id": "src_history_history",
+      "label": "History()",
       "_callable": true,
       "_origin": "ast",
       "community": 0,
       "community_name": "Clipboard and History Storage",
       "file_type": "code",
-      "norm_label": "rename()",
-      "source_file": "src/Editor.tsx",
-      "source_location": "L1005"
+      "norm_label": "history()",
+      "source_file": "src/History.tsx",
+      "source_location": "L46"
+    },
+    {
+      "id": "src_history_history_clearall",
+      "label": "clearAll()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "clearall()",
+      "source_file": "src/History.tsx",
+      "source_location": "L151"
+    },
+    {
+      "id": "src_history_history_remove",
+      "label": "remove()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "remove()",
+      "source_file": "src/History.tsx",
+      "source_location": "L125"
+    },
+    {
+      "id": "src_history_history_toggle",
+      "label": "toggle()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "toggle()",
+      "source_file": "src/History.tsx",
+      "source_location": "L176"
     },
     {
       "id": "src_lib_db_addshot",
@@ -639,6 +675,18 @@
       "norm_label": "getshot()",
       "source_file": "src/lib/Db.ts",
       "source_location": "L131"
+    },
+    {
+      "id": "src_lib_db_listshots",
+      "label": "listShots()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "listshots()",
+      "source_file": "src/lib/Db.ts",
+      "source_location": "L134"
     },
     {
       "id": "src_lib_db_makethumb",
@@ -705,6 +753,54 @@
       "norm_label": "run()",
       "source_file": "src/lib/Db.ts",
       "source_location": "L74"
+    },
+    {
+      "id": "test_chrome_createchrome",
+      "label": "createChrome()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "createchrome()",
+      "source_file": "test/Chrome.ts",
+      "source_location": "L57"
+    },
+    {
+      "id": "test_chrome_event",
+      "label": "event()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "event()",
+      "source_file": "test/Chrome.ts",
+      "source_location": "L6"
+    },
+    {
+      "id": "test_chrome_installchrome",
+      "label": "installChrome()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "installchrome()",
+      "source_file": "test/Chrome.ts",
+      "source_location": "L136"
+    },
+    {
+      "id": "test_chrome_storagearea",
+      "label": "storageArea()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "storagearea()",
+      "source_file": "test/Chrome.ts",
+      "source_location": "L19"
     },
     {
       "id": "test_setup_bitmap",
@@ -803,6 +899,125 @@
       "source_location": "L110"
     },
     {
+      "id": "test_unit_background_test_badgetexts",
+      "label": "badgeTexts()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "badgetexts()",
+      "source_file": "test/unit/Background.test.ts",
+      "source_location": "L73"
+    },
+    {
+      "id": "test_unit_background_test_finished",
+      "label": "finished()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "finished()",
+      "source_file": "test/unit/Background.test.ts",
+      "source_location": "L56"
+    },
+    {
+      "id": "test_unit_background_test_lasterror",
+      "label": "lastError()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "lasterror()",
+      "source_file": "test/unit/Background.test.ts",
+      "source_location": "L72"
+    },
+    {
+      "id": "test_unit_background_test_mockselectedarea",
+      "label": "mockSelectedArea()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "mockselectedarea()",
+      "source_file": "test/unit/Background.test.ts",
+      "source_location": "L137"
+    },
+    {
+      "id": "test_unit_background_test_page",
+      "label": "page()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "page()",
+      "source_file": "test/unit/Background.test.ts",
+      "source_location": "L7"
+    },
+    {
+      "id": "test_unit_background_test_pointer",
+      "label": "pointer()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "dispatchEvent",
+            "receiver_type": "EventTarget",
+            "lang": "typescript",
+            "line": "L81",
+            "file": "test/unit/Background.test.ts"
+          }
+        ]
+      },
+      "norm_label": "pointer()",
+      "source_file": "test/unit/Background.test.ts",
+      "source_location": "L75"
+    },
+    {
+      "id": "test_unit_background_test_send",
+      "label": "send()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "send()",
+      "source_file": "test/unit/Background.test.ts",
+      "source_location": "L49"
+    },
+    {
+      "id": "test_unit_background_test_settle",
+      "label": "settle()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "settle()",
+      "source_file": "test/unit/Background.test.ts",
+      "source_location": "L59"
+    },
+    {
+      "id": "test_unit_background_test_shots",
+      "label": "shots()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "shots()",
+      "source_file": "test/unit/Background.test.ts",
+      "source_location": "L67"
+    },
+    {
       "id": "test_unit_clipboard_test_send",
       "label": "send()",
       "_callable": true,
@@ -861,6 +1076,114 @@
       "norm_label": "status()",
       "source_file": "test/unit/desktop/Editor.test.tsx",
       "source_location": "L52"
+    },
+    {
+      "id": "test_unit_desktop_home_test_cmds",
+      "label": "cmds()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "cmds()",
+      "source_file": "test/unit/desktop/Home.test.tsx",
+      "source_location": "L159"
+    },
+    {
+      "id": "test_unit_desktop_home_test_lastshortcuts",
+      "label": "lastShortcuts()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "lastshortcuts()",
+      "source_file": "test/unit/desktop/Home.test.tsx",
+      "source_location": "L158"
+    },
+    {
+      "id": "test_unit_desktop_home_test_movetour",
+      "label": "moveTour()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "movetour()",
+      "source_file": "test/unit/desktop/Home.test.tsx",
+      "source_location": "L174"
+    },
+    {
+      "id": "test_unit_desktop_home_test_nav",
+      "label": "nav()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "nav()",
+      "source_file": "test/unit/desktop/Home.test.tsx",
+      "source_location": "L149"
+    },
+    {
+      "id": "test_unit_desktop_home_test_opensettings",
+      "label": "openSettings()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "opensettings()",
+      "source_file": "test/unit/desktop/Home.test.tsx",
+      "source_location": "L168"
+    },
+    {
+      "id": "test_unit_desktop_home_test_renderhome",
+      "label": "renderHome()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "renderhome()",
+      "source_file": "test/unit/desktop/Home.test.tsx",
+      "source_location": "L163"
+    },
+    {
+      "id": "test_unit_desktop_home_test_rootblend",
+      "label": "rootBlend()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "rootblend()",
+      "source_file": "test/unit/desktop/Home.test.tsx",
+      "source_location": "L160"
+    },
+    {
+      "id": "test_unit_desktop_home_test_shortcutssent",
+      "label": "shortcutsSent()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "shortcutssent()",
+      "source_file": "test/unit/desktop/Home.test.tsx",
+      "source_location": "L154"
+    },
+    {
+      "id": "test_unit_desktop_home_test_updatestatus",
+      "label": "updateStatus()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "updatestatus()",
+      "source_file": "test/unit/desktop/Home.test.tsx",
+      "source_location": "L866"
     },
     {
       "id": "test_unit_editor_test_button",
@@ -1743,7 +2066,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 13,
-      "community_name": "Desktop Home Control",
+      "community_name": "Home",
       "file_type": "code",
       "norm_label": "home()",
       "source_file": "src/desktop/Home.tsx",
@@ -1755,7 +2078,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 13,
-      "community_name": "Desktop Home Control",
+      "community_name": "Home",
       "file_type": "code",
       "norm_label": "changeautostart()",
       "source_file": "src/desktop/Home.tsx",
@@ -1767,7 +2090,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 13,
-      "community_name": "Desktop Home Control",
+      "community_name": "Home",
       "file_type": "code",
       "norm_label": "changeblend()",
       "source_file": "src/desktop/Home.tsx",
@@ -1779,7 +2102,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 13,
-      "community_name": "Desktop Home Control",
+      "community_name": "Home",
       "file_type": "code",
       "norm_label": "changedelay()",
       "source_file": "src/desktop/Home.tsx",
@@ -1791,7 +2114,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 13,
-      "community_name": "Desktop Home Control",
+      "community_name": "Home",
       "file_type": "code",
       "norm_label": "changeshortcuts()",
       "source_file": "src/desktop/Home.tsx",
@@ -1803,23 +2126,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 13,
-      "community_name": "Desktop Home Control",
+      "community_name": "Home",
       "file_type": "code",
       "norm_label": "changetrayicon()",
       "source_file": "src/desktop/Home.tsx",
       "source_location": "L283"
-    },
-    {
-      "id": "src_desktop_home_home_copy",
-      "label": "copy()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "Desktop Home Control",
-      "file_type": "code",
-      "norm_label": "copy()",
-      "source_file": "src/desktop/Home.tsx",
-      "source_location": "L298"
     },
     {
       "id": "src_desktop_home_home_setrecording",
@@ -1827,7 +2138,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 13,
-      "community_name": "Desktop Home Control",
+      "community_name": "Home",
       "file_type": "code",
       "norm_label": "setrecording()",
       "source_file": "src/desktop/Home.tsx",
@@ -1839,23 +2150,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 13,
-      "community_name": "Desktop Home Control",
+      "community_name": "Home",
       "file_type": "code",
       "norm_label": "loadthemeblend()",
       "source_file": "src/desktop/Home.tsx",
       "source_location": "L41"
-    },
-    {
-      "id": "src_desktop_home_openeditor",
-      "label": "openEditor()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "Desktop Home Control",
-      "file_type": "code",
-      "norm_label": "openeditor()",
-      "source_file": "src/desktop/Home.tsx",
-      "source_location": "L38"
     },
     {
       "id": "src_desktop_home_openexternal",
@@ -1863,7 +2162,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 13,
-      "community_name": "Desktop Home Control",
+      "community_name": "Home",
       "file_type": "code",
       "norm_label": "openexternal()",
       "source_file": "src/desktop/Home.tsx",
@@ -1875,47 +2174,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 13,
-      "community_name": "Desktop Home Control",
+      "community_name": "Home",
       "file_type": "code",
       "norm_label": "showthemeblend()",
       "source_file": "src/desktop/Home.tsx",
       "source_location": "L51"
-    },
-    {
-      "id": "src_desktop_theme_applytheme",
-      "label": "applyTheme()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "Desktop Home Control",
-      "file_type": "code",
-      "norm_label": "applytheme()",
-      "source_file": "src/desktop/Theme.ts",
-      "source_location": "L6"
-    },
-    {
-      "id": "src_desktop_theme_changetheme",
-      "label": "changeTheme()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "Desktop Home Control",
-      "file_type": "code",
-      "norm_label": "changetheme()",
-      "source_file": "src/desktop/Theme.ts",
-      "source_location": "L19"
-    },
-    {
-      "id": "src_desktop_theme_onmac",
-      "label": "onMac()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "Desktop Home Control",
-      "file_type": "code",
-      "norm_label": "onmac()",
-      "source_file": "src/desktop/Theme.ts",
-      "source_location": "L3"
     },
     {
       "id": "src_desktop_capture_runcapture",
@@ -1942,40 +2205,16 @@
       "source_location": "L6"
     },
     {
-      "id": "src_desktop_editorglass_applyeditorglass",
-      "label": "applyEditorGlass()",
+      "id": "src_desktop_home_home_copy",
+      "label": "copy()",
       "_callable": true,
       "_origin": "ast",
       "community": 14,
       "community_name": "Liquid Glass Desktop Theme",
       "file_type": "code",
-      "norm_label": "applyeditorglass()",
-      "source_file": "src/desktop/EditorGlass.ts",
-      "source_location": "L22"
-    },
-    {
-      "id": "src_desktop_editorglass_loadblend",
-      "label": "loadBlend()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 14,
-      "community_name": "Liquid Glass Desktop Theme",
-      "file_type": "code",
-      "norm_label": "loadblend()",
-      "source_file": "src/desktop/EditorGlass.ts",
-      "source_location": "L5"
-    },
-    {
-      "id": "src_desktop_editorglass_watcheditorglass",
-      "label": "watchEditorGlass()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 14,
-      "community_name": "Liquid Glass Desktop Theme",
-      "file_type": "code",
-      "norm_label": "watcheditorglass()",
-      "source_file": "src/desktop/EditorGlass.ts",
-      "source_location": "L53"
+      "norm_label": "copy()",
+      "source_file": "src/desktop/Home.tsx",
+      "source_location": "L298"
     },
     {
       "id": "src_platform_desktop_bytes",
@@ -2084,18 +2323,6 @@
       "norm_label": "cmds()",
       "source_file": "test/unit/desktop/Desktop.test.ts",
       "source_location": "L31"
-    },
-    {
-      "id": "src_desktop_settingspage_appearance",
-      "label": "Appearance()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 15,
-      "community_name": "Desktop Settings and Shortcuts",
-      "file_type": "code",
-      "norm_label": "appearance()",
-      "source_file": "src/desktop/SettingsPage.tsx",
-      "source_location": "L16"
     },
     {
       "id": "src_desktop_settingspage_settingspage",
@@ -2290,112 +2517,111 @@
       "source_location": "L5"
     },
     {
-      "id": "test_unit_desktop_home_test_cmds",
-      "label": "cmds()",
+      "id": "src_lib_export_buildpdf",
+      "label": "buildPdf()",
       "_callable": true,
       "_origin": "ast",
       "community": 17,
-      "community_name": "Home.test.tsx",
+      "community_name": "Export.ts",
       "file_type": "code",
-      "norm_label": "cmds()",
-      "source_file": "test/unit/desktop/Home.test.tsx",
-      "source_location": "L159"
+      "metadata": {
+        "unresolved_calls": [
+          {
+            "callee": "set",
+            "receiver_type": "Uint8Array",
+            "lang": "typescript",
+            "line": "L153",
+            "file": "src/lib/Export.ts"
+          }
+        ]
+      },
+      "norm_label": "buildpdf()",
+      "source_file": "src/lib/Export.ts",
+      "source_location": "L75"
     },
     {
-      "id": "test_unit_desktop_home_test_lastshortcuts",
-      "label": "lastShortcuts()",
+      "id": "src_lib_export_canvastopdf",
+      "label": "canvasToPdf()",
       "_callable": true,
       "_origin": "ast",
       "community": 17,
-      "community_name": "Home.test.tsx",
+      "community_name": "Export.ts",
       "file_type": "code",
-      "norm_label": "lastshortcuts()",
-      "source_file": "test/unit/desktop/Home.test.tsx",
-      "source_location": "L158"
-    },
-    {
-      "id": "test_unit_desktop_home_test_movetour",
-      "label": "moveTour()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 17,
-      "community_name": "Home.test.tsx",
-      "file_type": "code",
-      "norm_label": "movetour()",
-      "source_file": "test/unit/desktop/Home.test.tsx",
-      "source_location": "L174"
-    },
-    {
-      "id": "test_unit_desktop_home_test_nav",
-      "label": "nav()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 17,
-      "community_name": "Home.test.tsx",
-      "file_type": "code",
-      "norm_label": "nav()",
-      "source_file": "test/unit/desktop/Home.test.tsx",
-      "source_location": "L149"
-    },
-    {
-      "id": "test_unit_desktop_home_test_opensettings",
-      "label": "openSettings()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 17,
-      "community_name": "Home.test.tsx",
-      "file_type": "code",
-      "norm_label": "opensettings()",
-      "source_file": "test/unit/desktop/Home.test.tsx",
-      "source_location": "L168"
-    },
-    {
-      "id": "test_unit_desktop_home_test_renderhome",
-      "label": "renderHome()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 17,
-      "community_name": "Home.test.tsx",
-      "file_type": "code",
-      "norm_label": "renderhome()",
-      "source_file": "test/unit/desktop/Home.test.tsx",
-      "source_location": "L163"
-    },
-    {
-      "id": "test_unit_desktop_home_test_rootblend",
-      "label": "rootBlend()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 17,
-      "community_name": "Home.test.tsx",
-      "file_type": "code",
-      "norm_label": "rootblend()",
-      "source_file": "test/unit/desktop/Home.test.tsx",
+      "norm_label": "canvastopdf()",
+      "source_file": "src/lib/Export.ts",
       "source_location": "L160"
     },
     {
-      "id": "test_unit_desktop_home_test_shortcutssent",
-      "label": "shortcutsSent()",
+      "id": "src_lib_export_filename",
+      "label": "fileName()",
       "_callable": true,
       "_origin": "ast",
       "community": 17,
-      "community_name": "Home.test.tsx",
+      "community_name": "Export.ts",
       "file_type": "code",
-      "norm_label": "shortcutssent()",
-      "source_file": "test/unit/desktop/Home.test.tsx",
-      "source_location": "L154"
+      "norm_label": "filename()",
+      "source_file": "src/lib/Export.ts",
+      "source_location": "L21"
     },
     {
-      "id": "test_unit_desktop_home_test_updatestatus",
-      "label": "updateStatus()",
+      "id": "src_lib_export_formatbytes",
+      "label": "formatBytes()",
       "_callable": true,
       "_origin": "ast",
       "community": 17,
-      "community_name": "Home.test.tsx",
+      "community_name": "Export.ts",
       "file_type": "code",
-      "norm_label": "updatestatus()",
-      "source_file": "test/unit/desktop/Home.test.tsx",
-      "source_location": "L866"
+      "norm_label": "formatbytes()",
+      "source_file": "src/lib/Export.ts",
+      "source_location": "L14"
+    },
+    {
+      "id": "src_lib_export_hostof",
+      "label": "hostOf()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "Export.ts",
+      "file_type": "code",
+      "norm_label": "hostof()",
+      "source_file": "src/lib/Export.ts",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_lib_export_test_latin1",
+      "label": "latin1()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "Export.ts",
+      "file_type": "code",
+      "norm_label": "latin1()",
+      "source_file": "src/lib/Export.test.ts",
+      "source_location": "L16"
+    },
+    {
+      "id": "src_lib_export_winansi",
+      "label": "winAnsi()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "Export.ts",
+      "file_type": "code",
+      "norm_label": "winansi()",
+      "source_file": "src/lib/Export.ts",
+      "source_location": "L66"
+    },
+    {
+      "id": "test_unit_lib_export_test_latin1",
+      "label": "latin1()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "Export.ts",
+      "file_type": "code",
+      "norm_label": "latin1()",
+      "source_file": "test/unit/lib/Export.test.ts",
+      "source_location": "L16"
     },
     {
       "id": "src_editor_clamp",
@@ -2408,6 +2634,18 @@
       "norm_label": "clamp()",
       "source_file": "src/Editor.tsx",
       "source_location": "L118"
+    },
+    {
+      "id": "src_editor_draw_constrain",
+      "label": "constrain()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 18,
+      "community_name": "Screen Region Cropping",
+      "file_type": "code",
+      "norm_label": "constrain()",
+      "source_file": "src/editor/Draw.ts",
+      "source_location": "L325"
     },
     {
       "id": "src_editor_draw_handleat",
@@ -2603,18 +2841,6 @@
       "source_location": "L979"
     },
     {
-      "id": "src_editor_editor_ondoubleclick",
-      "label": "onDoubleClick()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 18,
-      "community_name": "Screen Region Cropping",
-      "file_type": "code",
-      "norm_label": "ondoubleclick()",
-      "source_file": "src/Editor.tsx",
-      "source_location": "L815"
-    },
-    {
       "id": "src_editor_editor_onpointerdown",
       "label": "onPointerDown()",
       "_callable": true,
@@ -2684,6 +2910,18 @@
       "norm_label": "redo()",
       "source_file": "src/Editor.tsx",
       "source_location": "L558"
+    },
+    {
+      "id": "src_editor_editor_rename",
+      "label": "rename()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 18,
+      "community_name": "Screen Region Cropping",
+      "file_type": "code",
+      "norm_label": "rename()",
+      "source_file": "src/Editor.tsx",
+      "source_location": "L1005"
     },
     {
       "id": "src_editor_editor_renderfinal",
@@ -2853,6 +3091,18 @@
       "source_location": "L47"
     },
     {
+      "id": "src_desktop_capturepage_when",
+      "label": "when()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 20,
+      "community_name": "Interactive Editor Canvas",
+      "file_type": "code",
+      "norm_label": "when()",
+      "source_file": "src/desktop/CapturePage.tsx",
+      "source_location": "L39"
+    },
+    {
       "id": "src_desktop_producttour_createsample",
       "label": "createSample()",
       "_callable": true,
@@ -2913,6 +3163,18 @@
       "source_location": "L242"
     },
     {
+      "id": "src_desktop_settingspage_appearance",
+      "label": "Appearance()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 20,
+      "community_name": "Interactive Editor Canvas",
+      "file_type": "code",
+      "norm_label": "appearance()",
+      "source_file": "src/desktop/SettingsPage.tsx",
+      "source_location": "L16"
+    },
+    {
       "id": "test_unit_desktop_producttour_test_steptour",
       "label": "stepTour()",
       "_callable": true,
@@ -2923,6 +3185,42 @@
       "norm_label": "steptour()",
       "source_file": "test/unit/desktop/ProductTour.test.tsx",
       "source_location": "L51"
+    },
+    {
+      "id": "src_desktop_editorglass_applyeditorglass",
+      "label": "applyEditorGlass()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 23,
+      "community_name": "Overlay Html Host Module",
+      "file_type": "code",
+      "norm_label": "applyeditorglass()",
+      "source_file": "src/desktop/EditorGlass.ts",
+      "source_location": "L22"
+    },
+    {
+      "id": "src_desktop_editorglass_loadblend",
+      "label": "loadBlend()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 23,
+      "community_name": "Overlay Html Host Module",
+      "file_type": "code",
+      "norm_label": "loadblend()",
+      "source_file": "src/desktop/EditorGlass.ts",
+      "source_location": "L5"
+    },
+    {
+      "id": "src_desktop_editorglass_watcheditorglass",
+      "label": "watchEditorGlass()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 23,
+      "community_name": "Overlay Html Host Module",
+      "file_type": "code",
+      "norm_label": "watcheditorglass()",
+      "source_file": "src/desktop/EditorGlass.ts",
+      "source_location": "L53"
     },
     {
       "id": "src_desktop_overlay_finish",
@@ -3140,16 +3438,16 @@
       "source_location": "L17"
     },
     {
-      "id": "src_desktop_capturepage_when",
-      "label": "when()",
+      "id": "src_desktop_home_openeditor",
+      "label": "openEditor()",
       "_callable": true,
       "_origin": "ast",
       "community": 26,
       "community_name": "Popup Html Host Module",
       "file_type": "code",
-      "norm_label": "when()",
-      "source_file": "src/desktop/CapturePage.tsx",
-      "source_location": "L39"
+      "norm_label": "openeditor()",
+      "source_file": "src/desktop/Home.tsx",
+      "source_location": "L38"
     },
     {
       "id": "src_editor_menuitem",
@@ -3236,6 +3534,30 @@
       "source_location": "L100"
     },
     {
+      "id": "src_ui_toast",
+      "label": "Toast()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "Popup Html Host Module",
+      "file_type": "code",
+      "norm_label": "toast()",
+      "source_file": "src/Ui.tsx",
+      "source_location": "L181"
+    },
+    {
+      "id": "src_ui_usetoast",
+      "label": "useToast()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "Popup Html Host Module",
+      "file_type": "code",
+      "norm_label": "usetoast()",
+      "source_file": "src/Ui.tsx",
+      "source_location": "L170"
+    },
+    {
       "id": "src_editor_draw_bounds",
       "label": "bounds()",
       "_callable": true,
@@ -3271,18 +3593,6 @@
       "norm_label": "bounds()",
       "source_file": "src/editor/Draw.ts",
       "source_location": "L240"
-    },
-    {
-      "id": "src_editor_draw_constrain",
-      "label": "constrain()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "Canvas Annotation Engine",
-      "file_type": "code",
-      "norm_label": "constrain()",
-      "source_file": "src/editor/Draw.ts",
-      "source_location": "L325"
     },
     {
       "id": "src_editor_draw_disttosegment",
@@ -3571,6 +3881,18 @@
       "source_location": "L78"
     },
     {
+      "id": "src_editor_editor_ondoubleclick",
+      "label": "onDoubleClick()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "Canvas Annotation Engine",
+      "file_type": "code",
+      "norm_label": "ondoubleclick()",
+      "source_file": "src/Editor.tsx",
+      "source_location": "L815"
+    },
+    {
       "id": "test_unit_editor_draw_test_context",
       "label": "context()",
       "_callable": true,
@@ -3623,18 +3945,6 @@
       "norm_label": "confirmdialog()",
       "source_file": "src/Ui.tsx",
       "source_location": "L195"
-    },
-    {
-      "id": "src_ui_toast",
-      "label": "Toast()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 40,
-      "community_name": "Toast",
-      "file_type": "code",
-      "norm_label": "toast()",
-      "source_file": "src/Ui.tsx",
-      "source_location": "L181"
     },
     {
       "id": "src_ui_tooltip",
@@ -3970,7 +4280,7 @@
       "file_type": "code",
       "norm_label": "runscript()",
       "source_file": "test/unit/ReleaseAutomation.test.ts",
-      "source_location": "L57"
+      "source_location": "L59"
     },
     {
       "id": "scripts_generateassets_createsolidpng",
@@ -4093,183 +4403,40 @@
       "source_location": "L18"
     },
     {
-      "id": "src_lib_db_listshots",
-      "label": "listShots()",
+      "id": "src_desktop_theme_applytheme",
+      "label": "applyTheme()",
       "_callable": true,
       "_origin": "ast",
-      "community": 7,
-      "community_name": "Background.test.ts",
+      "community": 82,
+      "community_name": "desktop/Theme.ts",
       "file_type": "code",
-      "norm_label": "listshots()",
-      "source_file": "src/lib/Db.ts",
-      "source_location": "L134"
-    },
-    {
-      "id": "test_chrome_createchrome",
-      "label": "createChrome()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "Background.test.ts",
-      "file_type": "code",
-      "norm_label": "createchrome()",
-      "source_file": "test/Chrome.ts",
-      "source_location": "L57"
-    },
-    {
-      "id": "test_chrome_event",
-      "label": "event()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "Background.test.ts",
-      "file_type": "code",
-      "norm_label": "event()",
-      "source_file": "test/Chrome.ts",
+      "norm_label": "applytheme()",
+      "source_file": "src/desktop/Theme.ts",
       "source_location": "L6"
     },
     {
-      "id": "test_chrome_installchrome",
-      "label": "installChrome()",
+      "id": "src_desktop_theme_changetheme",
+      "label": "changeTheme()",
       "_callable": true,
       "_origin": "ast",
-      "community": 7,
-      "community_name": "Background.test.ts",
+      "community": 82,
+      "community_name": "desktop/Theme.ts",
       "file_type": "code",
-      "norm_label": "installchrome()",
-      "source_file": "test/Chrome.ts",
-      "source_location": "L136"
-    },
-    {
-      "id": "test_chrome_storagearea",
-      "label": "storageArea()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "Background.test.ts",
-      "file_type": "code",
-      "norm_label": "storagearea()",
-      "source_file": "test/Chrome.ts",
+      "norm_label": "changetheme()",
+      "source_file": "src/desktop/Theme.ts",
       "source_location": "L19"
     },
     {
-      "id": "test_unit_background_test_badgetexts",
-      "label": "badgeTexts()",
+      "id": "src_desktop_theme_onmac",
+      "label": "onMac()",
       "_callable": true,
       "_origin": "ast",
-      "community": 7,
-      "community_name": "Background.test.ts",
+      "community": 82,
+      "community_name": "desktop/Theme.ts",
       "file_type": "code",
-      "norm_label": "badgetexts()",
-      "source_file": "test/unit/Background.test.ts",
-      "source_location": "L73"
-    },
-    {
-      "id": "test_unit_background_test_finished",
-      "label": "finished()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "Background.test.ts",
-      "file_type": "code",
-      "norm_label": "finished()",
-      "source_file": "test/unit/Background.test.ts",
-      "source_location": "L56"
-    },
-    {
-      "id": "test_unit_background_test_lasterror",
-      "label": "lastError()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "Background.test.ts",
-      "file_type": "code",
-      "norm_label": "lasterror()",
-      "source_file": "test/unit/Background.test.ts",
-      "source_location": "L72"
-    },
-    {
-      "id": "test_unit_background_test_mockselectedarea",
-      "label": "mockSelectedArea()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "Background.test.ts",
-      "file_type": "code",
-      "norm_label": "mockselectedarea()",
-      "source_file": "test/unit/Background.test.ts",
-      "source_location": "L137"
-    },
-    {
-      "id": "test_unit_background_test_page",
-      "label": "page()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "Background.test.ts",
-      "file_type": "code",
-      "norm_label": "page()",
-      "source_file": "test/unit/Background.test.ts",
-      "source_location": "L7"
-    },
-    {
-      "id": "test_unit_background_test_pointer",
-      "label": "pointer()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "Background.test.ts",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "dispatchEvent",
-            "receiver_type": "EventTarget",
-            "lang": "typescript",
-            "line": "L81",
-            "file": "test/unit/Background.test.ts"
-          }
-        ]
-      },
-      "norm_label": "pointer()",
-      "source_file": "test/unit/Background.test.ts",
-      "source_location": "L75"
-    },
-    {
-      "id": "test_unit_background_test_send",
-      "label": "send()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "Background.test.ts",
-      "file_type": "code",
-      "norm_label": "send()",
-      "source_file": "test/unit/Background.test.ts",
-      "source_location": "L49"
-    },
-    {
-      "id": "test_unit_background_test_settle",
-      "label": "settle()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "Background.test.ts",
-      "file_type": "code",
-      "norm_label": "settle()",
-      "source_file": "test/unit/Background.test.ts",
-      "source_location": "L59"
-    },
-    {
-      "id": "test_unit_background_test_shots",
-      "label": "shots()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "Background.test.ts",
-      "file_type": "code",
-      "norm_label": "shots()",
-      "source_file": "test/unit/Background.test.ts",
-      "source_location": "L67"
+      "norm_label": "onmac()",
+      "source_file": "src/desktop/Theme.ts",
+      "source_location": "L3"
     },
     {
       "id": "pnpmfile_readpackage",
@@ -4296,30 +4463,6 @@
       "source_location": "L31"
     },
     {
-      "id": "src_history_history",
-      "label": "History()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "History.tsx",
-      "file_type": "code",
-      "norm_label": "history()",
-      "source_file": "src/History.tsx",
-      "source_location": "L46"
-    },
-    {
-      "id": "src_history_history_clearall",
-      "label": "clearAll()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "History.tsx",
-      "file_type": "code",
-      "norm_label": "clearall()",
-      "source_file": "src/History.tsx",
-      "source_location": "L151"
-    },
-    {
       "id": "src_history_history_copy",
       "label": "copy()",
       "_callable": true,
@@ -4330,125 +4473,6 @@
       "norm_label": "copy()",
       "source_file": "src/History.tsx",
       "source_location": "L167"
-    },
-    {
-      "id": "src_history_history_remove",
-      "label": "remove()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "History.tsx",
-      "file_type": "code",
-      "norm_label": "remove()",
-      "source_file": "src/History.tsx",
-      "source_location": "L125"
-    },
-    {
-      "id": "src_history_history_toggle",
-      "label": "toggle()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "History.tsx",
-      "file_type": "code",
-      "norm_label": "toggle()",
-      "source_file": "src/History.tsx",
-      "source_location": "L176"
-    },
-    {
-      "id": "src_lib_export_buildpdf",
-      "label": "buildPdf()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "History.tsx",
-      "file_type": "code",
-      "metadata": {
-        "unresolved_calls": [
-          {
-            "callee": "set",
-            "receiver_type": "Uint8Array",
-            "lang": "typescript",
-            "line": "L153",
-            "file": "src/lib/Export.ts"
-          }
-        ]
-      },
-      "norm_label": "buildpdf()",
-      "source_file": "src/lib/Export.ts",
-      "source_location": "L75"
-    },
-    {
-      "id": "src_lib_export_canvastopdf",
-      "label": "canvasToPdf()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "History.tsx",
-      "file_type": "code",
-      "norm_label": "canvastopdf()",
-      "source_file": "src/lib/Export.ts",
-      "source_location": "L160"
-    },
-    {
-      "id": "src_lib_export_filename",
-      "label": "fileName()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "History.tsx",
-      "file_type": "code",
-      "norm_label": "filename()",
-      "source_file": "src/lib/Export.ts",
-      "source_location": "L21"
-    },
-    {
-      "id": "src_lib_export_formatbytes",
-      "label": "formatBytes()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "History.tsx",
-      "file_type": "code",
-      "norm_label": "formatbytes()",
-      "source_file": "src/lib/Export.ts",
-      "source_location": "L14"
-    },
-    {
-      "id": "src_lib_export_hostof",
-      "label": "hostOf()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "History.tsx",
-      "file_type": "code",
-      "norm_label": "hostof()",
-      "source_file": "src/lib/Export.ts",
-      "source_location": "L6"
-    },
-    {
-      "id": "src_lib_export_test_latin1",
-      "label": "latin1()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "History.tsx",
-      "file_type": "code",
-      "norm_label": "latin1()",
-      "source_file": "src/lib/Export.test.ts",
-      "source_location": "L16"
-    },
-    {
-      "id": "src_lib_export_winansi",
-      "label": "winAnsi()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "History.tsx",
-      "file_type": "code",
-      "norm_label": "winansi()",
-      "source_file": "src/lib/Export.ts",
-      "source_location": "L66"
     },
     {
       "id": "src_platform_chrome_copypng",
@@ -4523,30 +4547,6 @@
       "source_location": "L53"
     },
     {
-      "id": "src_ui_usetoast",
-      "label": "useToast()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "History.tsx",
-      "file_type": "code",
-      "norm_label": "usetoast()",
-      "source_file": "src/Ui.tsx",
-      "source_location": "L170"
-    },
-    {
-      "id": "test_unit_lib_export_test_latin1",
-      "label": "latin1()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "History.tsx",
-      "file_type": "code",
-      "norm_label": "latin1()",
-      "source_file": "test/unit/lib/Export.test.ts",
-      "source_location": "L16"
-    },
-    {
       "id": "src_tauri_src_portal_testportal",
       "label": "TestPortal",
       "_origin": "ast",
@@ -4559,24 +4559,12 @@
       "source_location": "L68"
     },
     {
-      "id": "src_tauri_src_capture_captured",
-      "label": "Captured",
-      "_origin": "ast",
-      "_rust_declaration_count": 1,
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "captured",
-      "source_file": "src-tauri/src/capture.rs",
-      "source_location": "L25"
-    },
-    {
       "id": "src_tauri_src_capture_captureinfo",
       "label": "CaptureInfo",
       "_origin": "ast",
       "_rust_declaration_count": 1,
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "captureinfo",
       "source_file": "src-tauri/src/capture.rs",
@@ -4588,119 +4576,11 @@
       "_origin": "ast",
       "_rust_declaration_count": 1,
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "rect",
       "source_file": "src-tauri/src/capture.rs",
       "source_location": "L10"
-    },
-    {
-      "id": "src_tauri_src_selection_cursorpoint",
-      "label": "CursorPoint",
-      "_origin": "ast",
-      "_rust_declaration_count": 1,
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "cursorpoint",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L25"
-    },
-    {
-      "id": "src_tauri_src_selection_frame",
-      "label": "Frame",
-      "_origin": "ast",
-      "_rust_declaration_count": 1,
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "frame",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L46"
-    },
-    {
-      "id": "src_tauri_src_selection_kind",
-      "label": "Kind",
-      "_origin": "ast",
-      "_rust_declaration_count": 1,
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "kind",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L69"
-    },
-    {
-      "id": "src_tauri_src_selection_overlayinfo",
-      "label": "OverlayInfo",
-      "_origin": "ast",
-      "_rust_declaration_count": 1,
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "overlayinfo",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L38"
-    },
-    {
-      "id": "src_tauri_src_selection_pickablewindow",
-      "label": "PickableWindow",
-      "_origin": "ast",
-      "_rust_declaration_count": 1,
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "pickablewindow",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L31"
-    },
-    {
-      "id": "src_tauri_src_selection_picked",
-      "label": "Picked",
-      "_origin": "ast",
-      "_rust_declaration_count": 1,
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "picked",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L54"
-    },
-    {
-      "id": "src_tauri_src_selection_rawwindow",
-      "label": "RawWindow",
-      "_origin": "ast",
-      "_rust_declaration_count": 1,
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "rawwindow",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L75"
-    },
-    {
-      "id": "src_tauri_src_selection_selection",
-      "label": "Selection",
-      "_origin": "ast",
-      "_rust_declaration_count": 1,
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "selection",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L60"
-    },
-    {
-      "id": "src_tauri_src_selection_session",
-      "label": "Session",
-      "_origin": "ast",
-      "_rust_declaration_count": 1,
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "session",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L62"
     },
     {
       "id": "src_tauri_src_lib_binaryid",
@@ -4727,18 +4607,6 @@
       "source_location": "L33"
     },
     {
-      "id": "src_tauri_src_lib_platform",
-      "label": "Platform",
-      "_origin": "ast",
-      "_rust_declaration_count": 1,
-      "community": 49,
-      "community_name": "Pending Module",
-      "file_type": "code",
-      "norm_label": "platform",
-      "source_file": "src-tauri/src/lib.rs",
-      "source_location": "L323"
-    },
-    {
       "id": "src_tauri_src_lib_shortcuts",
       "label": "Shortcuts",
       "_origin": "ast",
@@ -4751,6 +4619,18 @@
       "source_location": "L29"
     },
     {
+      "id": "src_tauri_src_lib_platform",
+      "label": "Platform",
+      "_origin": "ast",
+      "_rust_declaration_count": 1,
+      "community": 6,
+      "community_name": "Clipboardext Module",
+      "file_type": "code",
+      "norm_label": "platform",
+      "source_file": "src-tauri/src/lib.rs",
+      "source_location": "L323"
+    },
+    {
       "id": "src_tauri_src_lib_nsrect",
       "label": "NSRect",
       "_origin": "ast",
@@ -4761,6 +4641,126 @@
       "norm_label": "nsrect",
       "source_file": "src-tauri/src/lib.rs",
       "source_location": "L402"
+    },
+    {
+      "id": "src_tauri_src_selection_cursorpoint",
+      "label": "CursorPoint",
+      "_origin": "ast",
+      "_rust_declaration_count": 1,
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "cursorpoint",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L25"
+    },
+    {
+      "id": "src_tauri_src_selection_frame",
+      "label": "Frame",
+      "_origin": "ast",
+      "_rust_declaration_count": 1,
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "frame",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L46"
+    },
+    {
+      "id": "src_tauri_src_selection_overlayinfo",
+      "label": "OverlayInfo",
+      "_origin": "ast",
+      "_rust_declaration_count": 1,
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "overlayinfo",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L38"
+    },
+    {
+      "id": "src_tauri_src_selection_pickablewindow",
+      "label": "PickableWindow",
+      "_origin": "ast",
+      "_rust_declaration_count": 1,
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "pickablewindow",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L31"
+    },
+    {
+      "id": "src_tauri_src_selection_picked",
+      "label": "Picked",
+      "_origin": "ast",
+      "_rust_declaration_count": 1,
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "picked",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L54"
+    },
+    {
+      "id": "src_tauri_src_selection_session",
+      "label": "Session",
+      "_origin": "ast",
+      "_rust_declaration_count": 1,
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "session",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L62"
+    },
+    {
+      "id": "src_tauri_src_selection_selection",
+      "label": "Selection",
+      "_origin": "ast",
+      "_rust_declaration_count": 1,
+      "community": 77,
+      "community_name": "finish_selection",
+      "file_type": "code",
+      "norm_label": "selection",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L60"
+    },
+    {
+      "id": "src_tauri_src_selection_kind",
+      "label": "Kind",
+      "_origin": "ast",
+      "_rust_declaration_count": 1,
+      "community": 80,
+      "community_name": "select",
+      "file_type": "code",
+      "norm_label": "kind",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L69"
+    },
+    {
+      "id": "src_tauri_src_selection_rawwindow",
+      "label": "RawWindow",
+      "_origin": "ast",
+      "_rust_declaration_count": 1,
+      "community": 81,
+      "community_name": "filter_window",
+      "file_type": "code",
+      "norm_label": "rawwindow",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L75"
+    },
+    {
+      "id": "src_tauri_src_capture_captured",
+      "label": "Captured",
+      "_origin": "ast",
+      "_rust_declaration_count": 1,
+      "community": 84,
+      "community_name": "take_capture",
+      "file_type": "code",
+      "norm_label": "captured",
+      "source_file": "src-tauri/src/capture.rs",
+      "source_location": "L25"
     },
     {
       "id": "src_clipboard",
@@ -4783,6 +4783,28 @@
       "norm_label": "db.ts",
       "source_file": "src/lib/Db.ts",
       "source_location": "L1"
+    },
+    {
+      "id": "test_chrome",
+      "label": "test/Chrome.ts",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "test/chrome.ts",
+      "source_file": "test/Chrome.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "test_chrome_png_data_url",
+      "label": "PNG_DATA_URL",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "png_data_url",
+      "source_file": "test/Chrome.ts",
+      "source_location": "L55"
     },
     {
       "id": "test_setup",
@@ -4816,6 +4838,17 @@
       "norm_label": "sizes",
       "source_file": "test/Setup.ts",
       "source_location": "L12"
+    },
+    {
+      "id": "test_unit_background_test",
+      "label": "Background.test.ts",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "background.test.ts",
+      "source_file": "test/unit/Background.test.ts",
+      "source_location": "L1"
     },
     {
       "id": "test_unit_clipboard_test",
@@ -4882,6 +4915,28 @@
       "norm_label": "platform",
       "source_file": "test/unit/desktop/Editor.test.tsx",
       "source_location": "L15"
+    },
+    {
+      "id": "test_unit_desktop_home_test",
+      "label": "Home.test.tsx",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "home.test.tsx",
+      "source_file": "test/unit/desktop/Home.test.tsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "test_unit_desktop_home_test_runcapture",
+      "label": "runCapture",
+      "_origin": "ast",
+      "community": 0,
+      "community_name": "Clipboard and History Storage",
+      "file_type": "code",
+      "norm_label": "runcapture",
+      "source_file": "test/unit/desktop/Home.test.tsx",
+      "source_location": "L19"
     },
     {
       "id": "test_unit_editor_test",
@@ -5544,6 +5599,94 @@
       "source_location": "L76"
     },
     {
+      "id": "package_devdependencies_jsdom",
+      "label": "jsdom@^26.1.0",
+      "_origin": "ast",
+      "community": 106,
+      "community_name": "jsdom@^26.1.0",
+      "file_type": "code",
+      "norm_label": "jsdom@^26.1.0",
+      "source_file": "package.json",
+      "source_location": "L76"
+    },
+    {
+      "id": "ref_jsdom",
+      "label": "jsdom",
+      "_origin": "ast",
+      "community": 106,
+      "community_name": "jsdom@^26.1.0",
+      "file_type": "concept",
+      "norm_label": "jsdom",
+      "source_file": "package.json",
+      "source_location": "L76"
+    },
+    {
+      "id": "package_devdependencies_prettier",
+      "label": "prettier@^3.9.10",
+      "_origin": "ast",
+      "community": 107,
+      "community_name": "prettier@^3.9.10",
+      "file_type": "code",
+      "norm_label": "prettier@^3.9.10",
+      "source_file": "package.json",
+      "source_location": "L78"
+    },
+    {
+      "id": "ref_prettier",
+      "label": "prettier",
+      "_origin": "ast",
+      "community": 107,
+      "community_name": "prettier@^3.9.10",
+      "file_type": "concept",
+      "norm_label": "prettier",
+      "source_file": "package.json",
+      "source_location": "L78"
+    },
+    {
+      "id": "package_devdependencies_tauri_apps_cli",
+      "label": "@tauri-apps/cli@^2.12.4",
+      "_origin": "ast",
+      "community": 108,
+      "community_name": "@tauri-apps/cli@^2.12.4",
+      "file_type": "code",
+      "norm_label": "@tauri-apps/cli@^2.12.4",
+      "source_file": "package.json",
+      "source_location": "L62"
+    },
+    {
+      "id": "ref_tauri_apps_cli",
+      "label": "@tauri-apps/cli",
+      "_origin": "ast",
+      "community": 108,
+      "community_name": "@tauri-apps/cli@^2.12.4",
+      "file_type": "concept",
+      "norm_label": "@tauri-apps/cli",
+      "source_file": "package.json",
+      "source_location": "L62"
+    },
+    {
+      "id": "package_devdependencies_testing_library_dom",
+      "label": "@testing-library/dom@^10.4.2",
+      "_origin": "ast",
+      "community": 109,
+      "community_name": "@testing-library/dom@^10.4.2",
+      "file_type": "code",
+      "norm_label": "@testing-library/dom@^10.4.2",
+      "source_file": "package.json",
+      "source_location": "L63"
+    },
+    {
+      "id": "ref_testing_library_dom",
+      "label": "@testing-library/dom",
+      "_origin": "ast",
+      "community": 109,
+      "community_name": "@testing-library/dom@^10.4.2",
+      "file_type": "concept",
+      "norm_label": "@testing-library/dom",
+      "source_file": "package.json",
+      "source_location": "L63"
+    },
+    {
       "id": "tesseract_js",
       "label": "tesseract.js",
       "_origin": "ast",
@@ -5554,6 +5697,17 @@
       "norm_label": "tesseract.js",
       "source_file": "tesseract.js",
       "type": "module"
+    },
+    {
+      "id": "package_dependencies_tesseract_js",
+      "label": "tesseract.js@^7.0.0",
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "Live Text OCR Engine",
+      "file_type": "code",
+      "norm_label": "tesseract.js@^7.0.0",
+      "source_file": "package.json",
+      "source_location": "L56"
     },
     {
       "id": "src_lib_ocr",
@@ -5644,6 +5798,138 @@
       "source_location": "L56"
     },
     {
+      "id": "package_devdependencies_typescript",
+      "label": "typescript@^7.0.2",
+      "_origin": "ast",
+      "community": 110,
+      "community_name": "typescript@^7.0.2",
+      "file_type": "code",
+      "norm_label": "typescript@^7.0.2",
+      "source_file": "package.json",
+      "source_location": "L81"
+    },
+    {
+      "id": "ref_typescript",
+      "label": "typescript",
+      "_origin": "ast",
+      "community": 110,
+      "community_name": "typescript@^7.0.2",
+      "file_type": "concept",
+      "norm_label": "typescript",
+      "source_file": "package.json",
+      "source_location": "L81"
+    },
+    {
+      "id": "package_devdependencies_vitest_coverage_v8",
+      "label": "@vitest/coverage-v8@^5.0.5",
+      "_origin": "ast",
+      "community": 111,
+      "community_name": "@vitest/coverage-v8@^5.0.5",
+      "file_type": "code",
+      "norm_label": "@vitest/coverage-v8@^5.0.5",
+      "source_file": "package.json",
+      "source_location": "L70"
+    },
+    {
+      "id": "ref_vitest_coverage_v8",
+      "label": "@vitest/coverage-v8",
+      "_origin": "ast",
+      "community": 111,
+      "community_name": "@vitest/coverage-v8@^5.0.5",
+      "file_type": "concept",
+      "norm_label": "@vitest/coverage-v8",
+      "source_file": "package.json",
+      "source_location": "L70"
+    },
+    {
+      "id": "src_tauri_src_selection_rs_apphandle",
+      "label": "AppHandle",
+      "_origin": "ast",
+      "community": 112,
+      "community_name": "AppHandle",
+      "file_type": "code",
+      "norm_label": "apphandle",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_tauri_src_selection_rs_monitor",
+      "label": "Monitor",
+      "_origin": "ast",
+      "community": 113,
+      "community_name": "Monitor",
+      "file_type": "code",
+      "norm_label": "monitor",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_tauri_src_selection_rs_mutex",
+      "label": "Mutex",
+      "_origin": "ast",
+      "community": 114,
+      "community_name": "Mutex",
+      "file_type": "code",
+      "norm_label": "mutex",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_tauri_src_selection_rs_rect",
+      "label": "Rect",
+      "_origin": "ast",
+      "community": 115,
+      "community_name": "Rect",
+      "file_type": "code",
+      "norm_label": "rect",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_tauri_src_selection_rs_response",
+      "label": "Response",
+      "_origin": "ast",
+      "community": 116,
+      "community_name": "Response",
+      "file_type": "code",
+      "norm_label": "response",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_tauri_src_selection_rs_rgbaimage",
+      "label": "RgbaImage",
+      "_origin": "ast",
+      "community": 117,
+      "community_name": "RgbaImage",
+      "file_type": "code",
+      "norm_label": "rgbaimage",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_tauri_src_selection_rs_state",
+      "label": "State",
+      "_origin": "ast",
+      "community": 118,
+      "community_name": "State",
+      "file_type": "code",
+      "norm_label": "state",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_tauri_src_selection_rs_webviewwindow",
+      "label": "WebviewWindow",
+      "_origin": "ast",
+      "community": 119,
+      "community_name": "WebviewWindow",
+      "file_type": "code",
+      "norm_label": "webviewwindow",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
       "id": "src_background",
       "label": "Background.ts",
       "_origin": "ast",
@@ -5688,61 +5974,6 @@
       "source_location": "L3"
     },
     {
-      "id": "src_desktop_home",
-      "label": "Home.tsx",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "Desktop Home Control",
-      "file_type": "code",
-      "norm_label": "home.tsx",
-      "source_file": "src/desktop/Home.tsx",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_desktop_home_pages",
-      "label": "PAGES",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "Desktop Home Control",
-      "file_type": "code",
-      "norm_label": "pages",
-      "source_file": "src/desktop/Home.tsx",
-      "source_location": "L32"
-    },
-    {
-      "id": "src_desktop_home_root",
-      "label": "root",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "Desktop Home Control",
-      "file_type": "code",
-      "norm_label": "root",
-      "source_file": "src/desktop/Home.tsx",
-      "source_location": "L490"
-    },
-    {
-      "id": "src_desktop_theme",
-      "label": "desktop/Theme.ts",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "Desktop Home Control",
-      "file_type": "code",
-      "norm_label": "desktop/theme.ts",
-      "source_file": "src/desktop/Theme.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "test_unit_desktop_theme_test",
-      "label": "Theme.test.ts",
-      "_origin": "ast",
-      "community": 13,
-      "community_name": "Desktop Home Control",
-      "file_type": "code",
-      "norm_label": "theme.test.ts",
-      "source_file": "test/unit/desktop/Theme.test.ts",
-      "source_location": "L1"
-    },
-    {
       "id": "src_desktop_capture",
       "label": "Capture.ts",
       "_origin": "ast",
@@ -5751,17 +5982,6 @@
       "file_type": "code",
       "norm_label": "capture.ts",
       "source_file": "src/desktop/Capture.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_desktop_editorglass",
-      "label": "EditorGlass.ts",
-      "_origin": "ast",
-      "community": 14,
-      "community_name": "Liquid Glass Desktop Theme",
-      "file_type": "code",
-      "norm_label": "editorglass.ts",
-      "source_file": "src/desktop/EditorGlass.ts",
       "source_location": "L1"
     },
     {
@@ -5864,28 +6084,6 @@
       "source_location": "L1"
     },
     {
-      "id": "test_unit_desktop_editorglass_test",
-      "label": "EditorGlass.test.ts",
-      "_origin": "ast",
-      "community": 14,
-      "community_name": "Liquid Glass Desktop Theme",
-      "file_type": "code",
-      "norm_label": "editorglass.test.ts",
-      "source_file": "test/unit/desktop/EditorGlass.test.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "ref_tauri_apps_api",
-      "label": "@tauri-apps/api",
-      "_origin": "ast",
-      "community": 14,
-      "community_name": "Liquid Glass Desktop Theme",
-      "file_type": "concept",
-      "norm_label": "@tauri-apps/api",
-      "source_file": "package.json",
-      "source_location": "L47"
-    },
-    {
       "id": "src_desktop_settingspage",
       "label": "SettingsPage.tsx",
       "_origin": "ast",
@@ -5972,6 +6170,17 @@
       "norm_label": "shortcuts.test.ts",
       "source_file": "test/unit/desktop/Shortcuts.test.ts",
       "source_location": "L1"
+    },
+    {
+      "id": "package_devdependencies_puppeteer_core",
+      "label": "puppeteer-core@^25.16.0",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "Product Promo Assets",
+      "file_type": "code",
+      "norm_label": "puppeteer-core@^25.16.0",
+      "source_file": "package.json",
+      "source_location": "L79"
     },
     {
       "id": "scripts_captureappscreenshots",
@@ -6117,26 +6326,70 @@
       "source_location": "L79"
     },
     {
-      "id": "test_unit_desktop_home_test",
-      "label": "Home.test.tsx",
+      "id": "src_lib_export",
+      "label": "Export.ts",
       "_origin": "ast",
       "community": 17,
-      "community_name": "Home.test.tsx",
+      "community_name": "Export.ts",
       "file_type": "code",
-      "norm_label": "home.test.tsx",
-      "source_file": "test/unit/desktop/Home.test.tsx",
+      "norm_label": "export.ts",
+      "source_file": "src/lib/Export.ts",
       "source_location": "L1"
     },
     {
-      "id": "test_unit_desktop_home_test_runcapture",
-      "label": "runCapture",
+      "id": "src_lib_export_test",
+      "label": "src/lib/Export.test.ts",
       "_origin": "ast",
       "community": 17,
-      "community_name": "Home.test.tsx",
+      "community_name": "Export.ts",
       "file_type": "code",
-      "norm_label": "runcapture",
-      "source_file": "test/unit/desktop/Home.test.tsx",
-      "source_location": "L19"
+      "norm_label": "src/lib/export.test.ts",
+      "source_file": "src/lib/Export.test.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_lib_export_test_jpeg",
+      "label": "jpeg",
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "Export.ts",
+      "file_type": "code",
+      "norm_label": "jpeg",
+      "source_file": "src/lib/Export.test.ts",
+      "source_location": "L15"
+    },
+    {
+      "id": "src_lib_export_win_ansi",
+      "label": "WIN_ANSI",
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "Export.ts",
+      "file_type": "code",
+      "norm_label": "win_ansi",
+      "source_file": "src/lib/Export.ts",
+      "source_location": "L52"
+    },
+    {
+      "id": "test_unit_lib_export_test",
+      "label": "unit/lib/Export.test.ts",
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "Export.ts",
+      "file_type": "code",
+      "norm_label": "unit/lib/export.test.ts",
+      "source_file": "test/unit/lib/Export.test.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "test_unit_lib_export_test_jpeg",
+      "label": "jpeg",
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "Export.ts",
+      "file_type": "code",
+      "norm_label": "jpeg",
+      "source_file": "test/unit/lib/Export.test.ts",
+      "source_location": "L15"
     },
     {
       "id": "github_workflows_release_steps_with",
@@ -7155,117 +7408,95 @@
       "label": "devDependencies",
       "_origin": "ast",
       "community": 22,
-      "community_name": "Automated Screenshot Pipelines",
+      "community_name": "devDependencies",
       "file_type": "code",
       "norm_label": "devdependencies",
       "source_file": "package.json",
       "source_location": "L58"
     },
     {
-      "id": "package_devdependencies_husky",
-      "label": "husky@^9.1.7",
+      "id": "package_devdependencies_fake_indexeddb",
+      "label": "fake-indexeddb@^6.2.6",
       "_origin": "ast",
       "community": 22,
-      "community_name": "Automated Screenshot Pipelines",
+      "community_name": "devDependencies",
       "file_type": "code",
-      "norm_label": "husky@^9.1.7",
+      "norm_label": "fake-indexeddb@^6.2.6",
       "source_file": "package.json",
-      "source_location": "L75"
-    },
-    {
-      "id": "package_devdependencies_jsdom",
-      "label": "jsdom@^26.1.0",
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "Automated Screenshot Pipelines",
-      "file_type": "code",
-      "norm_label": "jsdom@^26.1.0",
-      "source_file": "package.json",
-      "source_location": "L76"
-    },
-    {
-      "id": "package_devdependencies_prettier",
-      "label": "prettier@^3.9.10",
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "Automated Screenshot Pipelines",
-      "file_type": "code",
-      "norm_label": "prettier@^3.9.10",
-      "source_file": "package.json",
-      "source_location": "L78"
-    },
-    {
-      "id": "package_devdependencies_puppeteer_core",
-      "label": "puppeteer-core@^25.16.0",
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "Automated Screenshot Pipelines",
-      "file_type": "code",
-      "norm_label": "puppeteer-core@^25.16.0",
-      "source_file": "package.json",
-      "source_location": "L79"
+      "source_location": "L73"
     },
     {
       "id": "package_devdependencies_remotion",
       "label": "remotion@^4.0.542",
       "_origin": "ast",
       "community": 22,
-      "community_name": "Automated Screenshot Pipelines",
+      "community_name": "devDependencies",
       "file_type": "code",
       "norm_label": "remotion@^4.0.542",
       "source_file": "package.json",
       "source_location": "L80"
     },
     {
-      "id": "package_devdependencies_tauri_apps_cli",
-      "label": "@tauri-apps/cli@^2.12.4",
+      "id": "package_devdependencies_remotion_shapes",
+      "label": "@remotion/shapes@^4.0.542",
       "_origin": "ast",
       "community": 22,
-      "community_name": "Automated Screenshot Pipelines",
+      "community_name": "devDependencies",
       "file_type": "code",
-      "norm_label": "@tauri-apps/cli@^2.12.4",
+      "norm_label": "@remotion/shapes@^4.0.542",
       "source_file": "package.json",
-      "source_location": "L62"
-    },
-    {
-      "id": "package_devdependencies_testing_library_dom",
-      "label": "@testing-library/dom@^10.4.2",
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "Automated Screenshot Pipelines",
-      "file_type": "code",
-      "norm_label": "@testing-library/dom@^10.4.2",
-      "source_file": "package.json",
-      "source_location": "L63"
+      "source_location": "L61"
     },
     {
       "id": "package_devdependencies_testing_library_react",
       "label": "@testing-library/react@^16.3.3",
       "_origin": "ast",
       "community": 22,
-      "community_name": "Automated Screenshot Pipelines",
+      "community_name": "devDependencies",
       "file_type": "code",
       "norm_label": "@testing-library/react@^16.3.3",
       "source_file": "package.json",
       "source_location": "L64"
     },
     {
-      "id": "package_devdependencies_typescript",
-      "label": "typescript@^7.0.2",
+      "id": "package_devdependencies_types_chrome",
+      "label": "@types/chrome@^0.3.6",
       "_origin": "ast",
       "community": 22,
-      "community_name": "Automated Screenshot Pipelines",
+      "community_name": "devDependencies",
       "file_type": "code",
-      "norm_label": "typescript@^7.0.2",
+      "norm_label": "@types/chrome@^0.3.6",
       "source_file": "package.json",
-      "source_location": "L81"
+      "source_location": "L65"
+    },
+    {
+      "id": "package_devdependencies_types_react",
+      "label": "@types/react@^19.3.0",
+      "_origin": "ast",
+      "community": 22,
+      "community_name": "devDependencies",
+      "file_type": "code",
+      "norm_label": "@types/react@^19.3.0",
+      "source_file": "package.json",
+      "source_location": "L67"
+    },
+    {
+      "id": "package_devdependencies_types_react_dom",
+      "label": "@types/react-dom@^19.3.0",
+      "_origin": "ast",
+      "community": 22,
+      "community_name": "devDependencies",
+      "file_type": "code",
+      "norm_label": "@types/react-dom@^19.3.0",
+      "source_file": "package.json",
+      "source_location": "L68"
     },
     {
       "id": "package_devdependencies_vite",
       "label": "vite@^8.3.5",
       "_origin": "ast",
       "community": 22,
-      "community_name": "Automated Screenshot Pipelines",
+      "community_name": "devDependencies",
       "file_type": "code",
       "norm_label": "vite@^8.3.5",
       "source_file": "package.json",
@@ -7276,88 +7507,110 @@
       "label": "vitest@^5.0.5",
       "_origin": "ast",
       "community": 22,
-      "community_name": "Automated Screenshot Pipelines",
+      "community_name": "devDependencies",
       "file_type": "code",
       "norm_label": "vitest@^5.0.5",
       "source_file": "package.json",
       "source_location": "L84"
     },
     {
-      "id": "ref_husky",
-      "label": "husky",
+      "id": "package_devdependencies_vitest_canvas_mock",
+      "label": "vitest-canvas-mock@^1.2.0",
       "_origin": "ast",
       "community": 22,
-      "community_name": "Automated Screenshot Pipelines",
-      "file_type": "concept",
-      "norm_label": "husky",
+      "community_name": "devDependencies",
+      "file_type": "code",
+      "norm_label": "vitest-canvas-mock@^1.2.0",
       "source_file": "package.json",
-      "source_location": "L75"
+      "source_location": "L85"
     },
     {
-      "id": "ref_jsdom",
-      "label": "jsdom",
+      "id": "ref_fake_indexeddb",
+      "label": "fake-indexeddb",
       "_origin": "ast",
       "community": 22,
-      "community_name": "Automated Screenshot Pipelines",
+      "community_name": "devDependencies",
       "file_type": "concept",
-      "norm_label": "jsdom",
+      "norm_label": "fake-indexeddb",
       "source_file": "package.json",
-      "source_location": "L76"
+      "source_location": "L73"
     },
     {
-      "id": "ref_prettier",
-      "label": "prettier",
+      "id": "ref_remotion_shapes",
+      "label": "@remotion/shapes",
       "_origin": "ast",
       "community": 22,
-      "community_name": "Automated Screenshot Pipelines",
+      "community_name": "devDependencies",
       "file_type": "concept",
-      "norm_label": "prettier",
+      "norm_label": "@remotion/shapes",
       "source_file": "package.json",
-      "source_location": "L78"
+      "source_location": "L61"
     },
     {
-      "id": "ref_tauri_apps_cli",
-      "label": "@tauri-apps/cli",
+      "id": "ref_types_chrome",
+      "label": "@types/chrome",
       "_origin": "ast",
       "community": 22,
-      "community_name": "Automated Screenshot Pipelines",
+      "community_name": "devDependencies",
       "file_type": "concept",
-      "norm_label": "@tauri-apps/cli",
+      "norm_label": "@types/chrome",
       "source_file": "package.json",
-      "source_location": "L62"
+      "source_location": "L65"
     },
     {
-      "id": "ref_testing_library_dom",
-      "label": "@testing-library/dom",
+      "id": "ref_types_react",
+      "label": "@types/react",
       "_origin": "ast",
       "community": 22,
-      "community_name": "Automated Screenshot Pipelines",
+      "community_name": "devDependencies",
       "file_type": "concept",
-      "norm_label": "@testing-library/dom",
+      "norm_label": "@types/react",
       "source_file": "package.json",
-      "source_location": "L63"
+      "source_location": "L67"
     },
     {
-      "id": "ref_typescript",
-      "label": "typescript",
+      "id": "ref_types_react_dom",
+      "label": "@types/react-dom",
       "_origin": "ast",
       "community": 22,
-      "community_name": "Automated Screenshot Pipelines",
+      "community_name": "devDependencies",
       "file_type": "concept",
-      "norm_label": "typescript",
+      "norm_label": "@types/react-dom",
       "source_file": "package.json",
-      "source_location": "L81"
+      "source_location": "L68"
     },
     {
       "id": "ref_vite",
       "label": "vite",
       "_origin": "ast",
       "community": 22,
-      "community_name": "Automated Screenshot Pipelines",
+      "community_name": "devDependencies",
       "file_type": "concept",
       "norm_label": "vite",
       "source_file": "package.json",
       "source_location": "L83"
+    },
+    {
+      "id": "ref_vitest_canvas_mock",
+      "label": "vitest-canvas-mock",
+      "_origin": "ast",
+      "community": 22,
+      "community_name": "devDependencies",
+      "file_type": "concept",
+      "norm_label": "vitest-canvas-mock",
+      "source_file": "package.json",
+      "source_location": "L85"
+    },
+    {
+      "id": "src_desktop_editorglass",
+      "label": "EditorGlass.ts",
+      "_origin": "ast",
+      "community": 23,
+      "community_name": "Overlay Html Host Module",
+      "file_type": "code",
+      "norm_label": "editorglass.ts",
+      "source_file": "src/desktop/EditorGlass.ts",
+      "source_location": "L1"
     },
     {
       "id": "src_desktop_overlay",
@@ -7382,6 +7635,17 @@
       "source_location": "L200"
     },
     {
+      "id": "test_unit_desktop_editorglass_test",
+      "label": "EditorGlass.test.ts",
+      "_origin": "ast",
+      "community": 23,
+      "community_name": "Overlay Html Host Module",
+      "file_type": "code",
+      "norm_label": "editorglass.test.ts",
+      "source_file": "test/unit/desktop/EditorGlass.test.ts",
+      "source_location": "L1"
+    },
+    {
       "id": "test_unit_desktop_overlay_test",
       "label": "Overlay.test.tsx",
       "_origin": "ast",
@@ -7391,6 +7655,17 @@
       "norm_label": "overlay.test.tsx",
       "source_file": "test/unit/desktop/Overlay.test.tsx",
       "source_location": "L1"
+    },
+    {
+      "id": "ref_tauri_apps_api",
+      "label": "@tauri-apps/api",
+      "_origin": "ast",
+      "community": 23,
+      "community_name": "Overlay Html Host Module",
+      "file_type": "concept",
+      "norm_label": "@tauri-apps/api",
+      "source_file": "package.json",
+      "source_location": "L47"
     },
     {
       "id": "scripts_desktopbuild",
@@ -7547,6 +7822,39 @@
       "source_location": "L7"
     },
     {
+      "id": "src_desktop_home",
+      "label": "Home.tsx",
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "Popup Html Host Module",
+      "file_type": "code",
+      "norm_label": "home.tsx",
+      "source_file": "src/desktop/Home.tsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_desktop_home_pages",
+      "label": "PAGES",
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "Popup Html Host Module",
+      "file_type": "code",
+      "norm_label": "pages",
+      "source_file": "src/desktop/Home.tsx",
+      "source_location": "L32"
+    },
+    {
+      "id": "src_desktop_home_root",
+      "label": "root",
+      "_origin": "ast",
+      "community": 26,
+      "community_name": "Popup Html Host Module",
+      "file_type": "code",
+      "norm_label": "root",
+      "source_file": "src/desktop/Home.tsx",
+      "source_location": "L490"
+    },
+    {
       "id": "src_popup",
       "label": "Popup.tsx",
       "_origin": "ast",
@@ -7578,17 +7886,6 @@
       "norm_label": "delays",
       "source_file": "src/Popup.tsx",
       "source_location": "L54"
-    },
-    {
-      "id": "src_popup_root",
-      "label": "root",
-      "_origin": "ast",
-      "community": 26,
-      "community_name": "Popup Html Host Module",
-      "file_type": "code",
-      "norm_label": "root",
-      "source_file": "src/Popup.tsx",
-      "source_location": "L363"
     },
     {
       "id": "src_ui",
@@ -7976,6 +8273,17 @@
       "source_location": "L118"
     },
     {
+      "id": "src_tauri_src_capture_is_wayland",
+      "label": "is_wayland()",
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "Interactive Editor Canvas",
+      "file_type": "code",
+      "norm_label": "is_wayland()",
+      "source_file": "src-tauri/src/capture.rs",
+      "source_location": "L40"
+    },
+    {
       "id": "src_tauri_src_lib_copy_text",
       "label": "copy_text()",
       "_origin": "ast",
@@ -7998,28 +8306,6 @@
       "source_location": "L154"
     },
     {
-      "id": "src_tauri_src_lib_parse_theme_blend",
-      "label": "parse_theme_blend()",
-      "_origin": "ast",
-      "community": 29,
-      "community_name": "Interactive Editor Canvas",
-      "file_type": "code",
-      "norm_label": "parse_theme_blend()",
-      "source_file": "src-tauri/src/lib.rs",
-      "source_location": "L505"
-    },
-    {
-      "id": "src_tauri_src_lib_reads_only_valid_saved_blends",
-      "label": "reads_only_valid_saved_blends()",
-      "_origin": "ast",
-      "community": 29,
-      "community_name": "Interactive Editor Canvas",
-      "file_type": "code",
-      "norm_label": "reads_only_valid_saved_blends()",
-      "source_file": "src-tauri/src/lib.rs",
-      "source_location": "L883"
-    },
-    {
       "id": "src_tauri_src_lib_rs_apphandle",
       "label": "AppHandle",
       "_origin": "ast",
@@ -8029,6 +8315,17 @@
       "norm_label": "apphandle",
       "source_file": "",
       "source_location": ""
+    },
+    {
+      "id": "src_tauri_src_lib_run",
+      "label": "run()",
+      "_origin": "ast",
+      "community": 29,
+      "community_name": "Interactive Editor Canvas",
+      "file_type": "code",
+      "norm_label": "run()",
+      "source_file": "src-tauri/src/lib.rs",
+      "source_location": "L636"
     },
     {
       "id": "src_tauri_src_lib_set_theme_blend",
@@ -8119,22 +8416,11 @@
       "source_location": "L70"
     },
     {
-      "id": "sender",
-      "label": "Sender",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "sender",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
       "id": "src_tauri_src_capture",
       "label": "capture.rs",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "capture.rs",
       "source_file": "src-tauri/src/capture.rs",
@@ -8145,7 +8431,7 @@
       "label": "capture_screen()",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "capture_screen()",
       "source_file": "src-tauri/src/capture.rs",
@@ -8156,7 +8442,7 @@
       "label": "centre_point()",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "centre_point()",
       "source_file": "src-tauri/src/capture.rs",
@@ -8167,7 +8453,7 @@
       "label": "centre_point_converts_pixels_to_points()",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "centre_point_converts_pixels_to_points()",
       "source_file": "src-tauri/src/capture.rs",
@@ -8178,7 +8464,7 @@
       "label": "clamps_to_the_capture()",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "clamps_to_the_capture()",
       "source_file": "src-tauri/src/capture.rs",
@@ -8189,7 +8475,7 @@
       "label": "detects_wayland_without_requiring_xdg_session_type()",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "detects_wayland_without_requiring_xdg_session_type()",
       "source_file": "src-tauri/src/capture.rs",
@@ -8200,7 +8486,7 @@
       "label": "encode_png()",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "encode_png()",
       "source_file": "src-tauri/src/capture.rs",
@@ -8211,7 +8497,7 @@
       "label": "encodes_a_png()",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "encodes_a_png()",
       "source_file": "src-tauri/src/capture.rs",
@@ -8222,7 +8508,7 @@
       "label": "err()",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "err()",
       "source_file": "src-tauri/src/capture.rs",
@@ -8233,7 +8519,7 @@
       "label": "finds_the_monitor_under_the_pointer()",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "finds_the_monitor_under_the_pointer()",
       "source_file": "src-tauri/src/capture.rs",
@@ -8244,7 +8530,7 @@
       "label": "monitor_at_cursor()",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "monitor_at_cursor()",
       "source_file": "src-tauri/src/capture.rs",
@@ -8255,7 +8541,7 @@
       "label": "portal_capture()",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "portal_capture()",
       "source_file": "src-tauri/src/capture.rs",
@@ -8266,7 +8552,7 @@
       "label": "R",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "r",
       "source_file": "src-tauri/src/capture.rs",
@@ -8277,7 +8563,7 @@
       "label": ".contains()",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": ".contains()",
       "source_file": "src-tauri/src/capture.rs",
@@ -8288,7 +8574,7 @@
       "label": "rejects_empty_or_malformed_rects()",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "rejects_empty_or_malformed_rects()",
       "source_file": "src-tauri/src/capture.rs",
@@ -8299,7 +8585,7 @@
       "label": "AppHandle",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "apphandle",
       "source_file": "",
@@ -8310,31 +8596,9 @@
       "label": "Monitor",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "monitor",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_tauri_src_capture_rs_mutex",
-      "label": "Mutex",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "mutex",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_tauri_src_capture_rs_response",
-      "label": "Response",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "response",
       "source_file": "",
       "source_location": ""
     },
@@ -8343,20 +8607,9 @@
       "label": "RgbaImage",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "rgbaimage",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_tauri_src_capture_rs_state",
-      "label": "State",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "state",
       "source_file": "",
       "source_location": ""
     },
@@ -8365,7 +8618,7 @@
       "label": "scales_monitor_units_to_capture_pixels()",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "scales_monitor_units_to_capture_pixels()",
       "source_file": "src-tauri/src/capture.rs",
@@ -8376,29 +8629,18 @@
       "label": "store()",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "store()",
       "source_file": "src-tauri/src/capture.rs",
       "source_location": "L137"
     },
     {
-      "id": "src_tauri_src_capture_take_capture",
-      "label": "take_capture()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "take_capture()",
-      "source_file": "src-tauri/src/capture.rs",
-      "source_location": "L181"
-    },
-    {
       "id": "src_tauri_src_capture_to_pixels",
       "label": "to_pixels()",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "to_pixels()",
       "source_file": "src-tauri/src/capture.rs",
@@ -8409,7 +8651,7 @@
       "label": "wayland_session()",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "wayland_session()",
       "source_file": "src-tauri/src/capture.rs",
@@ -8420,462 +8662,11 @@
       "label": "xcap_monitor()",
       "_origin": "ast",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "file_type": "code",
       "norm_label": "xcap_monitor()",
       "source_file": "src-tauri/src/capture.rs",
       "source_location": "L127"
-    },
-    {
-      "id": "src_tauri_src_selection",
-      "label": "selection.rs",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "selection.rs",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_tauri_src_selection_activate_app",
-      "label": "activate_app()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "activate_app()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L101"
-    },
-    {
-      "id": "src_tauri_src_selection_cancel",
-      "label": "cancel()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "cancel()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L441"
-    },
-    {
-      "id": "src_tauri_src_selection_cancels_on_nothing_or_an_empty_region",
-      "label": "cancels_on_nothing_or_an_empty_region()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "cancels_on_nothing_or_an_empty_region()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L656"
-    },
-    {
-      "id": "src_tauri_src_selection_close_overlays",
-      "label": "close_overlays()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "close_overlays()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L366"
-    },
-    {
-      "id": "src_tauri_src_selection_crop",
-      "label": "crop()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "crop()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L505"
-    },
-    {
-      "id": "src_tauri_src_selection_crops_a_region_in_capture_pixels",
-      "label": "crops_a_region_in_capture_pixels()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "crops_a_region_in_capture_pixels()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L566"
-    },
-    {
-      "id": "src_tauri_src_selection_cursor_point",
-      "label": "cursor_point()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "cursor_point()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L249"
-    },
-    {
-      "id": "src_tauri_src_selection_filter_window",
-      "label": "filter_window()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "filter_window()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L283"
-    },
-    {
-      "id": "src_tauri_src_selection_filters_windows_by_layer_alpha_onscreen_and_system_apps",
-      "label": "filters_windows_by_layer_alpha_onscreen_and_system_apps()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "filters_windows_by_layer_alpha_onscreen_and_system_apps()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L611"
-    },
-    {
-      "id": "src_tauri_src_selection_finish_selection",
-      "label": "finish_selection()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "finish_selection()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L484"
-    },
-    {
-      "id": "src_tauri_src_selection_frame_39d88b",
-      "label": "frame()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "frame()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L532"
-    },
-    {
-      "id": "src_tauri_src_selection_keeps_windows_overlapping_the_monitor",
-      "label": "keeps_windows_overlapping_the_monitor()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "keeps_windows_overlapping_the_monitor()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L668"
-    },
-    {
-      "id": "src_tauri_src_selection_kind_region",
-      "label": "Region",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "region",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L70"
-    },
-    {
-      "id": "src_tauri_src_selection_kind_window",
-      "label": "Window",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "window",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L71"
-    },
-    {
-      "id": "src_tauri_src_selection_maps_cursor_onto_monitor_units_only_when_inside",
-      "label": "maps_cursor_onto_monitor_units_only_when_inside()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "maps_cursor_onto_monitor_units_only_when_inside()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L640"
-    },
-    {
-      "id": "src_tauri_src_selection_overlay_frame",
-      "label": "overlay_frame()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "overlay_frame()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L450"
-    },
-    {
-      "id": "src_tauri_src_selection_overlay_info",
-      "label": "overlay_info()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "overlay_info()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L463"
-    },
-    {
-      "id": "src_tauri_src_selection_overlay_window",
-      "label": "overlay_window()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "overlay_window()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L321"
-    },
-    {
-      "id": "src_tauri_src_selection_pick",
-      "label": "pick()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "pick()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L520"
-    },
-    {
-      "id": "src_tauri_src_selection_picked_region",
-      "label": "Region",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "region",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L55"
-    },
-    {
-      "id": "src_tauri_src_selection_picked_window",
-      "label": "Window",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "window",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L56"
-    },
-    {
-      "id": "src_tauri_src_selection_picks_only_offered_windows_with_cropped_fallback",
-      "label": "picks_only_offered_windows_with_cropped_fallback()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "picks_only_offered_windows_with_cropped_fallback()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L580"
-    },
-    {
-      "id": "src_tauri_src_selection_prepare_overlay",
-      "label": "prepare_overlay()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "prepare_overlay()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L87"
-    },
-    {
-      "id": "src_tauri_src_selection_raw_window",
-      "label": "raw_window()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "raw_window()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L552"
-    },
-    {
-      "id": "src_tauri_src_selection_raw_windows",
-      "label": "raw_windows()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "raw_windows()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L110"
-    },
-    {
-      "id": "src_tauri_src_selection_resolve_window_image",
-      "label": "resolve_window_image()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "resolve_window_image()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L510"
-    },
-    {
-      "id": "src_tauri_src_selection_resolves_window_image_using_fallback_when_standalone_missing",
-      "label": "resolves_window_image_using_fallback_when_standalone_missing()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "resolves_window_image_using_fallback_when_standalone_missing()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L592"
-    },
-    {
-      "id": "src_tauri_src_selection_rs_apphandle",
-      "label": "AppHandle",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "apphandle",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_tauri_src_selection_rs_monitor",
-      "label": "Monitor",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "monitor",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_tauri_src_selection_rs_mutex",
-      "label": "Mutex",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "mutex",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_tauri_src_selection_rs_rect",
-      "label": "Rect",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "rect",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_tauri_src_selection_rs_response",
-      "label": "Response",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "response",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_tauri_src_selection_rs_rgbaimage",
-      "label": "RgbaImage",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "rgbaimage",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_tauri_src_selection_rs_state",
-      "label": "State",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "state",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_tauri_src_selection_rs_webviewwindow",
-      "label": "WebviewWindow",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "webviewwindow",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_tauri_src_selection_select",
-      "label": "select()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "select()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L377"
-    },
-    {
-      "id": "src_tauri_src_selection_skips_windows_elsewhere_or_too_small",
-      "label": "skips_windows_elsewhere_or_too_small()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "skips_windows_elsewhere_or_too_small()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L685"
-    },
-    {
-      "id": "src_tauri_src_selection_system_apps",
-      "label": "SYSTEM_APPS",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "system_apps",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L13"
-    },
-    {
-      "id": "src_tauri_src_selection_visible_rect",
-      "label": "visible_rect()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "visible_rect()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L268"
-    },
-    {
-      "id": "src_tauri_src_selection_windows_on",
-      "label": "windows_on()",
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "selection.rs",
-      "file_type": "code",
-      "norm_label": "windows_on()",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L308"
     },
     {
       "id": "package",
@@ -8909,17 +8700,6 @@
       "norm_label": "description",
       "source_file": "package.json",
       "source_location": "L5"
-    },
-    {
-      "id": "package_devdependencies_vitest_coverage_v8",
-      "label": "@vitest/coverage-v8@^5.0.5",
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "Package Module",
-      "file_type": "code",
-      "norm_label": "@vitest/coverage-v8@^5.0.5",
-      "source_file": "package.json",
-      "source_location": "L70"
     },
     {
       "id": "package_engines",
@@ -9043,17 +8823,6 @@
       "source_location": "L3"
     },
     {
-      "id": "ref_vitest_coverage_v8",
-      "label": "@vitest/coverage-v8",
-      "_origin": "ast",
-      "community": 30,
-      "community_name": "Package Module",
-      "file_type": "concept",
-      "norm_label": "@vitest/coverage-v8",
-      "source_file": "package.json",
-      "source_location": "L70"
-    },
-    {
       "id": "src_tauri_src_capture_monitor_area",
       "label": "monitor_area()",
       "_origin": "ast",
@@ -9085,6 +8854,28 @@
       "norm_label": "apply_liquid_glass()",
       "source_file": "src-tauri/src/lib.rs",
       "source_location": "L427"
+    },
+    {
+      "id": "src_tauri_src_lib_editor_label",
+      "label": "editor_label()",
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "Interactive Editor Canvas",
+      "file_type": "code",
+      "norm_label": "editor_label()",
+      "source_file": "src-tauri/src/lib.rs",
+      "source_location": "L44"
+    },
+    {
+      "id": "src_tauri_src_lib_editor_windows_are_labelled_by_screenshot_id",
+      "label": "editor_windows_are_labelled_by_screenshot_id()",
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "Interactive Editor Canvas",
+      "file_type": "code",
+      "norm_label": "editor_windows_are_labelled_by_screenshot_id()",
+      "source_file": "src-tauri/src/lib.rs",
+      "source_location": "L846"
     },
     {
       "id": "src_tauri_src_lib_keep_on_screen",
@@ -9558,17 +9349,6 @@
       "norm_label": "@tauri-apps/plugin-updater@^2.14.1",
       "source_file": "package.json",
       "source_location": "L50"
-    },
-    {
-      "id": "package_dependencies_tesseract_js",
-      "label": "tesseract.js@^7.0.0",
-      "_origin": "ast",
-      "community": 34,
-      "community_name": "Live Text OCR Engine",
-      "file_type": "code",
-      "norm_label": "tesseract.js@^7.0.0",
-      "source_file": "package.json",
-      "source_location": "L56"
     },
     {
       "id": "package_dependencies_tesseract_js_data_deu",
@@ -10649,17 +10429,6 @@
       "source_location": "L6"
     },
     {
-      "id": "src_tauri_src_lib_args",
-      "label": "args()",
-      "_origin": "ast",
-      "community": 47,
-      "community_name": "Args() Module",
-      "file_type": "code",
-      "norm_label": "args()",
-      "source_file": "src-tauri/src/lib.rs",
-      "source_location": "L801"
-    },
-    {
       "id": "src_tauri_src_lib_binaries_changed",
       "label": "binaries_changed()",
       "_origin": "ast",
@@ -10682,17 +10451,6 @@
       "source_location": "L594"
     },
     {
-      "id": "src_tauri_src_lib_capture_arg",
-      "label": "capture_arg()",
-      "_origin": "ast",
-      "community": 47,
-      "community_name": "Args() Module",
-      "file_type": "code",
-      "norm_label": "capture_arg()",
-      "source_file": "src-tauri/src/lib.rs",
-      "source_location": "L36"
-    },
-    {
       "id": "src_tauri_src_lib_detects_when_a_watched_binary_is_replaced_or_removed",
       "label": "detects_when_a_watched_binary_is_replaced_or_removed()",
       "_origin": "ast",
@@ -10702,28 +10460,6 @@
       "norm_label": "detects_when_a_watched_binary_is_replaced_or_removed()",
       "source_file": "src-tauri/src/lib.rs",
       "source_location": "L904"
-    },
-    {
-      "id": "src_tauri_src_lib_reads_the_capture_argument",
-      "label": "reads_the_capture_argument()",
-      "_origin": "ast",
-      "community": 47,
-      "community_name": "Args() Module",
-      "file_type": "code",
-      "norm_label": "reads_the_capture_argument()",
-      "source_file": "src-tauri/src/lib.rs",
-      "source_location": "L835"
-    },
-    {
-      "id": "src_tauri_src_lib_run",
-      "label": "run()",
-      "_origin": "ast",
-      "community": 47,
-      "community_name": "Args() Module",
-      "file_type": "code",
-      "norm_label": "run()",
-      "source_file": "src-tauri/src/lib.rs",
-      "source_location": "L636"
     },
     {
       "id": "src_tauri_src_lib_watched_binaries",
@@ -10823,28 +10559,6 @@
       "norm_label": "runs-on",
       "source_file": ".github/workflows/release.yml",
       "source_location": "L23"
-    },
-    {
-      "id": "src_tauri_src_capture_is_wayland",
-      "label": "is_wayland()",
-      "_origin": "ast",
-      "community": 49,
-      "community_name": "Pending Module",
-      "file_type": "code",
-      "norm_label": "is_wayland()",
-      "source_file": "src-tauri/src/capture.rs",
-      "source_location": "L40"
-    },
-    {
-      "id": "src_tauri_src_lib_platform_3c72ab",
-      "label": "platform()",
-      "_origin": "ast",
-      "community": 49,
-      "community_name": "Pending Module",
-      "file_type": "code",
-      "norm_label": "platform()",
-      "source_file": "src-tauri/src/lib.rs",
-      "source_location": "L329"
     },
     {
       "id": "src_tauri_src_lib_registers_only_known_actions_with_keys",
@@ -11773,6 +11487,28 @@
       "source_location": "L916"
     },
     {
+      "id": "src_tauri_src_lib_args",
+      "label": "args()",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "Clipboardext Module",
+      "file_type": "code",
+      "norm_label": "args()",
+      "source_file": "src-tauri/src/lib.rs",
+      "source_location": "L801"
+    },
+    {
+      "id": "src_tauri_src_lib_capture_arg",
+      "label": "capture_arg()",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "Clipboardext Module",
+      "file_type": "code",
+      "norm_label": "capture_arg()",
+      "source_file": "src-tauri/src/lib.rs",
+      "source_location": "L36"
+    },
+    {
       "id": "src_tauri_src_lib_cgpreflightscreencaptureaccess",
       "label": "CGPreflightScreenCaptureAccess()",
       "_origin": "ast",
@@ -11806,28 +11542,6 @@
       "source_location": "L876"
     },
     {
-      "id": "src_tauri_src_lib_editor_label",
-      "label": "editor_label()",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "Clipboardext Module",
-      "file_type": "code",
-      "norm_label": "editor_label()",
-      "source_file": "src-tauri/src/lib.rs",
-      "source_location": "L44"
-    },
-    {
-      "id": "src_tauri_src_lib_editor_windows_are_labelled_by_screenshot_id",
-      "label": "editor_windows_are_labelled_by_screenshot_id()",
-      "_origin": "ast",
-      "community": 6,
-      "community_name": "Clipboardext Module",
-      "file_type": "code",
-      "norm_label": "editor_windows_are_labelled_by_screenshot_id()",
-      "source_file": "src-tauri/src/lib.rs",
-      "source_location": "L846"
-    },
-    {
       "id": "src_tauri_src_lib_external_url",
       "label": "external_url()",
       "_origin": "ast",
@@ -11859,6 +11573,50 @@
       "norm_label": "pages",
       "source_file": "src-tauri/src/lib.rs",
       "source_location": "L24"
+    },
+    {
+      "id": "src_tauri_src_lib_parse_theme_blend",
+      "label": "parse_theme_blend()",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "Clipboardext Module",
+      "file_type": "code",
+      "norm_label": "parse_theme_blend()",
+      "source_file": "src-tauri/src/lib.rs",
+      "source_location": "L505"
+    },
+    {
+      "id": "src_tauri_src_lib_platform_3c72ab",
+      "label": "platform()",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "Clipboardext Module",
+      "file_type": "code",
+      "norm_label": "platform()",
+      "source_file": "src-tauri/src/lib.rs",
+      "source_location": "L329"
+    },
+    {
+      "id": "src_tauri_src_lib_reads_only_valid_saved_blends",
+      "label": "reads_only_valid_saved_blends()",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "Clipboardext Module",
+      "file_type": "code",
+      "norm_label": "reads_only_valid_saved_blends()",
+      "source_file": "src-tauri/src/lib.rs",
+      "source_location": "L883"
+    },
+    {
+      "id": "src_tauri_src_lib_reads_the_capture_argument",
+      "label": "reads_the_capture_argument()",
+      "_origin": "ast",
+      "community": 6,
+      "community_name": "Clipboardext Module",
+      "file_type": "code",
+      "norm_label": "reads_the_capture_argument()",
+      "source_file": "src-tauri/src/lib.rs",
+      "source_location": "L835"
     },
     {
       "id": "src_tauri_src_lib_screen_access",
@@ -12327,37 +12085,224 @@
       "source_location": "L4"
     },
     {
-      "id": "test_chrome",
-      "label": "test/Chrome.ts",
+      "id": "rect",
+      "label": "Rect",
       "_origin": "ast",
       "community": 7,
-      "community_name": "Background.test.ts",
+      "community_name": "selection.rs",
       "file_type": "code",
-      "norm_label": "test/chrome.ts",
-      "source_file": "test/Chrome.ts",
+      "norm_label": "rect",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "rgbaimage",
+      "label": "RgbaImage",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "rgbaimage",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "sender",
+      "label": "Sender",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "sender",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_tauri_src_selection",
+      "label": "selection.rs",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "selection.rs",
+      "source_file": "src-tauri/src/selection.rs",
       "source_location": "L1"
     },
     {
-      "id": "test_chrome_png_data_url",
-      "label": "PNG_DATA_URL",
+      "id": "src_tauri_src_selection_cancels_on_nothing_or_an_empty_region",
+      "label": "cancels_on_nothing_or_an_empty_region()",
       "_origin": "ast",
       "community": 7,
-      "community_name": "Background.test.ts",
+      "community_name": "selection.rs",
       "file_type": "code",
-      "norm_label": "png_data_url",
-      "source_file": "test/Chrome.ts",
+      "norm_label": "cancels_on_nothing_or_an_empty_region()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L656"
+    },
+    {
+      "id": "src_tauri_src_selection_crop",
+      "label": "crop()",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "crop()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L505"
+    },
+    {
+      "id": "src_tauri_src_selection_crops_a_region_in_capture_pixels",
+      "label": "crops_a_region_in_capture_pixels()",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "crops_a_region_in_capture_pixels()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L566"
+    },
+    {
+      "id": "src_tauri_src_selection_cursor_point",
+      "label": "cursor_point()",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "cursor_point()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L249"
+    },
+    {
+      "id": "src_tauri_src_selection_frame_39d88b",
+      "label": "frame()",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "frame()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L532"
+    },
+    {
+      "id": "src_tauri_src_selection_keeps_windows_overlapping_the_monitor",
+      "label": "keeps_windows_overlapping_the_monitor()",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "keeps_windows_overlapping_the_monitor()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L668"
+    },
+    {
+      "id": "src_tauri_src_selection_maps_cursor_onto_monitor_units_only_when_inside",
+      "label": "maps_cursor_onto_monitor_units_only_when_inside()",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "maps_cursor_onto_monitor_units_only_when_inside()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L640"
+    },
+    {
+      "id": "src_tauri_src_selection_pick",
+      "label": "pick()",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "pick()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L520"
+    },
+    {
+      "id": "src_tauri_src_selection_picked_region",
+      "label": "Region",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "region",
+      "source_file": "src-tauri/src/selection.rs",
       "source_location": "L55"
     },
     {
-      "id": "test_unit_background_test",
-      "label": "Background.test.ts",
+      "id": "src_tauri_src_selection_picked_window",
+      "label": "Window",
       "_origin": "ast",
       "community": 7,
-      "community_name": "Background.test.ts",
+      "community_name": "selection.rs",
       "file_type": "code",
-      "norm_label": "background.test.ts",
-      "source_file": "test/unit/Background.test.ts",
-      "source_location": "L1"
+      "norm_label": "window",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L56"
+    },
+    {
+      "id": "src_tauri_src_selection_picks_only_offered_windows_with_cropped_fallback",
+      "label": "picks_only_offered_windows_with_cropped_fallback()",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "picks_only_offered_windows_with_cropped_fallback()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L580"
+    },
+    {
+      "id": "src_tauri_src_selection_resolve_window_image",
+      "label": "resolve_window_image()",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "resolve_window_image()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L510"
+    },
+    {
+      "id": "src_tauri_src_selection_resolves_window_image_using_fallback_when_standalone_missing",
+      "label": "resolves_window_image_using_fallback_when_standalone_missing()",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "resolves_window_image_using_fallback_when_standalone_missing()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L592"
+    },
+    {
+      "id": "src_tauri_src_selection_skips_windows_elsewhere_or_too_small",
+      "label": "skips_windows_elsewhere_or_too_small()",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "skips_windows_elsewhere_or_too_small()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L685"
+    },
+    {
+      "id": "src_tauri_src_selection_system_apps",
+      "label": "SYSTEM_APPS",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "system_apps",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L13"
+    },
+    {
+      "id": "src_tauri_src_selection_visible_rect",
+      "label": "visible_rect()",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "selection.rs",
+      "file_type": "code",
+      "norm_label": "visible_rect()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L268"
     },
     {
       "id": "request",
@@ -12560,26 +12505,103 @@
       "source_location": "L1"
     },
     {
-      "id": "package_devdependencies_fake_indexeddb",
-      "label": "fake-indexeddb@^6.2.6",
+      "id": "mutex",
+      "label": "Mutex",
       "_origin": "ast",
       "community": 77,
-      "community_name": "fake-indexeddb",
+      "community_name": "finish_selection",
       "file_type": "code",
-      "norm_label": "fake-indexeddb@^6.2.6",
-      "source_file": "package.json",
-      "source_location": "L73"
+      "norm_label": "mutex",
+      "source_file": "",
+      "source_location": ""
     },
     {
-      "id": "ref_fake_indexeddb",
-      "label": "fake-indexeddb",
+      "id": "response",
+      "label": "Response",
       "_origin": "ast",
       "community": 77,
-      "community_name": "fake-indexeddb",
-      "file_type": "concept",
-      "norm_label": "fake-indexeddb",
-      "source_file": "package.json",
-      "source_location": "L73"
+      "community_name": "finish_selection",
+      "file_type": "code",
+      "norm_label": "response",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_tauri_src_selection_activate_app",
+      "label": "activate_app()",
+      "_origin": "ast",
+      "community": 77,
+      "community_name": "finish_selection",
+      "file_type": "code",
+      "norm_label": "activate_app()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L101"
+    },
+    {
+      "id": "src_tauri_src_selection_finish_selection",
+      "label": "finish_selection()",
+      "_origin": "ast",
+      "community": 77,
+      "community_name": "finish_selection",
+      "file_type": "code",
+      "norm_label": "finish_selection()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L484"
+    },
+    {
+      "id": "src_tauri_src_selection_overlay_frame",
+      "label": "overlay_frame()",
+      "_origin": "ast",
+      "community": 77,
+      "community_name": "finish_selection",
+      "file_type": "code",
+      "norm_label": "overlay_frame()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L450"
+    },
+    {
+      "id": "src_tauri_src_selection_overlay_info",
+      "label": "overlay_info()",
+      "_origin": "ast",
+      "community": 77,
+      "community_name": "finish_selection",
+      "file_type": "code",
+      "norm_label": "overlay_info()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L463"
+    },
+    {
+      "id": "src_tauri_src_selection_prepare_overlay",
+      "label": "prepare_overlay()",
+      "_origin": "ast",
+      "community": 77,
+      "community_name": "finish_selection",
+      "file_type": "code",
+      "norm_label": "prepare_overlay()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L87"
+    },
+    {
+      "id": "state",
+      "label": "State",
+      "_origin": "ast",
+      "community": 77,
+      "community_name": "finish_selection",
+      "file_type": "code",
+      "norm_label": "state",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "webviewwindow",
+      "label": "WebviewWindow",
+      "_origin": "ast",
+      "community": 77,
+      "community_name": "finish_selection",
+      "file_type": "code",
+      "norm_label": "webviewwindow",
+      "source_file": "",
+      "source_location": ""
     },
     {
       "id": "package_devdependencies_lint_staged",
@@ -12923,70 +12945,169 @@
       "source_location": "L14"
     },
     {
-      "id": "package_devdependencies_remotion_shapes",
-      "label": "@remotion/shapes@^4.0.542",
+      "id": "apphandle",
+      "label": "AppHandle",
       "_origin": "ast",
       "community": 80,
-      "community_name": "Remotion Video Generation",
+      "community_name": "select",
       "file_type": "code",
-      "norm_label": "@remotion/shapes@^4.0.542",
-      "source_file": "package.json",
-      "source_location": "L61"
+      "norm_label": "apphandle",
+      "source_file": "",
+      "source_location": ""
     },
     {
-      "id": "ref_remotion_shapes",
-      "label": "@remotion/shapes",
+      "id": "src_tauri_src_selection_cancel",
+      "label": "cancel()",
       "_origin": "ast",
       "community": 80,
-      "community_name": "Remotion Video Generation",
-      "file_type": "concept",
-      "norm_label": "@remotion/shapes",
-      "source_file": "package.json",
-      "source_location": "L61"
+      "community_name": "select",
+      "file_type": "code",
+      "norm_label": "cancel()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L441"
     },
     {
-      "id": "package_devdependencies_types_react_dom",
-      "label": "@types/react-dom@^19.3.0",
+      "id": "src_tauri_src_selection_close_overlays",
+      "label": "close_overlays()",
+      "_origin": "ast",
+      "community": 80,
+      "community_name": "select",
+      "file_type": "code",
+      "norm_label": "close_overlays()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L366"
+    },
+    {
+      "id": "src_tauri_src_selection_kind_region",
+      "label": "Region",
+      "_origin": "ast",
+      "community": 80,
+      "community_name": "select",
+      "file_type": "code",
+      "norm_label": "region",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L70"
+    },
+    {
+      "id": "src_tauri_src_selection_kind_window",
+      "label": "Window",
+      "_origin": "ast",
+      "community": 80,
+      "community_name": "select",
+      "file_type": "code",
+      "norm_label": "window",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L71"
+    },
+    {
+      "id": "src_tauri_src_selection_overlay_window",
+      "label": "overlay_window()",
+      "_origin": "ast",
+      "community": 80,
+      "community_name": "select",
+      "file_type": "code",
+      "norm_label": "overlay_window()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L321"
+    },
+    {
+      "id": "src_tauri_src_selection_select",
+      "label": "select()",
+      "_origin": "ast",
+      "community": 80,
+      "community_name": "select",
+      "file_type": "code",
+      "norm_label": "select()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L377"
+    },
+    {
+      "id": "monitor",
+      "label": "Monitor",
       "_origin": "ast",
       "community": 81,
-      "community_name": "@types/react-dom@^19.3.0",
+      "community_name": "filter_window",
       "file_type": "code",
-      "norm_label": "@types/react-dom@^19.3.0",
-      "source_file": "package.json",
-      "source_location": "L68"
+      "norm_label": "monitor",
+      "source_file": "",
+      "source_location": ""
     },
     {
-      "id": "ref_types_react_dom",
-      "label": "@types/react-dom",
+      "id": "src_tauri_src_selection_filter_window",
+      "label": "filter_window()",
       "_origin": "ast",
       "community": 81,
-      "community_name": "@types/react-dom@^19.3.0",
-      "file_type": "concept",
-      "norm_label": "@types/react-dom",
-      "source_file": "package.json",
-      "source_location": "L68"
-    },
-    {
-      "id": "package_devdependencies_types_chrome",
-      "label": "@types/chrome@^0.3.6",
-      "_origin": "ast",
-      "community": 82,
-      "community_name": "@Types/Chrome@^0.3.6 Module",
+      "community_name": "filter_window",
       "file_type": "code",
-      "norm_label": "@types/chrome@^0.3.6",
-      "source_file": "package.json",
-      "source_location": "L65"
+      "norm_label": "filter_window()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L283"
     },
     {
-      "id": "ref_types_chrome",
-      "label": "@types/chrome",
+      "id": "src_tauri_src_selection_filters_windows_by_layer_alpha_onscreen_and_system_apps",
+      "label": "filters_windows_by_layer_alpha_onscreen_and_system_apps()",
+      "_origin": "ast",
+      "community": 81,
+      "community_name": "filter_window",
+      "file_type": "code",
+      "norm_label": "filters_windows_by_layer_alpha_onscreen_and_system_apps()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L611"
+    },
+    {
+      "id": "src_tauri_src_selection_raw_window",
+      "label": "raw_window()",
+      "_origin": "ast",
+      "community": 81,
+      "community_name": "filter_window",
+      "file_type": "code",
+      "norm_label": "raw_window()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L552"
+    },
+    {
+      "id": "src_tauri_src_selection_raw_windows",
+      "label": "raw_windows()",
+      "_origin": "ast",
+      "community": 81,
+      "community_name": "filter_window",
+      "file_type": "code",
+      "norm_label": "raw_windows()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L110"
+    },
+    {
+      "id": "src_tauri_src_selection_windows_on",
+      "label": "windows_on()",
+      "_origin": "ast",
+      "community": 81,
+      "community_name": "filter_window",
+      "file_type": "code",
+      "norm_label": "windows_on()",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L308"
+    },
+    {
+      "id": "src_desktop_theme",
+      "label": "desktop/Theme.ts",
       "_origin": "ast",
       "community": 82,
-      "community_name": "@Types/Chrome@^0.3.6 Module",
-      "file_type": "concept",
-      "norm_label": "@types/chrome",
-      "source_file": "package.json",
-      "source_location": "L65"
+      "community_name": "desktop/Theme.ts",
+      "file_type": "code",
+      "norm_label": "desktop/theme.ts",
+      "source_file": "src/desktop/Theme.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "test_unit_desktop_theme_test",
+      "label": "Theme.test.ts",
+      "_origin": "ast",
+      "community": 82,
+      "community_name": "desktop/Theme.ts",
+      "file_type": "code",
+      "norm_label": "theme.test.ts",
+      "source_file": "test/unit/desktop/Theme.test.ts",
+      "source_location": "L1"
     },
     {
       "id": "package_devdependencies_types_node",
@@ -13011,48 +13132,81 @@
       "source_location": "L66"
     },
     {
-      "id": "package_devdependencies_types_react",
-      "label": "@types/react@^19.3.0",
+      "id": "src_tauri_src_capture_rs_mutex",
+      "label": "Mutex",
       "_origin": "ast",
       "community": 84,
-      "community_name": "@Types/React@^19.3.0 Module",
+      "community_name": "take_capture",
       "file_type": "code",
-      "norm_label": "@types/react@^19.3.0",
-      "source_file": "package.json",
-      "source_location": "L67"
+      "norm_label": "mutex",
+      "source_file": "",
+      "source_location": ""
     },
     {
-      "id": "ref_types_react",
-      "label": "@types/react",
+      "id": "src_tauri_src_capture_rs_response",
+      "label": "Response",
       "_origin": "ast",
       "community": 84,
-      "community_name": "@Types/React@^19.3.0 Module",
-      "file_type": "concept",
-      "norm_label": "@types/react",
-      "source_file": "package.json",
-      "source_location": "L67"
-    },
-    {
-      "id": "package_devdependencies_vitest_canvas_mock",
-      "label": "vitest-canvas-mock@^1.2.0",
-      "_origin": "ast",
-      "community": 85,
-      "community_name": "vitest-canvas-mock",
+      "community_name": "take_capture",
       "file_type": "code",
-      "norm_label": "vitest-canvas-mock@^1.2.0",
-      "source_file": "package.json",
-      "source_location": "L85"
+      "norm_label": "response",
+      "source_file": "",
+      "source_location": ""
     },
     {
-      "id": "ref_vitest_canvas_mock",
-      "label": "vitest-canvas-mock",
+      "id": "src_tauri_src_capture_rs_state",
+      "label": "State",
+      "_origin": "ast",
+      "community": 84,
+      "community_name": "take_capture",
+      "file_type": "code",
+      "norm_label": "state",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_tauri_src_capture_take_capture",
+      "label": "take_capture()",
+      "_origin": "ast",
+      "community": 84,
+      "community_name": "take_capture",
+      "file_type": "code",
+      "norm_label": "take_capture()",
+      "source_file": "src-tauri/src/capture.rs",
+      "source_location": "L181"
+    },
+    {
+      "id": "src_popup_root",
+      "label": "root",
       "_origin": "ast",
       "community": 85,
-      "community_name": "vitest-canvas-mock",
-      "file_type": "concept",
-      "norm_label": "vitest-canvas-mock",
+      "community_name": "Popup HTML Host",
+      "file_type": "code",
+      "norm_label": "root",
+      "source_file": "src/Popup.tsx",
+      "source_location": "L363"
+    },
+    {
+      "id": "package_devdependencies_husky",
+      "label": "husky@^9.1.7",
+      "_origin": "ast",
+      "community": 86,
+      "community_name": "husky@^9.1.7",
+      "file_type": "code",
+      "norm_label": "husky@^9.1.7",
       "source_file": "package.json",
-      "source_location": "L85"
+      "source_location": "L75"
+    },
+    {
+      "id": "ref_husky",
+      "label": "husky",
+      "_origin": "ast",
+      "community": 86,
+      "community_name": "husky@^9.1.7",
+      "file_type": "concept",
+      "norm_label": "husky",
+      "source_file": "package.json",
+      "source_location": "L75"
     },
     {
       "id": "package_devdependencies_vitejs_plugin_react",
@@ -13130,50 +13284,6 @@
       "norm_label": "filters",
       "source_file": "src/History.tsx",
       "source_location": "L29"
-    },
-    {
-      "id": "src_lib_export",
-      "label": "Export.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "History.tsx",
-      "file_type": "code",
-      "norm_label": "export.ts",
-      "source_file": "src/lib/Export.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_export_test",
-      "label": "src/lib/Export.test.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "History.tsx",
-      "file_type": "code",
-      "norm_label": "src/lib/export.test.ts",
-      "source_file": "src/lib/Export.test.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_lib_export_test_jpeg",
-      "label": "jpeg",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "History.tsx",
-      "file_type": "code",
-      "norm_label": "jpeg",
-      "source_file": "src/lib/Export.test.ts",
-      "source_location": "L15"
-    },
-    {
-      "id": "src_lib_export_win_ansi",
-      "label": "WIN_ANSI",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "History.tsx",
-      "file_type": "code",
-      "norm_label": "win_ansi",
-      "source_file": "src/lib/Export.ts",
-      "source_location": "L52"
     },
     {
       "id": "src_platform_chrome",
@@ -13262,28 +13372,6 @@
       "norm_label": "shortcut_hints",
       "source_file": "src/platform/Chrome.ts",
       "source_location": "L12"
-    },
-    {
-      "id": "test_unit_lib_export_test",
-      "label": "unit/lib/Export.test.ts",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "History.tsx",
-      "file_type": "code",
-      "norm_label": "unit/lib/export.test.ts",
-      "source_file": "test/unit/lib/Export.test.ts",
-      "source_location": "L1"
-    },
-    {
-      "id": "test_unit_lib_export_test_jpeg",
-      "label": "jpeg",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "History.tsx",
-      "file_type": "code",
-      "norm_label": "jpeg",
-      "source_file": "test/unit/lib/Export.test.ts",
-      "source_location": "L15"
     },
     {
       "id": "test_unit_platform_chromeplatform_test",
@@ -13387,7 +13475,7 @@
       "label": "Home HTML Host",
       "_origin": "semantic",
       "community": 13,
-      "community_name": "Desktop Home Control",
+      "community_name": "Home",
       "file_type": "document",
       "norm_label": "home html host",
       "rationale": "Mounting document for home.html",
@@ -13453,30 +13541,6 @@
       "rationale": "Mounting document for overlay.html",
       "source_file": "overlay.html",
       "source_location": "L1"
-    },
-    {
-      "id": "popup_html_root",
-      "label": "Popup HTML Host",
-      "_origin": "semantic",
-      "community": 26,
-      "community_name": "Popup Html Host Module",
-      "file_type": "document",
-      "norm_label": "popup html host",
-      "rationale": "Mounting document for popup.html",
-      "source_file": "popup.html",
-      "source_location": "L1"
-    },
-    {
-      "id": "public_icons_icon_128",
-      "label": "Extension App Icon 128px",
-      "_origin": "semantic",
-      "community": 26,
-      "community_name": "Popup Html Host Module",
-      "file_type": "image",
-      "norm_label": "extension app icon 128px",
-      "rationale": "Visual UI asset representing Extension App Icon 128px",
-      "source_file": "public/icons/icon-128.png",
-      "source_location": null
     },
     {
       "id": "store_screenshots_3_capture_modes",
@@ -13681,6 +13745,30 @@
       "rationale": "Rules for GitHub Copilot in Daguerre repo",
       "source_file": ".github/copilot-instructions.md",
       "source_location": "L1"
+    },
+    {
+      "id": "popup_html_root",
+      "label": "Popup HTML Host",
+      "_origin": "semantic",
+      "community": 85,
+      "community_name": "Popup HTML Host",
+      "file_type": "document",
+      "norm_label": "popup html host",
+      "rationale": "Mounting document for popup.html",
+      "source_file": "popup.html",
+      "source_location": "L1"
+    },
+    {
+      "id": "public_icons_icon_128",
+      "label": "Extension App Icon 128px",
+      "_origin": "semantic",
+      "community": 85,
+      "community_name": "Popup HTML Host",
+      "file_type": "image",
+      "norm_label": "extension app icon 128px",
+      "rationale": "Visual UI asset representing Extension App Icon 128px",
+      "source_file": "public/icons/icon-128.png",
+      "source_location": null
     },
     {
       "id": "public_icons_icon_16_png",
@@ -13956,17 +14044,6 @@
       "type": "external"
     },
     {
-      "id": "super",
-      "label": "super",
-      "community": 10,
-      "community_name": "Linux Wayland Portal Capture",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "super",
-      "source_file": "",
-      "type": "external"
-    },
-    {
       "id": "timeout",
       "label": "timeout",
       "community": 10,
@@ -14036,7 +14113,7 @@
       "id": "compressiontype",
       "label": "compressiontype",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "external": true,
       "file_type": "concept",
       "norm_label": "compressiontype",
@@ -14047,7 +14124,7 @@
       "id": "deserialize",
       "label": "deserialize",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "external": true,
       "file_type": "concept",
       "norm_label": "deserialize",
@@ -14058,7 +14135,7 @@
       "id": "extendedcolortype",
       "label": "extendedcolortype",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "external": true,
       "file_type": "concept",
       "norm_label": "extendedcolortype",
@@ -14069,7 +14146,7 @@
       "id": "filtertype",
       "label": "filtertype",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "external": true,
       "file_type": "concept",
       "norm_label": "filtertype",
@@ -14080,7 +14157,7 @@
       "id": "imageencoder",
       "label": "imageencoder",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "external": true,
       "file_type": "concept",
       "norm_label": "imageencoder",
@@ -14088,21 +14165,10 @@
       "type": "external"
     },
     {
-      "id": "imageops",
-      "label": "imageops",
-      "community": 3,
-      "community_name": "selection.rs",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "imageops",
-      "source_file": "",
-      "type": "external"
-    },
-    {
       "id": "manager",
       "label": "manager",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "external": true,
       "file_type": "concept",
       "norm_label": "manager",
@@ -14110,21 +14176,10 @@
       "type": "external"
     },
     {
-      "id": "oneshot",
-      "label": "oneshot",
-      "community": 3,
-      "community_name": "selection.rs",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "oneshot",
-      "source_file": "",
-      "type": "external"
-    },
-    {
       "id": "pngencoder",
       "label": "pngencoder",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "external": true,
       "file_type": "concept",
       "norm_label": "pngencoder",
@@ -14135,10 +14190,21 @@
       "id": "serialize",
       "label": "serialize",
       "community": 3,
-      "community_name": "selection.rs",
+      "community_name": "capture.rs",
       "external": true,
       "file_type": "concept",
       "norm_label": "serialize",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "super",
+      "label": "super",
+      "community": 3,
+      "community_name": "capture.rs",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "super",
       "source_file": "",
       "type": "external"
     },
@@ -14238,17 +14304,6 @@
       "external": true,
       "file_type": "concept",
       "norm_label": "globalshortcutext",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "hashmap",
-      "label": "hashmap",
-      "community": 6,
-      "community_name": "Clipboardext Module",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "hashmap",
       "source_file": "",
       "type": "external"
     },
@@ -14385,10 +14440,54 @@
       "type": "external"
     },
     {
-      "id": "webviewurl",
-      "label": "webviewurl",
+      "id": "windowevent",
+      "label": "windowevent",
       "community": 6,
       "community_name": "Clipboardext Module",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "windowevent",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "hashmap",
+      "label": "hashmap",
+      "community": 7,
+      "community_name": "selection.rs",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "hashmap",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "imageops",
+      "label": "imageops",
+      "community": 7,
+      "community_name": "selection.rs",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "imageops",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "oneshot",
+      "label": "oneshot",
+      "community": 7,
+      "community_name": "selection.rs",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "oneshot",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "webviewurl",
+      "label": "webviewurl",
+      "community": 7,
+      "community_name": "selection.rs",
       "external": true,
       "file_type": "concept",
       "norm_label": "webviewurl",
@@ -14398,22 +14497,11 @@
     {
       "id": "webviewwindowbuilder",
       "label": "webviewwindowbuilder",
-      "community": 6,
-      "community_name": "Clipboardext Module",
+      "community": 7,
+      "community_name": "selection.rs",
       "external": true,
       "file_type": "concept",
       "norm_label": "webviewwindowbuilder",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "windowevent",
-      "label": "windowevent",
-      "community": 6,
-      "community_name": "Clipboardext Module",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "windowevent",
       "source_file": "",
       "type": "external"
     }
@@ -15704,7 +15792,7 @@
     },
     {
       "source": "src_tauri_src_selection_picked",
-      "target": "src_tauri_src_selection_rs_rgbaimage",
+      "target": "rgbaimage",
       "relation": "references",
       "_origin": "ast",
       "also_seen": [
@@ -20420,18 +20508,6 @@
     },
     {
       "source": "src_tauri_src_selection_select",
-      "target": "src_tauri_src_capture_is_wayland",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L378",
-      "weight": 1.0
-    },
-    {
-      "source": "src_tauri_src_selection_select",
       "target": "src_tauri_src_selection_cancel",
       "relation": "calls",
       "_origin": "ast",
@@ -20440,18 +20516,6 @@
       "context": "call",
       "source_file": "src-tauri/src/selection.rs",
       "source_location": "L381",
-      "weight": 1.0
-    },
-    {
-      "source": "src_tauri_src_selection_select",
-      "target": "src_tauri_src_capture_portal_capture",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L384",
       "weight": 1.0
     },
     {
@@ -21879,7 +21943,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "test/unit/ReleaseAutomation.test.ts",
-      "source_location": "L57",
+      "source_location": "L59",
       "weight": 1.0
     },
     {
@@ -22076,7 +22140,7 @@
     },
     {
       "source": "src_tauri_src_selection_frame",
-      "target": "src_tauri_src_selection_rs_rgbaimage",
+      "target": "rgbaimage",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -22088,7 +22152,7 @@
     },
     {
       "source": "src_tauri_src_selection_pickablewindow",
-      "target": "src_tauri_src_selection_rs_rect",
+      "target": "rect",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -22100,7 +22164,7 @@
     },
     {
       "source": "src_tauri_src_selection_selection",
-      "target": "src_tauri_src_selection_rs_mutex",
+      "target": "mutex",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -22340,7 +22404,7 @@
     },
     {
       "source": "src_tauri_src_selection_crop",
-      "target": "src_tauri_src_selection_rs_rgbaimage",
+      "target": "rgbaimage",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -22376,7 +22440,7 @@
     },
     {
       "source": "src_tauri_src_selection_finish_selection",
-      "target": "src_tauri_src_selection_rs_rect",
+      "target": "rect",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -22424,7 +22488,7 @@
     },
     {
       "source": "src_tauri_src_selection_overlay_frame",
-      "target": "src_tauri_src_selection_rs_response",
+      "target": "response",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -22496,7 +22560,7 @@
     },
     {
       "source": "src_tauri_src_selection_pick",
-      "target": "src_tauri_src_selection_picked",
+      "target": "rect",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -22508,7 +22572,7 @@
     },
     {
       "source": "src_tauri_src_selection_pick",
-      "target": "src_tauri_src_selection_rs_rect",
+      "target": "src_tauri_src_selection_picked",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -22520,7 +22584,7 @@
     },
     {
       "source": "src_tauri_src_selection_resolve_window_image",
-      "target": "src_tauri_src_selection_rs_rgbaimage",
+      "target": "rgbaimage",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -22580,7 +22644,7 @@
     },
     {
       "source": "src_tauri_src_selection_visible_rect",
-      "target": "src_tauri_src_selection_rs_rect",
+      "target": "rect",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -31629,7 +31693,7 @@
     },
     {
       "source": "src_tauri_src_selection",
-      "target": "src_tauri_src_selection_rs_mutex",
+      "target": "mutex",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -31637,6 +31701,18 @@
       "context": "import",
       "source_file": "src-tauri/src/selection.rs",
       "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "src_tauri_src_selection",
+      "target": "rect",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L10",
       "weight": 1.0
     },
     {
@@ -31713,18 +31789,6 @@
     },
     {
       "source": "src_tauri_src_selection",
-      "target": "src_tauri_src_selection_rs_rect",
-      "relation": "imports_from",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L10",
-      "weight": 1.0
-    },
-    {
-      "source": "src_tauri_src_selection",
       "target": "deserialize",
       "relation": "imports_from",
       "_origin": "ast",
@@ -31749,6 +31813,18 @@
     },
     {
       "source": "src_tauri_src_selection",
+      "target": "apphandle",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_tauri_src_selection",
       "target": "manager",
       "relation": "imports_from",
       "_origin": "ast",
@@ -31761,7 +31837,7 @@
     },
     {
       "source": "src_tauri_src_selection",
-      "target": "src_tauri_src_selection_rs_apphandle",
+      "target": "response",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -31773,31 +31849,7 @@
     },
     {
       "source": "src_tauri_src_selection",
-      "target": "src_tauri_src_selection_rs_response",
-      "relation": "imports_from",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L5",
-      "weight": 1.0
-    },
-    {
-      "source": "src_tauri_src_selection",
-      "target": "src_tauri_src_selection_rs_state",
-      "relation": "imports_from",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "import",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L5",
-      "weight": 1.0
-    },
-    {
-      "source": "src_tauri_src_selection",
-      "target": "src_tauri_src_selection_rs_webviewwindow",
+      "target": "state",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -31810,6 +31862,18 @@
     {
       "source": "src_tauri_src_selection",
       "target": "webviewurl",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_tauri_src_selection",
+      "target": "webviewwindow",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -31869,7 +31933,7 @@
     },
     {
       "source": "src_tauri_src_selection",
-      "target": "src_tauri_src_selection_rs_rgbaimage",
+      "target": "rgbaimage",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -34324,7 +34388,7 @@
     },
     {
       "source": "src_tauri_src_selection_cancel",
-      "target": "src_tauri_src_selection_rs_apphandle",
+      "target": "apphandle",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -34336,7 +34400,7 @@
     },
     {
       "source": "src_tauri_src_selection_close_overlays",
-      "target": "src_tauri_src_selection_rs_apphandle",
+      "target": "apphandle",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -34348,7 +34412,7 @@
     },
     {
       "source": "src_tauri_src_selection_crop",
-      "target": "src_tauri_src_selection_frame",
+      "target": "rect",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -34360,7 +34424,7 @@
     },
     {
       "source": "src_tauri_src_selection_crop",
-      "target": "src_tauri_src_selection_rs_rect",
+      "target": "src_tauri_src_selection_frame",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -34384,7 +34448,7 @@
     },
     {
       "source": "src_tauri_src_selection_finish_selection",
-      "target": "src_tauri_src_selection_rs_state",
+      "target": "state",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -34396,7 +34460,7 @@
     },
     {
       "source": "src_tauri_src_selection_finish_selection",
-      "target": "src_tauri_src_selection_rs_webviewwindow",
+      "target": "webviewwindow",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -34408,7 +34472,7 @@
     },
     {
       "source": "src_tauri_src_selection_overlay_frame",
-      "target": "src_tauri_src_selection_rs_state",
+      "target": "state",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -34420,7 +34484,7 @@
     },
     {
       "source": "src_tauri_src_selection_overlay_frame",
-      "target": "src_tauri_src_selection_rs_webviewwindow",
+      "target": "webviewwindow",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -34432,7 +34496,7 @@
     },
     {
       "source": "src_tauri_src_selection_overlay_info",
-      "target": "src_tauri_src_selection_rs_state",
+      "target": "state",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -34444,7 +34508,7 @@
     },
     {
       "source": "src_tauri_src_selection_overlay_info",
-      "target": "src_tauri_src_selection_rs_webviewwindow",
+      "target": "webviewwindow",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -34456,31 +34520,31 @@
     },
     {
       "source": "src_tauri_src_selection_overlay_window",
+      "target": "apphandle",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "parameter_type",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L321",
+      "weight": 1.0
+    },
+    {
+      "source": "src_tauri_src_selection_overlay_window",
+      "target": "monitor",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "parameter_type",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L321",
+      "weight": 1.0
+    },
+    {
+      "source": "src_tauri_src_selection_overlay_window",
       "target": "src_tauri_src_selection_kind",
-      "relation": "references",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "parameter_type",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L321",
-      "weight": 1.0
-    },
-    {
-      "source": "src_tauri_src_selection_overlay_window",
-      "target": "src_tauri_src_selection_rs_apphandle",
-      "relation": "references",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "parameter_type",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L321",
-      "weight": 1.0
-    },
-    {
-      "source": "src_tauri_src_selection_overlay_window",
-      "target": "src_tauri_src_selection_rs_monitor",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -34504,7 +34568,7 @@
     },
     {
       "source": "src_tauri_src_selection_prepare_overlay",
-      "target": "src_tauri_src_selection_rs_webviewwindow",
+      "target": "webviewwindow",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -34512,6 +34576,18 @@
       "context": "parameter_type",
       "source_file": "src-tauri/src/selection.rs",
       "source_location": "L87",
+      "weight": 1.0
+    },
+    {
+      "source": "src_tauri_src_selection_select",
+      "target": "apphandle",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "parameter_type",
+      "source_file": "src-tauri/src/selection.rs",
+      "source_location": "L377",
       "weight": 1.0
     },
     {
@@ -34527,20 +34603,8 @@
       "weight": 1.0
     },
     {
-      "source": "src_tauri_src_selection_select",
-      "target": "src_tauri_src_selection_rs_apphandle",
-      "relation": "references",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "parameter_type",
-      "source_file": "src-tauri/src/selection.rs",
-      "source_location": "L377",
-      "weight": 1.0
-    },
-    {
       "source": "src_tauri_src_selection_windows_on",
-      "target": "src_tauri_src_selection_rs_monitor",
+      "target": "monitor",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -45161,5 +45225,5 @@
       "source_file": "README.md"
     }
   ],
-  "built_at_commit": "066cdda8362c76fb36f9773e8daad87d2e8c19a6"
+  "built_at_commit": "4cc0c7e484d475d9e1a55a73c797715d5f890800"
 }
