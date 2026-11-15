@@ -21,6 +21,7 @@ interface OverlayInfo {
   width: number;
   height: number;
   windows: PickableWindow[];
+  cursor?: Point;
 }
 
 type Point = { x: number; y: number };
@@ -67,6 +68,12 @@ export function Overlay() {
         url = URL.createObjectURL(new Blob([png], { type: 'image/png' }));
         setSrc(url);
         setInfo(next);
+        if (pickWindow) {
+          const underCursor =
+            next.cursor &&
+            next.windows.find((w) => inside(w.rect, next.cursor!));
+          setHover(underCursor ?? next.windows[0]);
+        }
       })
       .catch((error: unknown) => {
         clearTimeout(readyTimer.current);
@@ -80,7 +87,7 @@ export function Overlay() {
       if (url) URL.revokeObjectURL(url);
       removeEventListener('keydown', onKey);
     };
-  }, []);
+  }, [pickWindow]);
 
   const point = (e: ReactPointerEvent) => ({ x: e.clientX, y: e.clientY });
   const box =
@@ -108,16 +115,21 @@ export function Overlay() {
         h: hover.rect.h / k,
       };
 
+  const windowAt = (p: Point, current = info) =>
+    pickWindow && current
+      ? current.windows.find((w) => inside(w.rect, { x: p.x * k, y: p.y * k }))
+      : undefined;
+
   function onMove(e: ReactPointerEvent) {
     if (start) return setEnd(point(e));
     if (!pickWindow || !info) return;
-    const p = { x: e.clientX * k, y: e.clientY * k };
-    setHover(info.windows.find((w) => inside(w.rect, p)));
+    setHover(windowAt(point(e)));
   }
 
-  function onUp() {
+  function onUp(e: ReactPointerEvent) {
+    const picked = start ? windowAt(start) : (hover ?? windowAt(point(e)));
     if (dragging && box) void finish({ rect: scaled(box) });
-    else if (hover) void finish({ windowId: hover.id });
+    else if (picked) void finish({ windowId: picked.id });
     setStart(null);
     setEnd(null);
   }
@@ -127,8 +139,10 @@ export function Overlay() {
       className='overlay'
       onPointerDown={(e) => {
         e.currentTarget.setPointerCapture(e.pointerId);
-        setStart(point(e));
-        setEnd(point(e));
+        const p = point(e);
+        setStart(p);
+        setEnd(p);
+        if (pickWindow && info) setHover(windowAt(p));
       }}
       onPointerMove={onMove}
       onPointerUp={onUp}

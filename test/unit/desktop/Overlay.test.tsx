@@ -6,11 +6,28 @@ import { Overlay } from '../../../src/desktop/Overlay';
 let calls: { cmd: string; payload: any }[];
 let fail: boolean;
 let failWindow: string | undefined;
+let overlayInfo: {
+  width: number;
+  height: number;
+  windows: {
+    id: number;
+    title: string;
+    rect: { x: number; y: number; w: number; h: number };
+  }[];
+  cursor?: { x: number; y: number };
+};
 
 beforeEach(() => {
   calls = [];
   fail = false;
   failWindow = undefined;
+  overlayInfo = {
+    width: 2048,
+    height: 1536,
+    windows: [
+      { id: 7, title: 'Notes', rect: { x: 200, y: 200, w: 400, h: 300 } },
+    ],
+  };
   mockWindows('overlay-0');
   // jsdom's window is 1024 CSS px wide; the monitor is 2048 units wide.
   mockIPC((cmd, payload) => {
@@ -20,14 +37,7 @@ beforeEach(() => {
       if (fail) throw new Error('No selection in progress.');
       return new Uint8Array([1]).buffer;
     }
-    if (cmd === 'overlay_info')
-      return {
-        width: 2048,
-        height: 1536,
-        windows: [
-          { id: 7, title: 'Notes', rect: { x: 200, y: 200, w: 400, h: 300 } },
-        ],
-      };
+    if (cmd === 'overlay_info') return overlayInfo;
   });
 });
 afterEach(() => {
@@ -74,6 +84,36 @@ test('window mode highlights and picks the window under the pointer', async () =
   fireEvent.pointerDown(overlay, { clientX: 150, clientY: 150 });
   fireEvent.pointerUp(overlay);
   expect(finished()).toEqual([{ windowId: 7 }]);
+});
+
+test('window mode auto-selects the window under initial cursor or falls back to frontmost', async () => {
+  overlayInfo = {
+    width: 2048,
+    height: 1536,
+    windows: [
+      { id: 7, title: 'Notes', rect: { x: 200, y: 200, w: 400, h: 300 } },
+      { id: 9, title: 'Terminal', rect: { x: 800, y: 200, w: 500, h: 400 } },
+    ],
+    cursor: { x: 900, y: 300 },
+  };
+  await open('window');
+  expect(screen.getByText('Terminal')).toBeTruthy();
+});
+
+test('window mode auto-selects frontmost window when cursor is absent and supports direct click', async () => {
+  overlayInfo = {
+    width: 2048,
+    height: 1536,
+    windows: [
+      { id: 7, title: 'Notes', rect: { x: 200, y: 200, w: 400, h: 300 } },
+      { id: 9, title: 'Terminal', rect: { x: 800, y: 200, w: 500, h: 400 } },
+    ],
+  };
+  const overlay = await open('window');
+  expect(screen.getByText('Notes')).toBeTruthy();
+  fireEvent.pointerDown(overlay, { clientX: 450, clientY: 150 });
+  fireEvent.pointerUp(overlay, { clientX: 450, clientY: 150 });
+  expect(finished()).toEqual([{ windowId: 9 }]);
 });
 
 test('Escape cancels', async () => {
