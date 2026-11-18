@@ -134,6 +134,18 @@ test('the annotation toolbar suppresses horizontal scrolling while permitting ve
   );
 });
 
+test('the editor stage allows scrolling so long screenshots can scroll vertically and horizontally', () => {
+  const css = readFileSync('src/Styles.css', 'utf8');
+  const stageBlock = css.slice(
+    css.indexOf('.editor > .stage {'),
+    css.indexOf('\n}', css.indexOf('.editor > .stage {')),
+  );
+  expect(stageBlock).toContain('overflow: auto');
+  expect(stageBlock).toContain('min-width: 0');
+  expect(stageBlock).toContain('min-height: 0');
+  expect(stageBlock).not.toContain('overflow: hidden');
+});
+
 test('an in-memory editor preview never renames or saves the real capture', async () => {
   const id = await addShot(imageBlob(900, 600), {
     title: 'Original',
@@ -434,15 +446,243 @@ test('zoom with keys and buttons', async () => {
   key('+');
   expect(zoom()).toBe('125%');
   key('-');
+  expect(zoom()).toBe('100%');
   key('=');
+  expect(zoom()).toBe('125%');
+  key('_', { shiftKey: true });
+  expect(zoom()).toBe('100%');
+  const modZoomIn = new KeyboardEvent('keydown', {
+    key: '+',
+    metaKey: true,
+    bubbles: true,
+    cancelable: true,
+  });
+  act(() => {
+    document.body.dispatchEvent(modZoomIn);
+  });
+  expect(modZoomIn.defaultPrevented).toBe(true);
+  expect(zoom()).toBe('125%');
+  const modZoomOut = new KeyboardEvent('keydown', {
+    key: '-',
+    ctrlKey: true,
+    bubbles: true,
+    cancelable: true,
+  });
+  act(() => {
+    document.body.dispatchEvent(modZoomOut);
+  });
+  expect(modZoomOut.defaultPrevented).toBe(true);
+  expect(zoom()).toBe('100%');
   fireEvent.click(button('Zoom out'));
   fireEvent.click(button('Zoom in'));
   key('0');
   expect(zoom()).toBe('Fit');
   fireEvent.click(document.querySelector('.zoom-value')!);
   expect(zoom()).toBe('100%');
+  const modReset = new KeyboardEvent('keydown', {
+    key: '0',
+    metaKey: true,
+    bubbles: true,
+    cancelable: true,
+  });
+  act(() => {
+    document.body.dispatchEvent(modReset);
+  });
+  expect(modReset.defaultPrevented).toBe(true);
+  expect(zoom()).toBe('Fit');
+  fireEvent.click(document.querySelector('.zoom-value')!);
+  expect(zoom()).toBe('100%');
   fireEvent.click(document.querySelector('.zoom-value')!);
   expect(zoom()).toBe('Fit');
+
+  // Clicking the zoom readout resets zoom to Fit and centers the stage.
+  const stage = document.querySelector('.stage') as HTMLElement;
+  key('+');
+  key('+');
+  stage.scrollLeft = 120;
+  stage.scrollTop = 90;
+  expect(zoom()).toBe('156%');
+  fireEvent.click(document.querySelector('.zoom-value')!);
+  expect(zoom()).toBe('Fit');
+  expect(stage.scrollLeft).toBe(0);
+  expect(stage.scrollTop).toBe(0);
+});
+
+test('zooms toward the mouse cursor with Ctrl+wheel, touchpad pinch, and keyboard', async () => {
+  await open();
+  const stage = document.querySelector('.stage') as HTMLElement;
+  const zoom = () => document.querySelector('.zoom-value')!.textContent;
+  expect(zoom()).toBe('Fit');
+
+  // Unmodified wheel / horizontal scroll does not zoom.
+  const plainWheel = new WheelEvent('wheel', {
+    deltaY: -100,
+    deltaX: 60,
+    deltaMode: 0,
+    clientX: 400,
+    clientY: 300,
+    bubbles: true,
+    cancelable: true,
+  });
+  act(() => {
+    stage.dispatchEvent(plainWheel);
+  });
+  expect(plainWheel.defaultPrevented).toBe(false);
+  expect(zoom()).toBe('Fit');
+
+  // Ctrl + wheel scroll up zooms in toward cursor (400, 300); Ctrl + scroll down zooms out.
+  const wheelIn = new WheelEvent('wheel', {
+    deltaY: -100,
+    deltaMode: 0,
+    ctrlKey: true,
+    clientX: 400,
+    clientY: 300,
+    bubbles: true,
+    cancelable: true,
+  });
+  act(() => {
+    stage.dispatchEvent(wheelIn);
+  });
+  expect(wheelIn.defaultPrevented).toBe(true);
+  expect(zoom()).toBe('125%');
+  expect(stage.scrollLeft).toBe(100);
+  expect(stage.scrollTop).toBe(75);
+
+  const wheelOut = new WheelEvent('wheel', {
+    deltaY: 100,
+    deltaMode: 0,
+    ctrlKey: true,
+    clientX: 400,
+    clientY: 300,
+    bubbles: true,
+    cancelable: true,
+  });
+  act(() => {
+    stage.dispatchEvent(wheelOut);
+  });
+  expect(wheelOut.defaultPrevented).toBe(true);
+  expect(zoom()).toBe('100%');
+  expect(stage.scrollLeft).toBe(0);
+  expect(stage.scrollTop).toBe(0);
+
+  // Touchpad pinch-and-zoom via ctrl+wheel anchors to the cursor location.
+  const pinchIn = new WheelEvent('wheel', {
+    deltaY: -12,
+    ctrlKey: true,
+    clientX: 400,
+    clientY: 300,
+    bubbles: true,
+    cancelable: true,
+  });
+  act(() => {
+    stage.dispatchEvent(pinchIn);
+  });
+  expect(pinchIn.defaultPrevented).toBe(true);
+  expect(Number.parseInt(zoom()!, 10)).toBeGreaterThan(100);
+  expect(stage.scrollLeft).toBeGreaterThan(0);
+  expect(stage.scrollTop).toBeGreaterThan(0);
+
+  const afterPinchIn = Number.parseInt(zoom()!, 10);
+  const pinchOut = new WheelEvent('wheel', {
+    deltaY: 12,
+    ctrlKey: true,
+    clientX: 400,
+    clientY: 300,
+    bubbles: true,
+    cancelable: true,
+  });
+  act(() => {
+    stage.dispatchEvent(pinchOut);
+  });
+  expect(pinchOut.defaultPrevented).toBe(true);
+  expect(Number.parseInt(zoom()!, 10)).toBeLessThan(afterPinchIn);
+
+  // WebKit native trackpad gesture events.
+  key('0');
+  stage.scrollLeft = 0;
+  stage.scrollTop = 0;
+  expect(zoom()).toBe('Fit');
+  const gStart = new Event('gesturestart', { bubbles: true, cancelable: true });
+  const gChange = Object.assign(
+    new Event('gesturechange', { bubbles: true, cancelable: true }),
+    { scale: 1.5, clientX: 400, clientY: 300 },
+  );
+  const gEnd = new Event('gestureend', { bubbles: true, cancelable: true });
+  act(() => {
+    stage.dispatchEvent(gStart);
+    stage.dispatchEvent(gChange);
+    stage.dispatchEvent(gEnd);
+  });
+  expect(gStart.defaultPrevented).toBe(true);
+  expect(gChange.defaultPrevented).toBe(true);
+  expect(gEnd.defaultPrevented).toBe(true);
+  expect(zoom()).toBe('150%');
+  expect(stage.scrollLeft).toBe(200);
+  expect(stage.scrollTop).toBe(150);
+
+  // Keyboard '+' zooms toward hovered pointer position on the canvas.
+  key('0');
+  stage.scrollLeft = 0;
+  stage.scrollTop = 0;
+  fireEvent.pointerMove(canvas(), { clientX: 400, clientY: 300 });
+  key('+');
+  expect(zoom()).toBe('125%');
+  expect(stage.scrollLeft).toBe(100);
+  expect(stage.scrollTop).toBe(75);
+});
+
+test('preserves native touchpad vertical scrolling on long full-page screenshots', async () => {
+  Object.assign(defaultBitmap, { width: 900, height: 4000 });
+  const id = await addShot(imageBlob(900, 4000), {
+    title: 'Long page',
+    url: 'https://www.acme.com',
+    mode: 'full',
+  });
+  history.replaceState(null, '', `/editor.html?id=${id}`);
+  render(<Editor />);
+  await screen.findByRole('img', { name: 'Screenshot canvas' });
+
+  const stage = document.querySelector('.stage') as HTMLElement;
+  const zoom = () => document.querySelector('.zoom-value')!.textContent;
+  expect(zoom()).toBe('Fit');
+
+  // Touchpad two-finger scroll (small pixel delta) is not intercepted for zoom.
+  const touchpadScroll = new WheelEvent('wheel', {
+    deltaY: 12,
+    deltaMode: 0,
+    bubbles: true,
+    cancelable: true,
+  });
+  act(() => {
+    stage.dispatchEvent(touchpadScroll);
+  });
+  expect(touchpadScroll.defaultPrevented).toBe(false);
+  expect(zoom()).toBe('Fit');
+});
+
+test('select tool pans the zoomed canvas on empty drag without marking the screenshot dirty', async () => {
+  await open();
+  const stage = document.querySelector('.stage') as HTMLElement;
+  key('+');
+  key('+');
+  expect(document.querySelector('.zoom-value')!.textContent).toBe('156%');
+
+  key('v');
+  expect(button('Select and move').getAttribute('aria-pressed')).toBe('true');
+  expect(canvas().style.cursor).toBe('grab');
+
+  fireEvent.pointerDown(canvas(), { clientX: 300, clientY: 300, button: 0 });
+  expect(canvas().style.cursor).toBe('grabbing');
+  fireEvent.pointerMove(canvas(), { clientX: 220, clientY: 200 });
+  expect(stage.scrollLeft).toBe(80);
+  expect(stage.scrollTop).toBe(100);
+  fireEvent.pointerMove(canvas(), { clientX: 250, clientY: 240 });
+  expect(stage.scrollLeft).toBe(50);
+  expect(stage.scrollTop).toBe(60);
+  fireEvent.pointerUp(canvas(), { clientX: 250, clientY: 240 });
+
+  expect(canvas().style.cursor).toBe('grab');
+  expect(button(/^Saved/)).toHaveProperty('disabled', true);
 });
 
 describe('export', () => {
@@ -563,15 +803,9 @@ describe('clipboard', () => {
     };
     expect(await (await item.items['text/plain']).text()).toBe('Hello world');
 
-    vi.mocked(recognize).mockResolvedValueOnce({
-      text: 'a b',
-      words: [
-        { text: 'a', x0: 0, y0: 0, x1: 1, y1: 1 },
-        { text: 'b', x0: 0, y0: 0, x1: 1, y1: 1 },
-      ],
-    });
     key('c', { metaKey: true, shiftKey: true });
-    await waitFor(() => expect(status()).toBe('Copied 2 words to clipboard'));
+    await waitFor(() => expect(status()).toBe('Copied 1 word to clipboard'));
+    expect(recognize).toHaveBeenCalledTimes(1);
   });
 
   test('says so when there is no text', async () => {
@@ -687,17 +921,51 @@ describe('clipboard', () => {
     const overlay = screen.getByLabelText('Recognized text overlay');
     expect(within(overlay).getByText(germanSample)).toBeDefined();
 
-    /** Verify Copy Text writes the exact NFC German string to clipboard */
-    vi.mocked(recognize).mockResolvedValueOnce({
-      text: germanSample,
-      words: [{ text: 'München', x0: 0, y0: 0, x1: 10, y1: 10 }],
-    });
+    /** Verify Copy Text reuses cached OCR without re-running it and writes NFC German string */
     fireEvent.click(button(/Copy Text/));
-    await waitFor(() => expect(status()).toBe('Copied 1 word to clipboard'));
+    await waitFor(() => expect(status()).toBe('Copied 6 words to clipboard'));
+    expect(recognize).toHaveBeenCalledTimes(1);
     const item = write.mock.calls.at(-1)![0][0] as unknown as {
       items: Record<string, Promise<Blob>>;
     };
     expect(await (await item.items['text/plain']).text()).toBe(germanSample);
+  });
+
+  test('reuses single OCR run across Recognize Text, Copy Text, and Searchable PDF', async () => {
+    const downloads: string[] = [];
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      downloads.push(this.download);
+    });
+    const write = vi.spyOn(navigator.clipboard, 'write');
+    vi.mocked(recognize).mockResolvedValueOnce({
+      text: 'Cached line',
+      words: [
+        { text: 'Cached', x0: 10, y0: 10, x1: 50, y1: 30 },
+        { text: 'line', x0: 60, y0: 10, x1: 90, y1: 30 },
+      ],
+    });
+    await open();
+
+    fireEvent.click(button(/^Recognize Text/));
+    await waitFor(() =>
+      expect(button(/^Recognize Text/).getAttribute('aria-pressed')).toBe(
+        'true',
+      ),
+    );
+    expect(recognize).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(button(/Copy Text/));
+    await waitFor(() => expect(status()).toBe('Copied 2 words to clipboard'));
+    expect(write).toHaveBeenCalledTimes(1);
+    expect(recognize).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(button(/Export/));
+    fireEvent.click(button(/^Searchable PDF/));
+    await waitFor(() => expect(status()).toBe('PDF ready'));
+    expect(downloads).toHaveLength(1);
+    expect(recognize).toHaveBeenCalledTimes(1);
   });
 });
 

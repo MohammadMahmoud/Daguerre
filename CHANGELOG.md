@@ -4,6 +4,18 @@ All notable changes to Daguerre are listed here. The format follows [Keep a Chan
 
 New releases synchronize the desktop app and browser extension under one `vX.Y.Z` tag. Release CI turns the `## [Unreleased]` section below into `## [vX.Y.Z] - YYYY-MM-DD` and uses it verbatim as the GitHub Release body; without one, it generates Added, Fixed and Changed entries from commit messages. Version files are updated on remote main, not by local hooks. Earlier product-specific Desktop and Extension sections remain unchanged as historical records.
 
+## [Unreleased]
+
+### Added
+
+- Both: added canvas drag-panning to the **Select** tool (`V`) when dragging empty space (with `grab`/`grabbing` cursor feedback), canvas centering when toggling back to `Fit` via the zoom readout or `0`, and cursor-anchored zooming via touchpad pinch gestures (`ctrl`/`meta` wheel and WebKit trackpad gestures), `Ctrl` + mouse wheel scroll (keeping unmodified wheel scrolling for vertical/horizontal stage scroll), and keyboard `+`/`=`/`-`/`_`/`0` shortcuts.
+
+### Fixed
+
+- Both: restored vertical and horizontal scrolling on `.editor > .stage` so long full-page website screenshots and zoomed-in captures scroll properly in both the Chrome Extension and Desktop App while preserving native touchpad two-finger scrolling on overflowing captures.
+- Both: cached OCR results per screenshot/crop in `Editor.tsx` so Recognize Text, Copy Text, and Searchable PDF export reuse a single OCR pass instead of re-running OCR on each action.
+- Both: improved Live Text selection accuracy: OCR now uses automatic page segmentation plus horizontal column-gap splitting (no more lines spanning across sidebars or panels), upscales captures under 1920px wide 2x, applies tile-adaptive local contrast normalization (recovering both bright and muted dark-UI text reliably without relying on canvas `ctx.filter`), and filters wide border artifacts and low-confidence icon noise; `LiveTextLayer` and `.live-text-block` position each word on its recognized box with tight bounds so selection highlights match the screenshot at any zoom.
+
 ## [v1.0.9] - 2026-11-15
 
 ### Added

@@ -1,5 +1,6 @@
 import { guardClose, leaveToHistory, SAVED_TOAST } from '@platform';
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -43,8 +44,12 @@ import {
   hostOf,
   printPage,
 } from './lib/Export';
-import { recognize } from './lib/Ocr';
-import { OcrService, type RecognizedTextBlock } from './lib/OcrService';
+import {
+  OcrService,
+  type OcrServiceResult,
+  type RecognizedTextBlock,
+} from './lib/OcrService';
+import { LiveTextLayer } from './editor/LiveTextLayer';
 import './Styles.css';
 import {
   ConfirmDialog,
@@ -64,9 +69,11 @@ export type EditorTourState = {
   exportOpen: boolean;
 };
 type Drag = {
-  mode: 'draw' | 'move' | 'crop-new' | 'crop-move' | 'crop-resize';
+  mode: 'draw' | 'move' | 'pan' | 'crop-new' | 'crop-move' | 'crop-resize';
   x: number;
   y: number;
+  scrollLeft?: number;
+  scrollTop?: number;
   shape?: Shape;
   crop?: Rect;
   handle?: Handle;
@@ -160,6 +167,7 @@ export function Editor({
     RecognizedTextBlock[] | null
   >(null);
   const [ocrLoading, setOcrLoading] = useState(false);
+  const ocrResultRef = useRef<OcrServiceResult | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -173,8 +181,9 @@ export function Editor({
       : false,
   );
   const drag = useRef<Drag | null>(null);
-  const pointer = useRef({ x: 0, y: 0, shift: false, raf: 0 });
+  const pointer = useRef({ x: 0, y: 0, shift: false, raf: 0, valid: false });
   const [cropCursor, setCropCursor] = useState('crosshair');
+  const [panning, setPanning] = useState(false);
   const draftRef = useRef<Shape | null>(null);
   const editingRef = useRef<TextEdit | null>(null);
 
@@ -192,6 +201,47 @@ export function Editor({
     view.h / view.w < 2.5 ? (stage.h - 64) / view.h : Infinity,
   );
   const scale = zoom === 'fit' ? fitScale : zoom;
+  const scaleRef = useRef(scale);
+  scaleRef.current = scale;
+
+  const zoomTo = useCallback(
+    (rawScale: number, clientX?: number, clientY?: number) => {
+      const nextScale = clamp(rawScale, 0.05, 8);
+      const prevScale = scaleRef.current;
+      const stageEl = stageRef.current;
+      const wrap = wrapRef.current;
+      const ax =
+        clientX ?? (pointer.current.valid ? pointer.current.x : undefined);
+      const ay =
+        clientY ?? (pointer.current.valid ? pointer.current.y : undefined);
+      if (
+        stageEl &&
+        wrap &&
+        prevScale > 0 &&
+        ax !== undefined &&
+        ay !== undefined
+      ) {
+        const oldRect = wrap.getBoundingClientRect();
+        const fx = clamp((ax - oldRect.left) / prevScale, 0, view.w);
+        const fy = clamp((ay - oldRect.top) / prevScale, 0, view.h);
+        wrap.style.width = `${view.w * nextScale}px`;
+        wrap.style.height = `${view.h * nextScale}px`;
+        const newRect = wrap.getBoundingClientRect();
+        stageEl.scrollLeft = Math.max(
+          0,
+          stageEl.scrollLeft + (newRect.left + fx * nextScale - ax),
+        );
+        stageEl.scrollTop = Math.max(
+          0,
+          stageEl.scrollTop + (newRect.top + fy * nextScale - ay),
+        );
+        stageEl.dispatchEvent(new Event('scroll'));
+      }
+      scaleRef.current = nextScale;
+      setZoom(nextScale);
+    },
+    [view.w, view.h],
+  );
 
   const setDraft = (s: Shape | null) => {
     draftRef.current = s;
@@ -225,6 +275,7 @@ export function Editor({
   }, [id, sample]);
 
   useEffect(() => {
+    ocrResultRef.current = null;
     setLiveTextBlocks(null);
     setLiveTextActive(false);
     setOcrLoading(false);
@@ -401,7 +452,68 @@ export function Editor({
     editing,
     scale,
     full,
+    stage,
   ]);
+
+  useEffect(() => {
+    const stageEl = stageRef.current;
+    if (!stageEl || !img) return;
+    let gestureStartScale = scaleRef.current;
+
+    const onWheel = (e: WheelEvent) => {
+      Object.assign(pointer.current, {
+        x: e.clientX,
+        y: e.clientY,
+        valid: true,
+      });
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      if (e.deltaY === 0) return;
+      const factor =
+        Math.abs(e.deltaY) < 40
+          ? Math.exp(-e.deltaY * 0.015)
+          : e.deltaY < 0
+            ? 1.25
+            : 0.8;
+      zoomTo(scaleRef.current * factor, e.clientX, e.clientY);
+    };
+
+    const onGestureStart = (e: Event) => {
+      e.preventDefault();
+      gestureStartScale = scaleRef.current;
+    };
+    const onGestureChange = (e: Event) => {
+      e.preventDefault();
+      const ge = e as Event & {
+        scale?: number;
+        clientX?: number;
+        clientY?: number;
+      };
+      if (typeof ge.scale === 'number' && ge.scale > 0) {
+        zoomTo(gestureStartScale * ge.scale, ge.clientX, ge.clientY);
+      }
+    };
+    const onGestureEnd = (e: Event) => {
+      e.preventDefault();
+    };
+
+    stageEl.addEventListener('wheel', onWheel, { passive: false });
+    stageEl.addEventListener('gesturestart', onGestureStart, {
+      passive: false,
+    });
+    stageEl.addEventListener('gesturechange', onGestureChange, {
+      passive: false,
+    });
+    stageEl.addEventListener('gestureend', onGestureEnd, {
+      passive: false,
+    });
+    return () => {
+      stageEl.removeEventListener('wheel', onWheel);
+      stageEl.removeEventListener('gesturestart', onGestureStart);
+      stageEl.removeEventListener('gesturechange', onGestureChange);
+      stageEl.removeEventListener('gestureend', onGestureEnd);
+    };
+  }, [img, zoomTo]);
 
   // Live file-size estimates for the export menu.
   useEffect(() => {
@@ -486,6 +598,21 @@ export function Editor({
       if (window.getSelection()?.toString()) return;
       const mod = e.metaKey || e.ctrlKey;
       const key = e.key.toLowerCase();
+      if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        zoomBy(1.25);
+        return;
+      }
+      if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        zoomBy(0.8);
+        return;
+      }
+      if (e.key === '0') {
+        e.preventDefault();
+        fitToWindow();
+        return;
+      }
       if (mod) {
         const action = {
           z: e.shiftKey ? redo : undo,
@@ -512,12 +639,6 @@ export function Editor({
         if (tool === 'crop') selectTool('select');
       } else if (e.key === 'Enter' && tool === 'crop') {
         applyCrop();
-      } else if (e.key === '+' || e.key === '=') {
-        zoomBy(1.25);
-      } else if (e.key === '-') {
-        zoomBy(0.8);
-      } else if (e.key === '0') {
-        setZoom('fit');
       } else {
         const t = TOOLS.find((t) => t.key === key);
         if (t) selectTool(t.id);
@@ -562,11 +683,30 @@ export function Editor({
     }));
   }
   function zoomBy(f: number) {
-    setZoom(clamp(scale * f, 0.05, 8));
+    zoomTo(scaleRef.current * f);
+  }
+  function fitToWindow() {
+    const stageEl = stageRef.current;
+    const wrap = wrapRef.current;
+    scaleRef.current = fitScale;
+    setZoom('fit');
+    if (wrap) {
+      wrap.style.width = `${view.w * fitScale}px`;
+      wrap.style.height = `${view.h * fitScale}px`;
+    }
+    if (stageEl) {
+      stageEl.scrollLeft = Math.max(
+        0,
+        Math.round((stageEl.scrollWidth - stageEl.clientWidth) / 2),
+      );
+      stageEl.scrollTop = 0;
+      stageEl.dispatchEvent(new Event('scroll'));
+    }
   }
 
   function selectTool(t: Tool) {
     commitText();
+    setPanning(false);
     if (t === 'crop') setCropDraft(doc.crop);
     if (t !== 'select') setSelectedId(null);
     setTool(t);
@@ -664,6 +804,7 @@ export function Editor({
       x: e.clientX,
       y: e.clientY,
       shift: e.shiftKey,
+      valid: true,
     });
     if (tool === 'crop') {
       const c = cropDraft;
@@ -687,7 +828,20 @@ export function Editor({
         6 / scale,
       );
       setSelectedId(hit?.id ?? null);
-      if (hit) drag.current = { mode: 'move', ...p, shape: hit };
+      if (hit) {
+        drag.current = { mode: 'move', ...p, shape: hit };
+      } else {
+        e.preventDefault();
+        const stageEl = stageRef.current;
+        drag.current = {
+          mode: 'pan',
+          x: e.clientX,
+          y: e.clientY,
+          scrollLeft: stageEl?.scrollLeft ?? 0,
+          scrollTop: stageEl?.scrollTop ?? 0,
+        };
+        setPanning(true);
+      }
       return;
     }
     drag.current = { mode: 'draw', ...p };
@@ -702,13 +856,19 @@ export function Editor({
 
   function onPointerMove(e: ReactPointerEvent<HTMLCanvasElement>) {
     const pt = pointer.current;
-    Object.assign(pt, { x: e.clientX, y: e.clientY, shift: e.shiftKey });
+    Object.assign(pt, {
+      x: e.clientX,
+      y: e.clientY,
+      shift: e.shiftKey,
+      valid: true,
+    });
     if (!drag.current) {
       if (tool === 'crop') setCropCursor(cropCursorAt(toImage(e)));
       return;
     }
     dragTo();
-    if (!pt.raf) pt.raf = requestAnimationFrame(autoScroll);
+    if (drag.current.mode !== 'pan' && !pt.raf)
+      pt.raf = requestAnimationFrame(autoScroll);
   }
 
   function cropCursorAt(p: { x: number; y: number }) {
@@ -747,6 +907,15 @@ export function Editor({
     const d = drag.current;
     if (!d) return;
     const { x: clientX, y: clientY, shift } = pointer.current;
+    if (d.mode === 'pan') {
+      const stageEl = stageRef.current;
+      if (stageEl) {
+        stageEl.scrollLeft = Math.max(0, (d.scrollLeft ?? 0) - (clientX - d.x));
+        stageEl.scrollTop = Math.max(0, (d.scrollTop ?? 0) - (clientY - d.y));
+        stageEl.dispatchEvent(new Event('scroll'));
+      }
+      return;
+    }
     const p = toImage({ clientX, clientY });
     const dx = p.x - d.x;
     const dy = p.y - d.y;
@@ -795,6 +964,10 @@ export function Editor({
     pointer.current.raf = 0;
     const d = drag.current;
     drag.current = null;
+    if (d?.mode === 'pan') {
+      setPanning(false);
+      return;
+    }
     const s = draftRef.current;
     setDraft(null);
     if (!d || !s) return;
@@ -897,13 +1070,21 @@ export function Editor({
   const ocrProgress = (p: number) =>
     showToast(`Reading text… ${Math.round(p * 100)}%`, 60_000);
 
+  async function getOcrResult(): Promise<OcrServiceResult> {
+    if (ocrResultRef.current) return ocrResultRef.current;
+    showToast('Reading text…', 60_000);
+    const result = await OcrService.recognize(renderFinal(), ocrProgress);
+    ocrResultRef.current = result;
+    setLiveTextBlocks(result.blocks);
+    return result;
+  }
+
   function copyText() {
     let words = 0;
     return withBusy(
       () => `Copied ${words} word${words === 1 ? '' : 's'} to clipboard`,
       async () => {
-        showToast('Reading text…', 60_000);
-        const text = recognize(renderFinal(), ocrProgress).then((r) => {
+        const text = getOcrResult().then((r) => {
           words = r.words.length;
           if (!r.text) throw new Error('No text found in this screenshot.');
           return r.text;
@@ -920,6 +1101,11 @@ export function Editor({
   async function toggleLiveText() {
     if (ocrLoading) return;
     if (liveTextBlocks !== null) {
+      if (liveTextBlocks.length === 0) {
+        setLiveTextActive(false);
+        showToast('No text found in this screenshot.');
+        return;
+      }
       const next = !liveTextActive;
       setLiveTextActive(next);
       if (next && tool !== 'select') selectTool('select');
@@ -929,10 +1115,7 @@ export function Editor({
 
     setOcrLoading(true);
     try {
-      showToast('Reading text…', 60_000);
-      const canvas = renderFinal();
-      const result = await OcrService.recognize(canvas, ocrProgress);
-      setLiveTextBlocks(result.blocks);
+      const result = await getOcrResult();
       if (result.blocks.length === 0) {
         setLiveTextActive(false);
         showToast('No text found in this screenshot.');
@@ -983,11 +1166,8 @@ export function Editor({
     return withBusy(
       () => (saved === false ? '' : 'PDF ready'),
       async () => {
+        const words = searchable ? (await getOcrResult()).words : undefined;
         const canvas = renderFinal();
-        if (searchable) showToast('Reading text…', 60_000);
-        const words = searchable
-          ? (await recognize(canvas, ocrProgress)).words
-          : undefined;
         saved = await downloadBlob(
           await canvasToPdf(canvas, words),
           fileName(shot!, 'pdf'),
@@ -1019,7 +1199,9 @@ export function Editor({
 
   const cursor =
     tool === 'select'
-      ? 'default'
+      ? panning
+        ? 'grabbing'
+        : 'grab'
       : tool === 'text'
         ? 'text'
         : tool === 'crop'
@@ -1114,7 +1296,9 @@ export function Editor({
             <button
               className='zoom-value'
               aria-label='Toggle fit or actual size'
-              onClick={() => setZoom(zoom === 'fit' ? 1 / DPR : 'fit')}
+              onClick={() =>
+                zoom === 'fit' ? setZoom(1 / DPR) : fitToWindow()
+              }
               title='Toggle fit / actual size (0)'
             >
               {zoom === 'fit' ? 'Fit' : `${Math.round(scale * DPR * 100)}%`}
@@ -1384,7 +1568,21 @@ export function Editor({
           </nav>
         )}
 
-        <StageElement className='stage' ref={stageRef} data-os-dark={osDark}>
+        <StageElement
+          className='stage'
+          ref={stageRef}
+          data-os-dark={osDark}
+          onPointerMove={(e) =>
+            Object.assign(pointer.current, {
+              x: e.clientX,
+              y: e.clientY,
+              valid: true,
+            })
+          }
+          onPointerLeave={() => {
+            pointer.current.valid = false;
+          }}
+        >
           <div
             className='canvas-wrap'
             ref={wrapRef}
@@ -1401,32 +1599,17 @@ export function Editor({
               onPointerCancel={onPointerUp}
               onDoubleClick={onDoubleClick}
             />
-            {liveTextActive && liveTextBlocks && liveTextBlocks.length > 0 && (
-              <div
-                className='live-text-overlay'
-                aria-label='Recognized text overlay'
-                data-tool={tool}
-              >
-                {liveTextBlocks.map((block, i) => (
-                  <span
-                    key={i}
-                    className='live-text-block'
-                    tabIndex={0}
-                    style={{
-                      left: `${block.bbox.x * 100}%`,
-                      top: `${block.bbox.y * 100}%`,
-                      width: `${block.bbox.width * 100}%`,
-                      height: `${block.bbox.height * 100}%`,
-                      fontSize: `${Math.max(10, block.bbox.height * view.h * scale * 0.75)}px`,
-                      lineHeight: `${block.bbox.height * view.h * scale}px`,
-                    }}
-                    title={block.text}
-                  >
-                    {block.text}
-                  </span>
-                ))}
-              </div>
-            )}
+            {liveTextActive &&
+              tool !== 'crop' &&
+              liveTextBlocks &&
+              liveTextBlocks.length > 0 && (
+                <LiveTextLayer
+                  blocks={liveTextBlocks}
+                  width={view.w * scale}
+                  height={view.h * scale}
+                  tool={tool}
+                />
+              )}
             {editing && (
               <textarea
                 className='text-input'
