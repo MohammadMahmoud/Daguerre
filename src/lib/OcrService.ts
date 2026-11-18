@@ -1,19 +1,6 @@
-import { recognize, type OcrWord } from './Ocr';
+import { recognize, type OcrWord, type RecognizedTextBlock } from './Ocr';
 
-/**
- * Represents a single recognized text region normalized to image dimensions.
- */
-export interface RecognizedTextBlock {
-  text: string;
-  /** Normalized coordinates (0 to 1) relative to the source image dimensions */
-  bbox: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  };
-  confidence?: number;
-}
+export type { RecognizedTextBlock, RecognizedWord } from './Ocr';
 
 export interface OcrServiceResult {
   text: string;
