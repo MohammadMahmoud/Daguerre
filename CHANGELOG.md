@@ -13,6 +13,7 @@ New releases synchronize the desktop app and browser extension under one `vX.Y.Z
 ### Fixed
 
 - Both: attach the editor `afterprint` cleanup listener synchronously via `useLayoutEffect` so print teardown never races against DOM commit.
+- Both: wait briefly for GitHub's artifact index between `upload-pages-artifact` and `deploy-pages@v5` in CI so Pages deployment finds the `github-pages` artifact reliably.
 
 ### Changed
 
