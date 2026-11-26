@@ -129,6 +129,7 @@ export default defineConfig(({ mode }): UserConfig => {
               editor: 'editor.html',
               history: 'history.html',
               clipboard: 'clipboard.html',
+              offscreen: 'offscreen.html',
               background: 'src/Background.ts',
             },
             output: {

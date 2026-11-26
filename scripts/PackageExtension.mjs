@@ -94,6 +94,7 @@ export function verifyExtension(directory = 'dist') {
     'editor.html',
     'history.html',
     'clipboard.html',
+    'offscreen.html',
     'ocr/worker.min.js',
     'ocr/eng.traineddata.gz',
     'ocr/deu.traineddata.gz',

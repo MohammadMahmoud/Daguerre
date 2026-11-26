@@ -17,13 +17,16 @@ const EXTENSION = [
   'src/Background.ts',
   'src/Popup.tsx',
   'src/Clipboard.ts',
+  'src/Offscreen.ts',
   'src/platform/Chrome.ts',
   'popup.html',
   'clipboard.html',
+  'offscreen.html',
   'test/Chrome.ts',
   'test/unit/Background.test.ts',
   'test/unit/Popup.test.tsx',
   'test/unit/Clipboard.test.ts',
+  'test/unit/Offscreen.test.ts',
 ];
 // Docs, the store site and dev tooling: the always-on test job covers lint and formatting.
 const NEITHER = [

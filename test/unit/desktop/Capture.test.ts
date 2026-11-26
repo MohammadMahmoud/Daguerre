@@ -1,12 +1,14 @@
 import { clearMocks, mockIPC, mockWindows } from '@tauri-apps/api/mocks';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import { runCapture } from '../../../src/desktop/Capture';
+import * as captureSound from '../../../src/lib/CaptureSound';
 import { clearShots, getShot, listShots } from '../../../src/lib/Db';
 
 let calls: { cmd: string; payload: any }[];
 let visible: boolean;
 let picked: { title: string } | null;
 let screenPicked: { title: string } | null;
+let soundSpy: ReturnType<typeof vi.spyOn>;
 
 beforeEach(async () => {
   await clearShots();
@@ -14,6 +16,9 @@ beforeEach(async () => {
   visible = false;
   picked = { title: 'Notes' };
   screenPicked = { title: 'Built-in Display' };
+  soundSpy = vi
+    .spyOn(captureSound, 'playCaptureSound')
+    .mockResolvedValue(undefined);
   mockWindows('home');
   mockIPC((cmd, payload) => {
     calls.push({ cmd, payload });
@@ -30,8 +35,9 @@ afterEach(() => {
 
 const cmds = () => calls.map((c) => c.cmd);
 
-test('a window pick is saved and opened in the editor', async () => {
+test('a window pick is saved, plays shutter sound, and opens in the editor', async () => {
   expect(await runCapture('window')).toBe(true);
+  expect(soundSpy).toHaveBeenCalledOnce();
   const [shot] = await listShots();
   expect(shot).toMatchObject({ title: 'Notes', mode: 'window', url: '' });
   expect(calls.find((c) => c.cmd === 'select')!.payload).toEqual({
@@ -44,15 +50,17 @@ test('a window pick is saved and opened in the editor', async () => {
   expect(await getShot(shot.id)).toBeTruthy();
 });
 
-test('screen captures skip the overlay', async () => {
+test('screen captures skip the overlay and play shutter sound', async () => {
   await runCapture('screen');
+  expect(soundSpy).toHaveBeenCalledOnce();
   expect(cmds()).toContain('capture_screen');
   expect(cmds()).not.toContain('select');
   expect((await listShots())[0]).toMatchObject({ mode: 'screen' });
 });
 
-test('copy-selection copies and stays out of the editor', async () => {
+test('copy-selection plays shutter sound, copies, and stays out of the editor', async () => {
   await runCapture('copy-selection');
+  expect(soundSpy).toHaveBeenCalledOnce();
   expect(calls.find((c) => c.cmd === 'select')!.payload).toEqual({
     kind: 'region',
   });
@@ -61,16 +69,18 @@ test('copy-selection copies and stays out of the editor', async () => {
   expect((await listShots())[0]).toMatchObject({ mode: 'selection' });
 });
 
-test('a cancelled selection saves nothing', async () => {
+test('a cancelled selection saves nothing and plays no sound', async () => {
   picked = null;
   expect(await runCapture('selection')).toBe(false);
+  expect(soundSpy).not.toHaveBeenCalled();
   expect(await listShots()).toEqual([]);
   expect(cmds()).not.toContain('take_capture');
 });
 
-test('a cancelled portal screen request saves nothing', async () => {
+test('a cancelled portal screen request saves nothing and plays no sound', async () => {
   screenPicked = null;
   expect(await runCapture('screen')).toBe(false);
+  expect(soundSpy).not.toHaveBeenCalled();
   expect(await listShots()).toEqual([]);
   expect(cmds()).not.toContain('take_capture');
 });

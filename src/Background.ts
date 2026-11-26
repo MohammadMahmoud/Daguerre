@@ -96,6 +96,44 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
 let busy = false;
 let cancelled = false;
+let creatingOffscreen: Promise<void> | null = null;
+
+/** Ensures the MV3 offscreen audio document exists before sending playback messages. */
+async function ensureOffscreen() {
+  const url = chrome.runtime.getURL('offscreen.html');
+  const contexts = await chrome.runtime.getContexts({
+    contextTypes: [chrome.runtime.ContextType.OFFSCREEN_DOCUMENT],
+    documentUrls: [url],
+  });
+  if (contexts.length) return;
+  if (!creatingOffscreen) {
+    creatingOffscreen = chrome.offscreen
+      .createDocument({
+        url: 'offscreen.html',
+        reasons: [chrome.offscreen.Reason.AUDIO_PLAYBACK],
+        justification:
+          'Play camera shutter sound when a screenshot is captured.',
+      })
+      .finally(() => {
+        creatingOffscreen = null;
+      });
+  }
+  await creatingOffscreen;
+}
+
+/** Triggers shutter audio playback via the MV3 offscreen document without blocking capture. */
+async function playCaptureSound() {
+  if (!chrome.offscreen?.createDocument) return;
+  try {
+    await ensureOffscreen();
+    await chrome.runtime.sendMessage({
+      type: 'play-capture-sound',
+      target: 'offscreen',
+    });
+  } catch {
+    /** Audio playback failures must never interrupt a screenshot capture. */
+  }
+}
 
 /** Publishes progress for the popup dialog and the badge; aborts the capture when cancelled. */
 async function report(mode: CaptureMode, value: number, detail: string) {
@@ -135,6 +173,7 @@ async function capture(
       await report(mode, 0, 'Starting…');
       await showDialog(tab.windowId);
       await captureAllTabs(tab.windowId);
+      void playCaptureSound();
       await chrome.tabs.create({
         url: 'history.html',
         windowId: tab.windowId,
@@ -164,6 +203,7 @@ async function capture(
             ? await captureFullPage(tab)
             : await captureSelection(tab);
       if (blob) {
+        void playCaptureSound();
         if (mode === 'full') await report(mode, 1, 'Saving to history…');
         const id = await addShot(blob, {
           title: tab.title || 'Untitled',
