@@ -2,7 +2,7 @@
 
 ## Corpus Check
 
-- 134 files · ~105,380 words
+- 134 files · ~105,420 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 34 file(s) not represented in the graph (top: .toml 23, (none) 7, .plist 1)
 
@@ -14,7 +14,7 @@
 
 ## Graph Freshness
 
-- Built from commit: `87c2236a`
+- Built from commit: `a8a1d2cb`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -510,7 +510,7 @@ Nodes (5): @tauri-apps/plugin-process, @tauri-apps/plugin-updater, Updater, Upda
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Architecture Map` connect `Interactive Editor Canvas` to `Interactive Editor Canvas`?**
-  _High betweenness centrality (0.205) - this node is a cross-community bridge._
+  _High betweenness centrality (0.213) - this node is a cross-community bridge._
 - **Are the 3 inferred relationships involving `Editor()` (e.g. with `print()` and `redo()`) actually correct?**
   _`Editor()` has 3 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Region`, `Window`, `daguerre` to the rest of the system?**
@@ -518,7 +518,7 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Product Promo Assets` be split into smaller, more focused modules?**
   _Cohesion score 0.10343814281516309 - nodes in this community are weakly interconnected._
 - **Why does `Compressed` connect `Interactive Editor Canvas` to `Editor.tsx`?**
-  _High betweenness centrality (0.118) - this node is a cross-community bridge._
+  _High betweenness centrality (0.126) - this node is a cross-community bridge._
 - **Are the 3 inferred relationships involving `Home()` (e.g. with `loadThemeBlend()` and `loadShortcuts()`) actually correct?**
   _`Home()` has 3 INFERRED edges - model-reasoned connections that need verification._
 - **Should `Chrome Extension Manifest` be split into smaller, more focused modules?**
