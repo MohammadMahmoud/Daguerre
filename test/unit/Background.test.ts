@@ -92,7 +92,9 @@ test('ordinary captures open the editor even if the removed auto-copy setting is
       url: expect.stringMatching(/^editor\.html\?id=/),
     }),
   );
-  expect(chrome.runtime.sendMessage).not.toHaveBeenCalled();
+  expect(chrome.runtime.sendMessage).not.toHaveBeenCalledWith(
+    expect.objectContaining({ type: 'copy-capture' }),
+  );
 });
 
 test('the dedicated copy-selection request copies a selection and saves it without an editor', async () => {
@@ -497,7 +499,9 @@ describe('all tabs', () => {
     await settle();
     const saved = await shots();
     expect(saved).toHaveLength(2);
-    expect(chrome.runtime.sendMessage).not.toHaveBeenCalled();
+    expect(chrome.runtime.sendMessage).not.toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'copy-capture' }),
+    );
     expect(chrome.tabs.create).toHaveBeenCalledWith(
       expect.objectContaining({ url: 'history.html' }),
     );
@@ -544,5 +548,86 @@ describe('all tabs', () => {
     await chrome.storage.session.set({ pendingAllTabs: true });
     await chrome.permissions.onAdded.emit({ origins: ['<all_urls>'] })[0];
     expect(chrome.tabs.captureVisibleTab).not.toHaveBeenCalled();
+  });
+});
+
+describe('capture sound', () => {
+  test('creates the offscreen audio document and plays shutter sound on visible capture', async () => {
+    chrome.tabs.get.mockResolvedValue(page());
+    await send({ type: 'capture', mode: 'visible', tabId: 7 });
+    await settle();
+    expect(chrome.offscreen.createDocument).toHaveBeenCalledWith({
+      url: 'offscreen.html',
+      reasons: ['AUDIO_PLAYBACK'],
+      justification: expect.any(String),
+    });
+    expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
+      type: 'play-capture-sound',
+      target: 'offscreen',
+    });
+  });
+
+  test('reuses an existing offscreen audio document when already open', async () => {
+    chrome.runtime.getContexts.mockResolvedValue([
+      { documentUrl: 'offscreen.html' },
+    ]);
+    chrome.tabs.get.mockResolvedValue(page());
+    await send({ type: 'capture', mode: 'visible', tabId: 7 });
+    await settle();
+    expect(chrome.offscreen.createDocument).not.toHaveBeenCalled();
+    expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
+      type: 'play-capture-sound',
+      target: 'offscreen',
+    });
+  });
+
+  test('plays shutter sound after all-tabs capture', async () => {
+    const tabs = [page({ id: 1, index: 0, active: true })];
+    chrome.tabs.query.mockResolvedValue(tabs);
+    chrome.tabs.get.mockResolvedValue({ ...tabs[0], status: 'complete' });
+    chrome.contextMenus.onClicked.emit({ menuItemId: 'tabs' }, tabs[0]);
+    await settle();
+    expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
+      type: 'play-capture-sound',
+      target: 'offscreen',
+    });
+  });
+
+  test('does not play shutter sound when selection is cancelled or page is restricted', async () => {
+    chrome.tabs.get.mockResolvedValue(page());
+    await send({ type: 'capture', mode: 'selection', tabId: 7 });
+    await settle(() => !!document.getElementById('daguerre-select'));
+    dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    await settle();
+    expect(chrome.runtime.sendMessage).not.toHaveBeenCalledWith({
+      type: 'play-capture-sound',
+      target: 'offscreen',
+    });
+
+    chrome.tabs.get.mockResolvedValue(page({ url: 'chrome://settings' }));
+    await send({ type: 'capture', mode: 'visible', tabId: 7 });
+    await settle();
+    expect(chrome.runtime.sendMessage).not.toHaveBeenCalledWith({
+      type: 'play-capture-sound',
+      target: 'offscreen',
+    });
+  });
+
+  test('completes capture gracefully if offscreen playback fails', async () => {
+    chrome.tabs.get.mockResolvedValue(page());
+    chrome.offscreen.createDocument.mockRejectedValueOnce(new Error('denied'));
+    await send({ type: 'capture', mode: 'visible', tabId: 7 });
+    await settle();
+    expect(lastError()).toBeUndefined();
+    expect(await shots()).toHaveLength(1);
+  });
+
+  test('completes capture gracefully if offscreen API is unavailable', async () => {
+    chrome.tabs.get.mockResolvedValue(page());
+    (chrome as any).offscreen = undefined;
+    await send({ type: 'capture', mode: 'visible', tabId: 7 });
+    await settle();
+    expect(lastError()).toBeUndefined();
+    expect(await shots()).toHaveLength(1);
   });
 });

@@ -64,7 +64,15 @@ export function createChrome() {
       onMessage: event(),
       onInstalled: event(),
       getContexts: vi.fn(async () => [] as unknown[]),
-      ContextType: { POPUP: 'POPUP' },
+      ContextType: {
+        POPUP: 'POPUP',
+        OFFSCREEN_DOCUMENT: 'OFFSCREEN_DOCUMENT',
+      },
+    },
+    offscreen: {
+      createDocument: vi.fn(async () => undefined),
+      closeDocument: vi.fn(async () => undefined),
+      Reason: { AUDIO_PLAYBACK: 'AUDIO_PLAYBACK' },
     },
     storage: {
       onChanged,

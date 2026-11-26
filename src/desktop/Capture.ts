@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { playCaptureSound } from '../lib/CaptureSound';
 import { addShot } from '../lib/Db';
 import { copyPng, type Action } from '../platform/Desktop';
 
@@ -20,6 +21,7 @@ export async function runCapture(action: Action, delay = 0) {
           kind: mode === 'window' ? 'window' : 'region',
         });
   if (!info) return false;
+  void playCaptureSound();
   const png = await invoke<ArrayBuffer>('take_capture');
   const blob = new Blob([png], { type: 'image/png' });
   const id = await addShot(blob, { title: info.title, url: '', mode });
