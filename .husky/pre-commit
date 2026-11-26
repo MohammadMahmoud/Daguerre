@@ -1,3 +1,26 @@
 pnpm exec lint-staged
+
+STAGED_NON_GRAPH=$(git diff --cached --name-only --diff-filter=ACMR | grep -v '^graphify-out/' || true)
+if [ -n "$STAGED_NON_GRAPH" ]; then
+  GRAPHIFY_PY="/Users/mohammedmahmoud/.gemini/vendor/graphify/.venv/bin/python3.14"
+  if [ ! -x "$GRAPHIFY_PY" ] && [ -f "graphify-out/.graphify_python" ]; then
+    GRAPHIFY_PY=$(tr -d '[:space:]' < graphify-out/.graphify_python)
+  fi
+  if [ -n "$GRAPHIFY_PY" ] && [ -x "$GRAPHIFY_PY" ]; then
+    PYTHONHASHSEED=0 GRAPHIFY_CHANGED="$STAGED_NON_GRAPH" "$GRAPHIFY_PY" -c "
+import os
+from pathlib import Path
+from graphify.watch import _rebuild_code
+changed = [Path(p) for p in os.environ['GRAPHIFY_CHANGED'].splitlines() if p.strip()]
+if changed:
+    _rebuild_code(Path('.'), changed_paths=changed)
+"
+    if [ -f "graphify-out/GRAPH_REPORT.md" ] && [ -f "graphify-out/graph.json" ]; then
+      pnpm exec prettier --write graphify-out/GRAPH_REPORT.md graphify-out/graph.json
+      git add graphify-out/GRAPH_REPORT.md graphify-out/graph.json
+    fi
+  fi
+fi
+
 pnpm typecheck
 pnpm test
