@@ -2,6 +2,7 @@ import { guardClose, leaveToHistory, SAVED_TOAST } from '@platform';
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -581,7 +582,7 @@ export function Editor({
     return () => document.removeEventListener('pointerdown', onDown);
   }, [exportOpen, sample]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!printUrl) return;
     const done = () => setPrintUrl(undefined);
     addEventListener('afterprint', done);

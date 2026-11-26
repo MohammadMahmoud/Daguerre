@@ -10,6 +10,14 @@ New releases synchronize the desktop app and browser extension under one `vX.Y.Z
 
 - Both: added a camera shutter sound played when taking a screenshot in both the Chrome Extension and Desktop App.
 
+### Fixed
+
+- Both: attach the editor `afterprint` cleanup listener synchronously via `useLayoutEffect` so print teardown never races against DOM commit.
+
+### Changed
+
+- Both: aligned `.husky/pre-commit` and `.husky/pre-push` with CI (`typecheck`, `coverage`, extension packaging, and desktop frontend build) so full pipeline checks run locally before pushing.
+
 ## [v1.1.0] - 2026-11-18
 
 ### Added

@@ -171,9 +171,12 @@ test('clicking Print in export menu invokes print and handles OCR failure gracef
 
   const printBtn = screen.getByRole('button', { name: /Print/ });
   fireEvent.click(printBtn);
-  await waitFor(() =>
-    expect(document.querySelector('img.print-only')).not.toBeNull(),
-  );
+  const printImg = await waitFor(() => {
+    const img = document.querySelector('img.print-only');
+    expect(img).not.toBeNull();
+    return img as HTMLImageElement;
+  });
+  fireEvent.load(printImg);
   act(() => void dispatchEvent(new Event('afterprint')));
   await waitFor(() =>
     expect(document.querySelector('img.print-only')).toBeNull(),
