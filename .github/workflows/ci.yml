@@ -234,8 +234,10 @@ jobs:
       - name: Assemble site
         run: cp -r store/index.html store/privacy.html store/icon.png store/hero.png store/screenshots store/desktop store/promo-small-440x280.png _site/
       - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: _site
+      # Brief pause so GitHub's artifact metadata API indexes `github-pages` before deploy-pages queries it.
+      - run: sleep 5
       - id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
