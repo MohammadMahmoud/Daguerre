@@ -2,19 +2,19 @@
 
 ## Corpus Check
 
-- 134 files · ~105,420 words
+- 134 files · ~103,491 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 34 file(s) not represented in the graph (top: .toml 23, (none) 7, .plist 1)
 
 ## Summary
 
-- 1261 nodes · 2609 edges · 108 communities (71 shown, 37 thin omitted)
+- 1256 nodes · 2616 edges · 112 communities (74 shown, 38 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 54 edges (avg confidence: 0.85)
 - Token cost: 12,000 input · 3,500 output
 
 ## Graph Freshness
 
-- Built from commit: `a8a1d2cb`
+- Built from commit: `e5775670`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -29,15 +29,15 @@
 - Clipboardext Module
 - Setup.ts
 - Remotion Video Generation
-- lint-staged@^17.6.0
+- Background.test.ts
 - Linux Wayland Portal Capture
 - Live Text OCR Engine
 - Extension Background Capture
-- Home.tsx
+- Home
 - Liquid Glass Desktop Theme
 - Desktop Settings and Shortcuts
 - Product Promo Assets
-- Export.ts
+- Editor
 - Db.ts
 - With Module
 - Interactive Editor Canvas
@@ -45,7 +45,7 @@
 - devDependencies
 - Overlay Html Host Module
 - Chrome Extension Manifest
-- @remotion/cli@^4.0.542
+- dragTo
 - Popup Html Host Module
 - Name Module
 - With Module
@@ -60,7 +60,7 @@
 - Steps Module
 - Name Module
 - Release Ref Module
-- vitest
+- test/Chrome.ts
 - dock_visible
 - Bumpversion Module
 - Dependabot Automation
@@ -94,23 +94,27 @@
 - Build Module
 - Definition Of Done Module
 - Home.test.tsx
-- @types/chrome@^0.3.6
+- desktop/Theme.ts
 - unit/Editor.test.tsx
 - CapturePage.tsx
 - vitest
 - Updater.ts
 - @Types/Node@^26.6.5 Module
-- typescript@^7.0.2
-- vite
+- Ui.test.tsx
+- jsdom@^26.1.0
 - husky@^9.1.7
 - fake-indexeddb
 - Daguerre Module
+- prettier@^3.9.10
+- @tauri-apps/cli@^2.12.4
+- @types/react@^19.3.0
 - @types/react-dom@^19.3.0
 - @vitejs/plugin-react
+- @vitest/coverage-v8@^5.0.5
 
 ## God Nodes (most connected - your core abstractions)
 
-1. `Editor()` - 63 edges
+1. `Editor()` - 67 edges
 2. `vitest` - 40 edges
 3. `react` - 36 edges
 4. `Home()` - 30 edges
@@ -142,12 +146,12 @@
 
 - **Capture and Edit Workflow** — readme_capture_engine, readme_annotation_suite, readme_live_text_ocr [INFERRED 0.95]
 
-## Communities (108 total, 37 thin omitted)
+## Communities (112 total, 38 thin omitted)
 
 ### Community 0 - "History.tsx"
 
-Cohesion: 0.26
-Nodes (14): FILTERS, CaptureMode, Shot, CAPTURE_HINT, CAPTURE_MODES, downloadBlob(), guardClose(), leaveToHistory() (+6 more)
+Cohesion: 0.14
+Nodes (26): MenuItem(), dayLabel(), FILTERS, copy(), CaptureMode, buildPdf(), fileName(), formatBytes() (+18 more)
 
 ### Community 1 - "Product Promo Assets"
 
@@ -162,12 +166,12 @@ Nodes (42): action, default_icon, default_popup, default_title, background, serv
 ### Community 3 - "selection.rs"
 
 Cohesion: 0.05
-Nodes (63): capture_screen(), Captured, CaptureInfo, centre_point(), centre_point_converts_pixels_to_points(), clamps_to_the_capture(), detects_wayland_without_requiring_xdg_session_type(), encode_png() (+55 more)
+Nodes (65): capture_screen(), Captured, CaptureInfo, centre_point(), centre_point_converts_pixels_to_points(), clamps_to_the_capture(), detects_wayland_without_requiring_xdg_session_type(), encode_png() (+57 more)
 
 ### Community 4 - "Editor.tsx"
 
-Cohesion: 0.06
-Nodes (59): Annotation Suite, clamp(), COLORS, Drag, bounds(), constrain(), distToSegment(), drawShape() (+51 more)
+Cohesion: 0.11
+Nodes (30): Annotation Suite, COLORS, Drag, bounds(), constrain(), distToSegment(), drawShape(), font() (+22 more)
 
 ### Community 5 - "Tauri Application Configuration"
 
@@ -176,13 +180,13 @@ Nodes (34): app, macOSPrivateApi, security, windows, build, beforeBuildCommand, 
 
 ### Community 6 - "Clipboardext Module"
 
-Cohesion: 0.07
-Nodes (11): ACTIONS, allows_only_clean_https_external_urls(), CGPreflightScreenCaptureAccess(), CGRequestScreenCaptureAccess(), editor_label(), editor_windows_are_labelled_by_screenshot_id(), external_url(), open_external() (+3 more)
+Cohesion: 0.06
+Nodes (16): ACTIONS, allows_only_clean_https_external_urls(), args(), capture_arg(), CGPreflightScreenCaptureAccess(), CGRequestScreenCaptureAccess(), external_url(), open_external() (+8 more)
 
 ### Community 7 - "Setup.ts"
 
-Cohesion: 0.12
-Nodes (7): @testing-library/react, defaultBitmap, FakePointerEvent, imageBlob(), sizes, open(), platform
+Cohesion: 0.11
+Nodes (8): @testing-library/react, defaultBitmap, FakePointerEvent, imageBlob(), sizes, open(), platform, open()
 
 ### Community 8 - "Remotion Video Generation"
 
@@ -196,23 +200,23 @@ Nodes (9): accepts_only_local_screenshot_files(), cancellation_does_not_require_
 
 ### Community 11 - "Live Text OCR Engine"
 
-Cohesion: 0.13
-Nodes (18): Live Text OCR & Searchable PDF, tesseract.js, PdfImage, asset(), getWorker(), isSegment(), isWord(), normalizeBand() (+10 more)
+Cohesion: 0.11
+Nodes (20): Live Text OCR & Searchable PDF, tesseract.js, LiveTextLayer(), PdfImage, asset(), getWorker(), isSegment(), isWord() (+12 more)
 
 ### Community 12 - "Extension Background Capture"
 
-Cohesion: 0.16
-Nodes (25): Area, capture(), captureAllTabs(), captureFullPage(), captureSelection(), COMMANDS, copyCapture(), ensureOffscreen() (+17 more)
+Cohesion: 0.15
+Nodes (26): Area, capture(), captureAllTabs(), captureFullPage(), captureSelection(), COMMANDS, copyCapture(), ensureOffscreen() (+18 more)
 
-### Community 13 - "Home.tsx"
+### Community 13 - "Home"
 
-Cohesion: 0.12
-Nodes (19): Home HTML Host, runCapture(), sleep(), Home(), changeBlend(), copy(), loadThemeBlend(), openExternal() (+11 more)
+Cohesion: 0.20
+Nodes (6): Home HTML Host, Home(), changeBlend(), loadThemeBlend(), openExternal(), showThemeBlend()
 
 ### Community 14 - "Liquid Glass Desktop Theme"
 
-Cohesion: 0.14
-Nodes (16): @tauri-apps/api, applyEditorGlass(), loadBlend(), watchEditorGlass(), CAPTURE_HINT, CAPTURE_MODES, copyText(), downloadBlob() (+8 more)
+Cohesion: 0.13
+Nodes (17): runCapture(), sleep(), copy(), Action, CAPTURE_HINT, CAPTURE_MODES, copyPng(), copyText() (+9 more)
 
 ### Community 15 - "Desktop Settings and Shortcuts"
 
@@ -224,15 +228,15 @@ Nodes (16): SettingsPage(), record(), TRAY_ICONS, TrayIcon, UpdateButton(), upda
 Cohesion: 0.11
 Nodes (9): puppeteer-core@^25.16.0, puppeteer-core, rows, { total }, css, css, declared, files() (+1 more)
 
-### Community 17 - "Export.ts"
+### Community 17 - "Editor"
 
-Cohesion: 0.23
-Nodes (12): Clipboard HTML Host, buildPdf(), canvasToPdf(), fileName(), formatBytes(), hostOf(), jpeg, WIN_ANSI (+4 more)
+Cohesion: 0.16
+Nodes (20): Editor(), applyCrop(), commit(), commitText(), copy(), copyText(), download(), exportPdf() (+12 more)
 
 ### Community 18 - "Db.ts"
 
-Cohesion: 0.22
-Nodes (16): dayLabel(), History(), clearAll(), copy(), remove(), addShot(), clearShots(), deleteShots() (+8 more)
+Cohesion: 0.21
+Nodes (13): Clipboard HTML Host, History(), clearAll(), remove(), addShot(), clearShots(), deleteShots(), getShot() (+5 more)
 
 ### Community 19 - "With Module"
 
@@ -241,8 +245,8 @@ Nodes (21): with, body_path, cache, client-id, client-secret, extension-id, fail
 
 ### Community 20 - "Interactive Editor Canvas"
 
-Cohesion: 0.15
-Nodes (16): driver.js@^1.10.2, driver.js, createSample(), DEMO_SHAPES, EDITOR_STATES, getTarget(), Preview, ProductTour() (+8 more)
+Cohesion: 0.17
+Nodes (14): driver.js, createSample(), DEMO_SHAPES, EDITOR_STATES, getTarget(), Preview, ProductTour(), STEPS (+6 more)
 
 ### Community 21 - "Tsconfig Module"
 
@@ -252,22 +256,27 @@ Nodes (19): compilerOptions, allowImportingTsExtensions, allowJs, isolatedModule
 ### Community 22 - "devDependencies"
 
 Cohesion: 0.11
-Nodes (18): devDependencies, jsdom@^26.1.0, prettier@^3.9.10, remotion@^4.0.542, @remotion/shapes@^4.0.542, @tauri-apps/cli@^2.12.4, @testing-library/dom@^10.4.2, @testing-library/react@^16.3.3 (+10 more)
+Nodes (18): devDependencies, lint-staged@^17.6.0, remotion@^4.0.542, @remotion/cli@^4.0.542, @remotion/shapes@^4.0.542, @testing-library/dom@^10.4.2, @testing-library/react@^16.3.3, @types/chrome@^0.3.6 (+10 more)
 
 ### Community 23 - "Overlay Html Host Module"
 
-Cohesion: 0.18
-Nodes (12): Overlay HTML Host, finish(), inside(), Overlay(), onUp(), OverlayInfo, PickableWindow, Point (+4 more)
+Cohesion: 0.16
+Nodes (16): Overlay HTML Host, @tauri-apps/api, applyEditorGlass(), loadBlend(), watchEditorGlass(), finish(), inside(), Overlay() (+8 more)
 
 ### Community 24 - "Chrome Extension Manifest"
 
 Cohesion: 0.22
 Nodes (10): readVersions(), buildDesktop(), require, resolveAppleSigningIdentity(), resolveCargoEnv(), PRODUCTS, readVersion(), releaseNotes() (+2 more)
 
+### Community 25 - "dragTo"
+
+Cohesion: 0.31
+Nodes (9): clamp(), handleAt(), autoScroll(), cropCursorAt(), dragTo(), onPointerDown(), onPointerMove(), toImage() (+1 more)
+
 ### Community 26 - "Popup Html Host Module"
 
-Cohesion: 0.13
-Nodes (20): Popup HTML Host, Extension App Icon 128px, react-dom, MenuItem(), Progress, ACTIONS, DELAYS, openPage() (+12 more)
+Cohesion: 0.12
+Nodes (21): Popup HTML Host, Extension App Icon 128px, react-dom, Page, PAGES, root, Shot, ACTIONS (+13 more)
 
 ### Community 27 - "Name Module"
 
@@ -281,18 +290,18 @@ Nodes (14): with, cache, cache-all-crates, components, fetch-depth, if-no-files-
 
 ### Community 29 - "Interactive Editor Canvas"
 
-Cohesion: 0.26
-Nodes (12): copy_text(), hide_main(), parse_theme_blend(), reads_only_valid_saved_blends(), set_theme_blend(), show_home(), show_main(), theme_blend() (+4 more)
+Cohesion: 0.32
+Nodes (12): is_wayland(), copy_text(), hide_main(), run(), set_theme_blend(), show_home(), show_main(), theme_blend() (+4 more)
 
 ### Community 30 - "Package Module"
 
 Cohesion: 0.12
-Nodes (15): author, description, @vitest/coverage-v8@^5.0.5, engines, node, homepage, keywords, license (+7 more)
+Nodes (15): author, description, typescript@^7.0.2, engines, node, homepage, keywords, license (+7 more)
 
 ### Community 31 - "Interactive Editor Canvas"
 
-Cohesion: 0.23
-Nodes (12): Tauri App Icon, monitor_area(), unit_scale(), apply_liquid_glass(), keep_on_screen(), move_window(), open_editor(), print() (+4 more)
+Cohesion: 0.21
+Nodes (12): Tauri App Icon, apply_liquid_glass(), editor_label(), editor_windows_are_labelled_by_screenshot_id(), keep_on_screen(), move_window(), open_editor(), print() (+4 more)
 
 ### Community 32 - "CI Verification Workflow"
 
@@ -306,8 +315,8 @@ Nodes (13): APPLE_CERTIFICATE, APPLE_CERTIFICATE_PASSWORD, APPLE_ID, APPLE_PASSW
 
 ### Community 34 - "Live Text OCR Engine"
 
-Cohesion: 0.15
-Nodes (13): dependencies, react@^19.3.1, react-dom@^19.3.1, @tauri-apps/api@^2.12.4, @tauri-apps/plugin-autostart@^2.7.0, @tauri-apps/plugin-process@^2.4.0, @tauri-apps/plugin-updater@^2.14.1, tesseract.js@^7.0.0 (+5 more)
+Cohesion: 0.14
+Nodes (14): dependencies, driver.js@^1.10.2, react@^19.3.1, react-dom@^19.3.1, @tauri-apps/api@^2.12.4, @tauri-apps/plugin-autostart@^2.7.0, @tauri-apps/plugin-process@^2.4.0, @tauri-apps/plugin-updater@^2.14.1 (+6 more)
 
 ### Community 35 - "Interactive Editor Canvas"
 
@@ -334,10 +343,10 @@ Nodes (11): name, url, pages, environment, if, name, needs, permissions (+3 more
 Cohesion: 0.18
 Nodes (11): release_ref, on, pull_request, push, workflow_call, workflow_dispatch, branches, default (+3 more)
 
-### Community 40 - "vitest"
+### Community 40 - "test/Chrome.ts"
 
-Cohesion: 0.12
-Nodes (10): vitest, ChromeMock, createChrome(), event(), installChrome(), Listener, PNG_DATA_URL, storageArea() (+2 more)
+Cohesion: 0.25
+Nodes (8): ChromeMock, createChrome(), event(), installChrome(), Listener, PNG_DATA_URL, storageArea(), playCaptureSound
 
 ### Community 42 - "Bumpversion Module"
 
@@ -366,8 +375,8 @@ Nodes (8): chunk(), crc32(), CRC_TABLE, encodePng(), insideRoundedRect(), isInk(
 
 ### Community 47 - "Args() Module"
 
-Cohesion: 0.33
-Nodes (8): args(), binaries_changed(), BinaryId, capture_arg(), detects_when_a_watched_binary_is_replaced_or_removed(), reads_the_capture_argument(), run(), watched_binaries()
+Cohesion: 0.60
+Nodes (4): binaries_changed(), BinaryId, detects_when_a_watched_binary_is_replaced_or_removed(), watched_binaries()
 
 ### Community 48 - "Husky Module"
 
@@ -376,8 +385,8 @@ Nodes (8): HUSKY, prepare, sha, version, env, name, outputs, runs-on
 
 ### Community 49 - "Pending Module"
 
-Cohesion: 0.20
-Nodes (9): is_wayland(), Pending, Platform, platform(), registers_only_known_actions_with_keys(), set_shortcuts(), Shortcuts, take_pending() (+1 more)
+Cohesion: 0.29
+Nodes (6): Pending, registers_only_known_actions_with_keys(), set_shortcuts(), Shortcuts, take_pending(), wanted_shortcuts()
 
 ### Community 50 - "Name Module"
 
@@ -479,6 +488,11 @@ Nodes (3): repository, type, url
 Cohesion: 0.25
 Nodes (7): cmds(), lastShortcuts(), nav(), openSettings(), renderHome(), runCapture, shortcutsSent()
 
+### Community 78 - "desktop/Theme.ts"
+
+Cohesion: 0.53
+Nodes (4): applyTheme(), changeTheme(), onMac(), Theme
+
 ### Community 79 - "unit/Editor.test.tsx"
 
 Cohesion: 0.31
@@ -486,40 +500,45 @@ Nodes (6): Edits, button(), canvas(), drag(), savedEdits(), status()
 
 ### Community 80 - "CapturePage.tsx"
 
-Cohesion: 0.19
-Nodes (11): Capture Engine, CapturePage(), DELAYS, MODES, when(), Shortcuts, IconName, MODE_LABEL (+3 more)
+Cohesion: 0.23
+Nodes (10): Capture Engine, CapturePage(), DELAYS, MODES, when(), Shortcuts, Icon(), Desktop Capture Screenshot (+2 more)
 
 ### Community 81 - "vitest"
 
-Cohesion: 0.43
-Nodes (3): loadAudioData(), playCaptureSound(), importCaptureSound()
+Cohesion: 0.36
+Nodes (4): vitest, loadAudioData(), playCaptureSound(), importCaptureSound()
 
 ### Community 82 - "Updater.ts"
 
 Cohesion: 0.43
 Nodes (5): @tauri-apps/plugin-process, @tauri-apps/plugin-updater, Updater, UpdateState, useUpdater()
 
+### Community 84 - "Ui.test.tsx"
+
+Cohesion: 0.67
+Nodes (3): ConfirmDialog(), Tooltip(), renderDialog()
+
 ## Knowledge Gaps
 
 - **26 isolated node(s):** `Region`, `Window`, `daguerre`, `Live Text OCR & Searchable PDF`, `Full Page Capture Screenshot` (+21 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 495 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **37 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 490 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **38 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Architecture Map` connect `Interactive Editor Canvas` to `Interactive Editor Canvas`?**
-  _High betweenness centrality (0.213) - this node is a cross-community bridge._
+  _High betweenness centrality (0.218) - this node is a cross-community bridge._
 - **Are the 3 inferred relationships involving `Editor()` (e.g. with `print()` and `redo()`) actually correct?**
   _`Editor()` has 3 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Region`, `Window`, `daguerre` to the rest of the system?**
   _26 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Product Promo Assets` be split into smaller, more focused modules?**
-  _Cohesion score 0.10343814281516309 - nodes in this community are weakly interconnected._
+- **Should `History.tsx` be split into smaller, more focused modules?**
+  _Cohesion score 0.1408199643493761 - nodes in this community are weakly interconnected._
 - **Why does `Compressed` connect `Interactive Editor Canvas` to `Editor.tsx`?**
-  _High betweenness centrality (0.126) - this node is a cross-community bridge._
+  _High betweenness centrality (0.131) - this node is a cross-community bridge._
 - **Are the 3 inferred relationships involving `Home()` (e.g. with `loadThemeBlend()` and `loadShortcuts()`) actually correct?**
   _`Home()` has 3 INFERRED edges - model-reasoned connections that need verification._
-- **Should `Chrome Extension Manifest` be split into smaller, more focused modules?**
-  _Cohesion score 0.059800664451827246 - nodes in this community are weakly interconnected._
+- **Should `Product Promo Assets` be split into smaller, more focused modules?**
+  _Cohesion score 0.10343814281516309 - nodes in this community are weakly interconnected._
