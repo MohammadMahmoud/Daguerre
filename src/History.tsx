@@ -6,8 +6,16 @@ import {
   SEARCH_PLACEHOLDER,
   SHORTCUT_HINTS,
 } from '@platform';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type DragEvent,
+} from 'react';
 import { createRoot } from 'react-dom/client';
+import type { ImportResult } from './desktop/DocumentImport';
 import {
   clearShots,
   deleteShots,
@@ -26,7 +34,54 @@ import {
 import './Styles.css';
 import { ConfirmDialog, Icon, Logo, MODE_LABEL, Toast, useToast } from './Ui';
 
-const FILTERS: (CaptureMode | 'all')[] = ['all', ...CAPTURE_MODES];
+function hasDraggedFiles(dt: DataTransfer | null) {
+  if (!dt) return false;
+  if (Array.from(dt.types ?? []).includes('Files')) return true;
+  return (dt.files?.length ?? 0) > 0;
+}
+
+function summarizeImport(result: ImportResult) {
+  const notes: string[] = [];
+  if (result.truncatedPdfPages > 0) {
+    notes.push(
+      `${result.truncatedPdfPages} PDF page${result.truncatedPdfPages === 1 ? '' : 's'} beyond 25 skipped`,
+    );
+  }
+  if (result.skippedUnsupported > 0) {
+    notes.push(`${result.skippedUnsupported} unsupported skipped`);
+  }
+  if (result.skippedTooLarge > 0) {
+    notes.push(`${result.skippedTooLarge} over 50 MB skipped`);
+  }
+  if (result.failed > 0) {
+    notes.push(`${result.failed} couldn't be opened`);
+  }
+  if (result.ids.length > 0) {
+    const base =
+      result.ids.length === 1
+        ? `Added "${result.titles[0]}"`
+        : `Added ${result.ids.length} items`;
+    return notes.length > 0 ? `${base} (${notes.join(', ')})` : base;
+  }
+  if (
+    result.skippedUnsupported > 0 &&
+    result.skippedTooLarge === 0 &&
+    result.failed === 0
+  ) {
+    return 'Unsupported file type. Drop or choose images or PDFs.';
+  }
+  if (
+    result.skippedTooLarge > 0 &&
+    result.skippedUnsupported === 0 &&
+    result.failed === 0
+  ) {
+    return 'File exceeds the 50 MB limit.';
+  }
+  if (notes.length > 0) {
+    return `Could not import document (${notes.join(', ')}).`;
+  }
+  return 'No documents selected.';
+}
 
 function dayLabel(ts: number) {
   const d = new Date(ts);
@@ -47,12 +102,31 @@ export function History({
   embedded = false,
   onOpen,
   onChange,
+  modes = CAPTURE_MODES,
+  onUpload,
+  uploadAccept,
+  handleDrop = true,
+  refreshKey = 0,
 }: {
   embedded?: boolean;
   onOpen?: (id: string) => void;
   onChange?: () => void;
+  modes?: CaptureMode[];
+  onUpload?: (files: File[]) => Promise<ImportResult>;
+  uploadAccept?: string;
+  handleDrop?: boolean;
+  refreshKey?: number;
 } = {}) {
+  const canUpload = Boolean(onUpload);
+  const canDrop = canUpload && handleDrop;
+  const filters = useMemo<(CaptureMode | 'all')[]>(
+    () => ['all', ...modes],
+    [modes],
+  );
   const root = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const dragDepthRef = useRef(0);
+  const uploadingRef = useRef(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [shots, setShots] = useState<Shot[]>();
   const [query, setQuery] = useState('');
@@ -60,6 +134,8 @@ export function History({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [usage, setUsage] = useState<number>();
   const [confirmClear, setConfirmClear] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
   const [toast, showToast] = useToast();
 
   useEffect(() => {
@@ -92,6 +168,12 @@ export function History({
       removeEventListener('focus', onFocus);
     };
   }, [load]);
+
+  useEffect(() => {
+    if (refreshKey === 0) return;
+    setFilter((f) => (f !== 'all' && f !== 'upload' ? 'all' : f));
+    void load();
+  }, [refreshKey, load]);
 
   const thumbs = useMemo(
     () => new Map(shots?.map((s) => [s.id, URL.createObjectURL(s.thumb)])),
@@ -179,8 +261,124 @@ export function History({
     setSelected(next);
   }
 
+  useEffect(() => {
+    if (!dragActive) return;
+    const dismiss = () => {
+      dragDepthRef.current = 0;
+      setDragActive(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') dismiss();
+    };
+    addEventListener('blur', dismiss);
+    addEventListener('dragend', dismiss);
+    addEventListener('keydown', onKeyDown);
+    return () => {
+      removeEventListener('blur', dismiss);
+      removeEventListener('dragend', dismiss);
+      removeEventListener('keydown', onKeyDown);
+    };
+  }, [dragActive]);
+
+  const openPicker = () => {
+    if (!canUpload || uploadingRef.current) return;
+    fileInputRef.current?.click();
+  };
+
+  const handleUpload = async (files: File[]) => {
+    if (!onUpload || files.length === 0 || uploadingRef.current) return;
+    uploadingRef.current = true;
+    setUploading(true);
+    try {
+      const result = await onUpload(files);
+      const summary = summarizeImport(result);
+      if (result.ids.length > 0) {
+        if (filter !== 'all' && filter !== 'upload') setFilter('all');
+        await load();
+        onChange?.();
+        const firstId = result.ids[0];
+        showToast(
+          <>
+            <span>{summary}</span>
+            {onOpen && (
+              <button
+                type='button'
+                className='link'
+                onClick={() => onOpen(firstId)}
+              >
+                {result.ids.length === 1 ? 'Open' : 'Open first'}
+              </button>
+            )}
+          </>,
+          4500,
+        );
+      } else {
+        showToast(summary, 4000);
+      }
+    } catch {
+      showToast('Could not import the selected document.', 4000);
+    } finally {
+      uploadingRef.current = false;
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const onDragEnter = (e: DragEvent<HTMLDivElement>) => {
+    if (!canDrop || !hasDraggedFiles(e.dataTransfer)) return;
+    e.preventDefault();
+    dragDepthRef.current += 1;
+    setDragActive(true);
+  };
+
+  const onDragOver = (e: DragEvent<HTMLDivElement>) => {
+    if (!canDrop || !hasDraggedFiles(e.dataTransfer)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  };
+
+  const onDragLeave = () => {
+    if (!canDrop) return;
+    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
+    if (dragDepthRef.current === 0) setDragActive(false);
+  };
+
+  const onDrop = (e: DragEvent<HTMLDivElement>) => {
+    if (!canDrop) return;
+    dragDepthRef.current = 0;
+    setDragActive(false);
+    if (!hasDraggedFiles(e.dataTransfer)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const files = Array.from(e.dataTransfer?.files ?? []);
+    if (files.length > 0) void handleUpload(files);
+  };
+
   return (
-    <div ref={root} className={embedded ? 'history embedded' : 'history'}>
+    <div
+      ref={root}
+      className={embedded ? 'history embedded' : 'history'}
+      data-dragging={canDrop && dragActive ? 'true' : undefined}
+      onDragEnter={canDrop ? onDragEnter : undefined}
+      onDragOver={canDrop ? onDragOver : undefined}
+      onDragLeave={canDrop ? onDragLeave : undefined}
+      onDrop={canDrop ? onDrop : undefined}
+    >
+      {canUpload && (
+        <input
+          ref={fileInputRef}
+          type='file'
+          multiple
+          accept={uploadAccept}
+          tabIndex={-1}
+          aria-hidden='true'
+          className='visually-hidden'
+          onChange={(e) => {
+            const files = Array.from(e.target.files ?? []);
+            if (files.length > 0) void handleUpload(files);
+          }}
+        />
+      )}
       <header className='history-head' data-scrolled={isScrolled}>
         <div className='history-title'>
           {!embedded && <Logo size={34} />}
@@ -209,7 +407,7 @@ export function History({
           role='radiogroup'
           aria-label='Filter by capture type'
         >
-          {FILTERS.map((f) => (
+          {filters.map((f) => (
             <button
               key={f}
               role='radio'
@@ -245,16 +443,39 @@ export function History({
               </button>
             </>
           ) : (
-            shots &&
-            shots.length > 0 && (
-              <button
-                className='btn ghost'
-                onClick={() => setConfirmClear(true)}
-              >
-                <Icon name='trash' size={16} />
-                Clear all
-              </button>
-            )
+            <>
+              {canUpload && (
+                <button
+                  type='button'
+                  className='btn primary upload-btn'
+                  onClick={openPicker}
+                  disabled={uploading}
+                  aria-busy={uploading || undefined}
+                >
+                  {uploading ? (
+                    <>
+                      <span className='spinner sm' aria-hidden='true' />
+                      Uploading…
+                    </>
+                  ) : (
+                    <>
+                      <Icon name='upload' size={16} />
+                      Upload
+                    </>
+                  )}
+                </button>
+              )}
+              {shots && shots.length > 0 && (
+                <button
+                  type='button'
+                  className='btn ghost'
+                  onClick={() => setConfirmClear(true)}
+                >
+                  <Icon name='trash' size={16} />
+                  Clear all
+                </button>
+              )}
+            </>
           )}
         </div>
       </header>
@@ -275,6 +496,22 @@ export function History({
                 </li>
               ))}
             </ul>
+            {canUpload && (
+              <button
+                type='button'
+                className='upload-empty-drop'
+                onClick={openPicker}
+                disabled={uploading}
+              >
+                <span className='upload-empty-icon'>
+                  <Icon name='upload' size={20} />
+                </span>
+                <strong>Drop images or PDFs here</strong>
+                <span className='meta'>
+                  or click to upload · PNG, JPEG, WebP, GIF, SVG, or PDF
+                </span>
+              </button>
+            )}
           </div>
         )}
         {shots && shots.length > 0 && visible.length === 0 && (
@@ -378,6 +615,23 @@ export function History({
         >
           This can't be undone.
         </ConfirmDialog>
+      )}
+      {canDrop && dragActive && (
+        <div
+          className='drop-overlay'
+          role='region'
+          aria-label='Drop documents to upload'
+        >
+          <div className='drop-overlay-card'>
+            <span className='drop-overlay-icon'>
+              <Icon name='upload' size={28} />
+            </span>
+            <strong>Drop to add to History</strong>
+            <span className='meta'>
+              PNG, JPEG, WebP, GIF, SVG, or PDF · Stored locally on this device
+            </span>
+          </div>
+        </div>
       )}
       <Toast message={toast} />
     </div>

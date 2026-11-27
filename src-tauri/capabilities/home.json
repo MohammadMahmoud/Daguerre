@@ -29,6 +29,7 @@
     "allow-set-tray-icon",
     "allow-set-liquid-glass",
     "allow-theme-blend",
-    "allow-set-theme-blend"
+    "allow-set-theme-blend",
+    "allow-set-updating"
   ]
 }

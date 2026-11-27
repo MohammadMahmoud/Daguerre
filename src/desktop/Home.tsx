@@ -3,14 +3,21 @@ import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { Effect, EffectState, getCurrentWindow } from '@tauri-apps/api/window';
 import { disable, enable, isEnabled } from '@tauri-apps/plugin-autostart';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type DragEvent as ReactDragEvent,
+} from 'react';
 import { createRoot } from 'react-dom/client';
 import { History } from '../History';
 import { listShots, type Shot } from '../lib/Db';
 import { formatBytes } from '../lib/Export';
-import { copyPng, type Action } from '../platform/Desktop';
+import { copyPng, CAPTURE_MODES, type Action } from '../platform/Desktop';
 import '../Styles.css';
 import {
+  ConfirmDialog,
   Icon,
   Logo,
   SUPPORT_LABEL,
@@ -22,6 +29,11 @@ import {
 } from '../Ui';
 import { runCapture } from './Capture';
 import { CapturePage } from './CapturePage';
+import {
+  DOCUMENT_ACCEPT,
+  formatImportSummary,
+  importDocuments,
+} from './DocumentImport';
 import { ProductTour } from './ProductTour';
 import { SettingsPage, updateMessage, type TrayIcon } from './SettingsPage';
 import { loadShortcuts, type Shortcuts } from './Shortcuts';
@@ -37,6 +49,111 @@ const PAGES: { id: Page; label: string; icon: IconName }[] = [
 
 const openEditor = (id: string) => void invoke('open_editor', { id });
 const openExternal = (url: string) => void invoke('open_external', { url });
+const UPDATE_COUNTDOWN_SECONDS = 60;
+
+function formatReleaseDate(date?: string) {
+  if (!date) return undefined;
+  const parsed = Date.parse(date);
+  if (Number.isNaN(parsed)) return date;
+  return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(
+    parsed,
+  );
+}
+
+/** Renders release notes markdown into safe headings, bullet lists, and paragraphs. */
+function UpdateChangelog({ notes }: { notes: string }) {
+  const blocks: { kind: 'heading' | 'list' | 'paragraph'; items: string[] }[] =
+    [];
+  for (const raw of notes.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line || /^##\s+\[?v?\d/.test(line)) continue;
+    if (line.startsWith('### ')) {
+      blocks.push({ kind: 'heading', items: [line.slice(4).trim()] });
+    } else if (/^[-*]\s+/.test(line)) {
+      const text = line.slice(2).trim();
+      const prev = blocks.at(-1);
+      if (prev?.kind === 'list') prev.items.push(text);
+      else blocks.push({ kind: 'list', items: [text] });
+    } else {
+      blocks.push({ kind: 'paragraph', items: [line] });
+    }
+  }
+  if (!blocks.length) return null;
+  return (
+    <div className='update-changelog' aria-label='Release notes'>
+      {blocks.map((block, index) => {
+        if (block.kind === 'heading')
+          return <h4 key={index}>{block.items[0]}</h4>;
+        if (block.kind === 'list')
+          return (
+            <ul key={index}>
+              {block.items.map((item, itemIndex) => (
+                <li key={itemIndex}>{item}</li>
+              ))}
+            </ul>
+          );
+        return <p key={index}>{block.items[0]}</p>;
+      })}
+    </div>
+  );
+}
+
+function UpdatePrompt({
+  version,
+  date,
+  notes,
+  auto,
+  onInstall,
+  onSkip,
+}: {
+  version: string;
+  date?: string;
+  notes?: string;
+  auto: boolean;
+  onInstall: () => void;
+  onSkip: () => void;
+}) {
+  const [seconds, setSeconds] = useState(UPDATE_COUNTDOWN_SECONDS);
+  const installRef = useRef(onInstall);
+  installRef.current = onInstall;
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setSeconds((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          installRef.current();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const releaseDate = formatReleaseDate(date);
+
+  return (
+    <ConfirmDialog
+      title='Update available'
+      confirmLabel={auto ? 'Install' : 'Download & install'}
+      cancelLabel='Skip'
+      tone='primary'
+      onConfirm={onInstall}
+      onCancel={onSkip}
+    >
+      <div className='update-meta'>
+        {releaseDate && <span className='update-date'>{releaseDate}</span>}
+        <span>Daguerre v{version} is available.</span>
+      </div>
+      {notes && <UpdateChangelog notes={notes} />}
+      <div className='update-countdown' role='timer' aria-live='polite'>
+        Please save your work. Installing automatically in{' '}
+        <strong>{seconds}s</strong>.
+      </div>
+    </ConfirmDialog>
+  );
+}
 
 function loadThemeBlend() {
   const saved = localStorage.getItem('themeBlend');
@@ -93,10 +210,23 @@ export function Home() {
   const [version, setVersion] = useState('');
   const [shots, setShots] = useState<Shot[]>([]);
   const [usage, setUsage] = useState<number>();
+  const [dragActive, setDragActive] = useState(false);
+  const [historyVersion, setHistoryVersion] = useState(0);
   const [toast, showToast] = useToast();
   const updater = useUpdater();
+  const availableBanner =
+    updater.state.status === 'available' &&
+    !updater.promptOpen &&
+    !updater.bannerDismissed;
+  const downloading = updater.state.status === 'downloading';
   const updated = updater.state.status === 'ready';
+  const installError =
+    updater.state.status === 'error' &&
+    updater.state.during === 'install' &&
+    page !== 'settings';
   const busy = useRef(false);
+  const dragDepthRef = useRef(0);
+  const uploadingRef = useRef(false);
   const recording = useRef(false);
   const current = useRef(shortcuts);
   const platformInfo = useRef<typeof platform | null>(null);
@@ -191,6 +321,41 @@ export function Home() {
   useEffect(() => {
     if (page === 'capture') void refresh();
   }, [page, refresh]);
+
+  /** Prevents file drops outside active drag targets from navigating the Tauri webview away. */
+  useEffect(() => {
+    const preventFileDrop = (e: DragEvent) => {
+      const types = Array.from(e.dataTransfer?.types ?? []);
+      if (types.includes('Files') || (e.dataTransfer?.files?.length ?? 0) > 0) {
+        e.preventDefault();
+      }
+    };
+    addEventListener('dragover', preventFileDrop);
+    addEventListener('drop', preventFileDrop);
+    return () => {
+      removeEventListener('dragover', preventFileDrop);
+      removeEventListener('drop', preventFileDrop);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!dragActive) return;
+    const dismiss = () => {
+      dragDepthRef.current = 0;
+      setDragActive(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') dismiss();
+    };
+    addEventListener('blur', dismiss);
+    addEventListener('dragend', dismiss);
+    addEventListener('keydown', onKeyDown);
+    return () => {
+      removeEventListener('blur', dismiss);
+      removeEventListener('dragend', dismiss);
+      removeEventListener('keydown', onKeyDown);
+    };
+  }, [dragActive]);
 
   const register = async (next: Shortcuts) => {
     if (!platformInfo.current || platformInfo.current.wayland) return;
@@ -309,11 +474,83 @@ export function Home() {
       setScreenAccess,
     );
 
+  const hasDraggedFiles = (dt: DataTransfer | null) => {
+    if (!dt) return false;
+    if (Array.from(dt.types ?? []).includes('Files')) return true;
+    return (dt.files?.length ?? 0) > 0;
+  };
+
+  const handleDroppedFiles = async (files: File[]) => {
+    if (files.length === 0 || uploadingRef.current) return;
+    uploadingRef.current = true;
+    try {
+      const result = await importDocuments(files);
+      const summary = formatImportSummary(result);
+      if (result.ids.length > 0) {
+        await refresh();
+        setHistoryVersion((v) => v + 1);
+        const firstId = result.ids[0];
+        showToast(
+          <>
+            <span>{summary}</span>
+            <button
+              type='button'
+              className='link'
+              onClick={() => openEditor(firstId)}
+            >
+              {result.ids.length === 1 ? 'Open' : 'Open first'}
+            </button>
+          </>,
+          4500,
+        );
+      } else {
+        showToast(summary, 4000);
+      }
+    } catch {
+      showToast('Could not import the selected document.', 4000);
+    } finally {
+      uploadingRef.current = false;
+    }
+  };
+
+  const onDragEnter = (e: ReactDragEvent<HTMLDivElement>) => {
+    if (tourOpen || !hasDraggedFiles(e.dataTransfer)) return;
+    e.preventDefault();
+    dragDepthRef.current += 1;
+    setDragActive(true);
+  };
+
+  const onDragOver = (e: ReactDragEvent<HTMLDivElement>) => {
+    if (tourOpen || !hasDraggedFiles(e.dataTransfer)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  };
+
+  const onDragLeave = () => {
+    if (tourOpen) return;
+    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
+    if (dragDepthRef.current === 0) setDragActive(false);
+  };
+
+  const onDrop = (e: ReactDragEvent<HTMLDivElement>) => {
+    dragDepthRef.current = 0;
+    setDragActive(false);
+    if (tourOpen || !hasDraggedFiles(e.dataTransfer)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const files = Array.from(e.dataTransfer?.files ?? []);
+    if (files.length > 0) void handleDroppedFiles(files);
+  };
+
   return (
     <div
       className='app'
       data-appearance={mac ? (visibleGlass ? 'glass' : 'current') : undefined}
       data-native-glass={mac && visibleGlass && nativeGlass}
+      onDragEnter={onDragEnter}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
     >
       <nav className='app-nav' aria-label='Sections' data-tauri-drag-region>
         <div className='app-brand' data-tauri-drag-region>
@@ -392,7 +629,12 @@ export function Home() {
           />
         )}
         <div className='home-content' hidden={tourOpen}>
-          {(error || !screenAccess || updated) && (
+          {(error ||
+            !screenAccess ||
+            availableBanner ||
+            downloading ||
+            updated ||
+            installError) && (
             <div className='banners'>
               {error && (
                 <div className='banner danger' role='alert'>
@@ -416,6 +658,41 @@ export function Home() {
                   </p>
                   <button className='btn primary' onClick={requestAccess}>
                     Allow
+                  </button>
+                </div>
+              )}
+              {availableBanner && updater.state.status === 'available' && (
+                <div className='banner'>
+                  <Icon name='download' size={17} />
+                  <p>{updateMessage(updater.state)}</p>
+                  <button className='btn primary' onClick={updater.install}>
+                    Install {updater.state.version}
+                  </button>
+                  <button
+                    className='icon-btn sm'
+                    onClick={updater.dismissBanner}
+                    aria-label='Dismiss update notice'
+                  >
+                    <Icon name='close' size={14} />
+                  </button>
+                </div>
+              )}
+              {downloading && (
+                <div className='banner'>
+                  <Icon name='download' size={17} />
+                  <p>{updateMessage(updater.state)}</p>
+                </div>
+              )}
+              {installError && (
+                <div className='banner danger' role='alert'>
+                  <Icon name='alert' size={17} />
+                  <p>{updateMessage(updater.state)}</p>
+                  <button
+                    className='icon-btn sm'
+                    onClick={updater.dismissError}
+                    aria-label='Dismiss update error'
+                  >
+                    <Icon name='close' size={14} />
                   </button>
                 </div>
               )}
@@ -451,6 +728,11 @@ export function Home() {
               embedded
               onOpen={openEditor}
               onChange={refresh}
+              modes={CAPTURE_MODES}
+              onUpload={importDocuments}
+              uploadAccept={DOCUMENT_ACCEPT}
+              handleDrop={false}
+              refreshKey={historyVersion}
             />
           )}
           {page === 'settings' && (
@@ -481,6 +763,35 @@ export function Home() {
           )}
         </div>
       </main>
+      {updater.promptOpen &&
+        updater.state.status === 'available' &&
+        !tourOpen && (
+          <UpdatePrompt
+            version={updater.state.version}
+            date={updater.state.date}
+            notes={updater.state.notes}
+            auto={updater.auto}
+            onInstall={updater.install}
+            onSkip={updater.dismissPrompt}
+          />
+        )}
+      {dragActive && !tourOpen && (
+        <div
+          className='drop-overlay'
+          role='region'
+          aria-label='Drop documents to upload'
+        >
+          <div className='drop-overlay-card'>
+            <span className='drop-overlay-icon'>
+              <Icon name='upload' size={28} />
+            </span>
+            <strong>Drop to add to History</strong>
+            <span className='meta'>
+              PNG, JPEG, WebP, GIF, SVG, or PDF · Stored locally on this device
+            </span>
+          </div>
+        </div>
+      )}
       <Toast message={toast} />
     </div>
   );

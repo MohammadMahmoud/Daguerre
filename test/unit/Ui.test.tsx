@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { expect, test, vi } from 'vitest';
-import { ConfirmDialog, Icon, Toast, Tooltip } from '../../src/Ui';
+import { ConfirmDialog, Icon, MODE_LABEL, Toast, Tooltip } from '../../src/Ui';
 
 function renderDialog() {
   const onConfirm = vi.fn();
@@ -98,6 +98,26 @@ test('ConfirmDialog buttons are explicitly typed as button', () => {
   }
 });
 
+test('ConfirmDialog supports primary non-destructive prompt mode', () => {
+  render(
+    <ConfirmDialog
+      title='Update available'
+      confirmLabel='Install update'
+      cancelLabel='Later'
+      tone='primary'
+      onConfirm={vi.fn()}
+      onCancel={vi.fn()}
+    >
+      A new version is ready.
+    </ConfirmDialog>,
+  );
+  const dialog = screen.getByRole('dialog', { name: 'Update available' });
+  expect(dialog.getAttribute('aria-modal')).toBe('true');
+  expect(screen.getByRole('button', { name: 'Later' })).toBeTruthy();
+  const confirm = screen.getByRole('button', { name: 'Install update' });
+  expect(confirm.className).toContain('primary');
+});
+
 test('Toast has accessible status role and polite live region', () => {
   const { rerender } = render(<Toast message='Screenshot copied' />);
   const toast = screen.getByRole('status');
@@ -148,4 +168,10 @@ test('Tooltip supports right, bottom, and left positioning', () => {
   );
   fireEvent.focus(screen.getByRole('button', { name: 'Left' }));
   expect(screen.getByRole('tooltip').textContent).toBe('Left tip');
+});
+
+test('renders upload icon and Uploaded mode label', () => {
+  const { container } = render(<Icon name='upload' size={16} />);
+  expect(container.querySelector('svg.icon-upload')).not.toBeNull();
+  expect(MODE_LABEL.upload).toBe('Uploaded');
 });

@@ -1,5 +1,6 @@
 import type { CaptureMode } from '../lib/Db';
 
+export const SUPPORTS_UPLOAD = false;
 export const CAPTURE_MODES: CaptureMode[] = [
   'visible',
   'full',

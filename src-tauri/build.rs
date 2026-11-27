@@ -22,6 +22,7 @@ const COMMANDS: &[&str] = &[
     "set_liquid_glass",
     "theme_blend",
     "set_theme_blend",
+    "set_updating",
 ];
 
 fn main() {
