@@ -308,6 +308,7 @@ test('release and CI workflows never use bot commits and guard duplicate release
   expect(releaseYml).not.toContain('refs/heads/main');
   expect(releaseYml).not.toContain('git commit');
   expect(releaseYml).not.toContain('git push');
+  expect(ciYml).toContain("inputs.release_ref != ''");
   expect(ciYml).toContain(
     "!startsWith(github.event.head_commit.message, 'chore(release): ')",
   );

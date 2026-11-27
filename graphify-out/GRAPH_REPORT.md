@@ -2,7 +2,7 @@
 
 ## Corpus Check
 
-- 136 files · ~110,351 words
+- 136 files · ~110,358 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 35 file(s) not represented in the graph (top: .toml 24, (none) 7, .plist 1)
 
@@ -14,7 +14,7 @@
 
 ## Graph Freshness
 
-- Built from commit: `dcef7201`
+- Built from commit: `c1e26abe`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -114,8 +114,8 @@
 3. `react` - 36 edges
 4. `Home()` - 35 edges
 5. `scripts` - 27 edges
-6. `remotion` - 25 edges
-7. `History()` - 25 edges
+6. `History()` - 25 edges
+7. `remotion` - 25 edges
 8. `THEME` - 21 edges
 9. `with` - 21 edges
 10. `addShot()` - 20 edges
@@ -515,7 +515,7 @@ Nodes (4): @tauri-apps/api, applyEditorGlass(), loadBlend(), watchEditorGlass()
 
 ## Knowledge Gaps
 
-- **26 isolated node(s):** `daguerre`, `Region`, `Window`, `Live Text OCR & Searchable PDF`, `Full Page Capture Screenshot` (+21 more)
+- **26 isolated node(s):** `Region`, `Window`, `daguerre`, `Live Text OCR & Searchable PDF`, `Full Page Capture Screenshot` (+21 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 496 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **33 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -524,15 +524,15 @@ Nodes (4): @tauri-apps/api, applyEditorGlass(), loadBlend(), watchEditorGlass()
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Architecture Map` connect `Interactive Editor Canvas` to `Interactive Editor Canvas`?**
-  _High betweenness centrality (0.184) - this node is a cross-community bridge._
+  _High betweenness centrality (0.191) - this node is a cross-community bridge._
 - **Are the 3 inferred relationships involving `Editor()` (e.g. with `print()` and `redo()`) actually correct?**
   _`Editor()` has 3 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `daguerre`, `Region`, `Window` to the rest of the system?**
+- **What connects `Region`, `Window`, `daguerre` to the rest of the system?**
   _26 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `DocumentImport.ts` be split into smaller, more focused modules?**
   _Cohesion score 0.11182795698924732 - nodes in this community are weakly interconnected._
-- **Why does `Compressed` connect `Interactive Editor Canvas` to `Editor.tsx`?**
-  _High betweenness centrality (0.116) - this node is a cross-community bridge._
+- **Why does `vitest` connect `vitest` to `DocumentImport.ts`, `Product Promo Assets`, `Editor.tsx`, `vitest`, `Setup.ts`, `Live Text OCR Engine`, `Home.tsx`, `Liquid Glass Desktop Theme`, `Desktop Settings and Shortcuts`, `Product Promo Assets`, `unit/Editor.test.tsx`, `Interactive Editor Canvas`, `devDependencies`, `Overlay Html Host Module`, `Chrome Extension Manifest`, `Popup.tsx`, `Package Module`, `test/Chrome.ts`, `Releaseautomation.Test Module`, `Themecontrast.Test Module`, `Home.test.tsx`, `Export.ts`, `platform/Chrome.ts`, `Updater.ts`, `Background.test.ts`, `Capture.ts`, `@tauri-apps/api`?**
+  _High betweenness centrality (0.119) - this node is a cross-community bridge._
 - **Are the 3 inferred relationships involving `Home()` (e.g. with `loadThemeBlend()` and `loadShortcuts()`) actually correct?**
   _`Home()` has 3 INFERRED edges - model-reasoned connections that need verification._
 - **Should `Product Promo Assets` be split into smaller, more focused modules?**
