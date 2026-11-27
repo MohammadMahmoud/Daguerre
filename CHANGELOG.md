@@ -2,7 +2,17 @@
 
 All notable changes to Daguerre are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
-New releases synchronize the desktop app and browser extension under one `vX.Y.Z` tag. Release CI turns the `## [Unreleased]` section below into `## [vX.Y.Z] - YYYY-MM-DD` and uses it verbatim as the GitHub Release body; without one, it generates Added, Fixed and Changed entries from commit messages. Version files are updated on remote main, not by local hooks. Earlier product-specific Desktop and Extension sections remain unchanged as historical records.
+New releases synchronize the desktop app and browser extension under one `vX.Y.Z` tag. `pnpm publish:release` turns the `## [Unreleased]` section below into `## [vX.Y.Z] - YYYY-MM-DD` (or generates Added, Fixed and Changed entries from commit messages), bumps version files locally as you, commits and tags `vX.Y.Z`, and pushes atomically to trigger Release CI, which uses that changelog section verbatim as the GitHub Release body. Earlier product-specific Desktop and Extension sections remain unchanged as historical records.
+
+## [Unreleased]
+
+### Fixed
+
+- Desktop: rendered inline Markdown formatting (bold, italic, inline code, strikethrough, ordered lists, and `https://` links) in the update prompt changelog instead of raw syntax.
+
+### Changed
+
+- Both: restructured release automation to local developer commits (`pnpm publish:release`) and tag-triggered Release CI so `github-actions[bot]` never commits to `main` or desynchronizes `graphify-out/`.
 
 ## [v1.1.2] - 2026-11-27
 

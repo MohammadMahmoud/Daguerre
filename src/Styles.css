@@ -2469,13 +2469,26 @@ html[data-platform='macos'] .history.embedded .history-head {
   margin-top: 0;
 }
 
-.update-changelog ul {
+.update-changelog ul,
+.update-changelog ol {
   margin: 0;
   padding-left: 16px;
 }
 
 .update-changelog li + li {
   margin-top: 3px;
+}
+
+.update-changelog code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--panel-3);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11.5px;
+}
+
+.update-changelog strong {
+  font-weight: 650;
 }
 
 .update-changelog p {

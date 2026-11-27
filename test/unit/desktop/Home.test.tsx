@@ -119,7 +119,7 @@ beforeEach(async () => {
               currentVersion: '1.2.3',
               version: latest,
               date: '2026-11-26T22:11:51.472Z',
-              body: '## [v1.3.0] - 2026-11-26\n\n### Added\n\n- Added update prompt changelog.\n\n### Fixed\n\n- Kept app running until restart.\n',
+              body: '## [v1.3.0] - 2026-11-26\n\n### Added\n\n- Added **Upload** button and `Install`/`Skip` *controls*.\n\n### Fixed\n\n- Kept app running until restart.\n',
               rawJson: {},
             }
           );
@@ -883,7 +883,14 @@ test('checks for updates on request, prompts with changelog and Download & insta
     name: 'Update available',
   });
   expect(prompt.textContent).toContain('Daguerre v1.3.0 is available.');
-  expect(prompt.textContent).toContain('Added update prompt changelog.');
+  expect(prompt.textContent).toContain(
+    'Added Upload button and Install/Skip controls.',
+  );
+  expect(prompt.textContent).not.toContain('**Upload**');
+  expect(prompt.textContent).not.toContain('`Install`');
+  expect(within(prompt).getByText('Upload').tagName).toBe('STRONG');
+  expect(within(prompt).getByText('Install').tagName).toBe('CODE');
+  expect(within(prompt).getByText('controls').tagName).toBe('EM');
   expect(prompt.textContent).toContain('Kept app running until restart.');
   expect(prompt.textContent).toContain(
     'Please save your work. Installing automatically in 60s.',
@@ -982,7 +989,9 @@ test('automatic updates prompt with Install/Skip and install automatically after
       name: 'Update available',
     });
     expect(prompt.textContent).toContain('Daguerre v1.3.0 is available.');
-    expect(prompt.textContent).toContain('Added update prompt changelog.');
+    expect(prompt.textContent).toContain(
+      'Added Upload button and Install/Skip controls.',
+    );
     expect(
       within(prompt).getByRole('button', { name: 'Install' }),
     ).toBeTruthy();

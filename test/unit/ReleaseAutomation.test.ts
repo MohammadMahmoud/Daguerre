@@ -13,8 +13,19 @@ import { afterEach, expect, test } from 'vitest';
 
 const root = resolve('.');
 const temporary: string[] = [];
+function cleanGitEnv(): NodeJS.ProcessEnv {
+  const env = { ...process.env };
+  for (const key of Object.keys(env)) {
+    if (key.startsWith('GIT_')) delete env[key];
+  }
+  return env;
+}
 const git = (cwd: string, ...args: string[]) =>
-  execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
+  execFileSync('git', args, {
+    cwd,
+    env: cleanGitEnv(),
+    encoding: 'utf8',
+  }).trim();
 function createRepository(version = '0.0.4') {
   const cwd = mkdtempSync(join(tmpdir(), 'daguerre-release-'));
   temporary.push(cwd);
@@ -59,6 +70,7 @@ function createRepository(version = '0.0.4') {
 function runScript(cwd: string, script: string, ...args: string[]) {
   return spawnSync(process.execPath, [join(root, 'scripts', script), ...args], {
     cwd,
+    env: cleanGitEnv(),
     encoding: 'utf8',
   });
 }
@@ -205,7 +217,7 @@ test('a curated Unreleased section becomes the release notes verbatim', () => {
   expect(updated).toContain(`${notes}\n## [Desktop 0.0.4]`);
 });
 
-test('local publisher dispatches main without changing feature-branch files', () => {
+test('local publisher dry-run plans release without changing feature-branch files', () => {
   const cwd = createRepository();
   git(cwd, 'switch', '-qc', 'feature/test');
   writeFileSync(join(cwd, 'pending.txt'), 'do not alter');
@@ -218,12 +230,85 @@ test('local publisher dispatches main without changing feature-branch files', ()
     '--dry-run',
   );
   expect(result.status, result.stderr).toBe(0);
+  expect(result.stdout).toContain('Dry run for v0.1.0:');
+  expect(result.stdout).toContain('chore(release): v0.1.0');
   expect(result.stdout).toContain(
-    'gh workflow run release.yml --ref main -f target_version=0.1.0',
+    'git push --atomic origin main refs/tags/v0.1.0',
   );
   expect(git(cwd, 'status', '--porcelain')).toBe(before);
   expect(
     runScript(cwd, 'PublishRelease.mjs', '--version', 'garbage', '--dry-run')
       .status,
   ).not.toBe(0);
+});
+
+test('local publisher refuses non-main branch or dirty tree without modifying manifests', () => {
+  const cwd = createRepository();
+  git(cwd, 'branch', '-M', 'main');
+  git(cwd, 'switch', '-qc', 'feature/test');
+  const before = readFileSync(join(cwd, 'package.json'), 'utf8');
+  const branchFailure = runScript(cwd, 'PublishRelease.mjs');
+  expect(branchFailure.status).not.toBe(0);
+  expect(branchFailure.stderr).toContain('main branch');
+  expect(readFileSync(join(cwd, 'package.json'), 'utf8')).toBe(before);
+
+  git(cwd, 'switch', '-q', 'main');
+  writeFileSync(join(cwd, 'dirty.txt'), 'uncommitted');
+  const dirtyFailure = runScript(cwd, 'PublishRelease.mjs');
+  expect(dirtyFailure.status).not.toBe(0);
+  expect(dirtyFailure.stderr).toContain('clean');
+  expect(readFileSync(join(cwd, 'package.json'), 'utf8')).toBe(before);
+});
+
+test('local publisher commits as local user and pushes main + tag atomically', () => {
+  const cwd = createRepository();
+  git(cwd, 'branch', '-M', 'main');
+  git(cwd, 'tag', 'v0.0.4');
+  git(cwd, 'commit', '--allow-empty', '-qm', 'feat: capture delay');
+
+  const remote = mkdtempSync(join(tmpdir(), 'daguerre-remote-'));
+  temporary.push(remote);
+  git(remote, 'init', '--bare', '-q');
+  git(cwd, 'remote', 'add', 'origin', remote);
+  git(cwd, 'push', '-qu', 'origin', 'main', 'refs/tags/v0.0.4');
+
+  const result = runScript(cwd, 'PublishRelease.mjs');
+  expect(result.status, result.stderr).toBe(0);
+  expect(
+    JSON.parse(readFileSync(join(cwd, 'package.json'), 'utf8')).version,
+  ).toBe('0.0.5');
+  expect(readFileSync(join(cwd, 'CHANGELOG.md'), 'utf8')).toContain(
+    '## [v0.0.5]',
+  );
+
+  const subject = git(cwd, 'log', '-1', '--format=%s');
+  const author = git(cwd, 'log', '-1', '--format=%an <%ae>');
+  expect(subject).toBe('chore(release): v0.0.5');
+  expect(subject).not.toContain('[skip ci]');
+  expect(author).toBe('Release Test <test@example.com>');
+  expect(author).not.toContain('github-actions[bot]');
+
+  expect(git(remote, 'rev-parse', 'refs/heads/main')).toBe(
+    git(cwd, 'rev-parse', 'HEAD'),
+  );
+  expect(git(remote, 'rev-parse', 'refs/tags/v0.0.5^{commit}')).toBe(
+    git(cwd, 'rev-parse', 'HEAD'),
+  );
+});
+
+test('release and CI workflows never use bot commits and guard duplicate release runs', () => {
+  const releaseYml = readFileSync(
+    join(root, '.github/workflows/release.yml'),
+    'utf8',
+  );
+  const ciYml = readFileSync(join(root, '.github/workflows/ci.yml'), 'utf8');
+
+  expect(releaseYml).toContain("tags:\n      - 'v*.*.*'");
+  expect(releaseYml).not.toContain('github-actions[bot]');
+  expect(releaseYml).not.toContain('refs/heads/main');
+  expect(releaseYml).not.toContain('git commit');
+  expect(releaseYml).not.toContain('git push');
+  expect(ciYml).toContain(
+    "!startsWith(github.event.head_commit.message, 'chore(release): ')",
+  );
 });

@@ -22,6 +22,9 @@ concurrency:
 jobs:
   test:
     name: Quality, tests and extension build
+    if: >-
+      github.event_name != 'push' ||
+      !startsWith(github.event.head_commit.message, 'chore(release): ')
     runs-on: ubuntu-latest
     outputs:
       desktop: ${{ steps.which.outputs.desktop }}

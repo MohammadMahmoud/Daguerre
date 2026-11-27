@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
   type DragEvent as ReactDragEvent,
+  type ReactNode,
 } from 'react';
 import { createRoot } from 'react-dom/client';
 import { History } from '../History';
@@ -60,20 +61,72 @@ function formatReleaseDate(date?: string) {
   );
 }
 
-/** Renders release notes markdown into safe headings, bullet lists, and paragraphs. */
+const INLINE_MD =
+  /\*\*(.+?)\*\*|__(.+?)__|`([^`]+)`|~~(.+?)~~|\*([^*]+)\*|_([^_]+)_|\[([^\]]+)\]\((https:\/\/[^)\s]+)\)/g;
+
+/** Converts inline Markdown tokens (bold, italic, code, strikethrough, https links) to React nodes. */
+function renderInlineMarkdown(text: string): ReactNode[] {
+  const nodes: ReactNode[] = [];
+  let lastIndex = 0;
+  let key = 0;
+  for (const match of text.matchAll(INLINE_MD)) {
+    const index = match.index ?? 0;
+    if (index > lastIndex) nodes.push(text.slice(lastIndex, index));
+    if (match[1] !== undefined || match[2] !== undefined) {
+      nodes.push(
+        <strong key={key++}>
+          {renderInlineMarkdown(match[1] ?? match[2])}
+        </strong>,
+      );
+    } else if (match[3] !== undefined) {
+      nodes.push(<code key={key++}>{match[3]}</code>);
+    } else if (match[4] !== undefined) {
+      nodes.push(<del key={key++}>{renderInlineMarkdown(match[4])}</del>);
+    } else if (match[5] !== undefined || match[6] !== undefined) {
+      nodes.push(
+        <em key={key++}>{renderInlineMarkdown(match[5] ?? match[6])}</em>,
+      );
+    } else if (match[7] !== undefined && match[8] !== undefined) {
+      const url = match[8];
+      nodes.push(
+        <button
+          key={key++}
+          type='button'
+          className='link'
+          onClick={() => openExternal(url)}
+        >
+          {match[7]}
+        </button>,
+      );
+    }
+    lastIndex = index + match[0].length;
+  }
+  if (lastIndex < text.length) nodes.push(text.slice(lastIndex));
+  return nodes;
+}
+
+/** Renders release notes markdown into safe headings, lists, paragraphs, and inline formatting. */
 function UpdateChangelog({ notes }: { notes: string }) {
-  const blocks: { kind: 'heading' | 'list' | 'paragraph'; items: string[] }[] =
-    [];
+  const blocks: {
+    kind: 'heading' | 'list' | 'ordered' | 'paragraph';
+    items: string[];
+  }[] = [];
   for (const raw of notes.split(/\r?\n/)) {
     const line = raw.trim();
     if (!line || /^##\s+\[?v?\d/.test(line)) continue;
-    if (line.startsWith('### ')) {
-      blocks.push({ kind: 'heading', items: [line.slice(4).trim()] });
+    const heading = line.match(/^#{1,6}\s+(.+)$/);
+    if (heading) {
+      blocks.push({ kind: 'heading', items: [heading[1].trim()] });
     } else if (/^[-*]\s+/.test(line)) {
       const text = line.slice(2).trim();
       const prev = blocks.at(-1);
       if (prev?.kind === 'list') prev.items.push(text);
       else blocks.push({ kind: 'list', items: [text] });
+    } else if (/^\d+\.\s+/.test(line)) {
+      const text = line.replace(/^\d+\.\s+/, '').trim();
+      const prev = blocks.at(-1);
+      if (prev?.kind === 'ordered') prev.items.push(text);
+      else blocks.push({ kind: 'ordered', items: [text] });
     } else {
       blocks.push({ kind: 'paragraph', items: [line] });
     }
@@ -83,16 +136,24 @@ function UpdateChangelog({ notes }: { notes: string }) {
     <div className='update-changelog' aria-label='Release notes'>
       {blocks.map((block, index) => {
         if (block.kind === 'heading')
-          return <h4 key={index}>{block.items[0]}</h4>;
+          return <h4 key={index}>{renderInlineMarkdown(block.items[0])}</h4>;
         if (block.kind === 'list')
           return (
             <ul key={index}>
               {block.items.map((item, itemIndex) => (
-                <li key={itemIndex}>{item}</li>
+                <li key={itemIndex}>{renderInlineMarkdown(item)}</li>
               ))}
             </ul>
           );
-        return <p key={index}>{block.items[0]}</p>;
+        if (block.kind === 'ordered')
+          return (
+            <ol key={index}>
+              {block.items.map((item, itemIndex) => (
+                <li key={itemIndex}>{renderInlineMarkdown(item)}</li>
+              ))}
+            </ol>
+          );
+        return <p key={index}>{renderInlineMarkdown(block.items[0])}</p>;
       })}
     </div>
   );

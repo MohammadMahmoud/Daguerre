@@ -1,95 +1,83 @@
 name: Release
 
 on:
+  push:
+    tags:
+      - 'v*.*.*'
+      - '!v*-*'
   workflow_dispatch:
     inputs:
-      target_version:
-        description: Optional X.Y.Z override; blank increments patch with rollover at 9
+      tag:
+        description: Existing vX.Y.Z tag to build and publish
         type: string
-        required: false
-  push:
-    branches: ['release/**']
+        required: true
 
 permissions:
   contents: read
 
 concurrency:
-  group: release-main
+  group: release-${{ inputs.tag || github.ref_name }}
   cancel-in-progress: false
 
 jobs:
-  prepare:
-    name: Prepare release on main
+  verify:
+    name: Verify release tag and changelog
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     outputs:
-      version: ${{ steps.bump.outputs.version }}
-      sha: ${{ steps.commit.outputs.sha }}
-    env:
-      HUSKY: '0'
+      version: ${{ steps.check.outputs.version }}
+      tag: ${{ steps.check.outputs.tag }}
+      sha: ${{ steps.check.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
-          fetch-depth: 0
-      - uses: pnpm/action-setup@v4
+          ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 1
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Calculate and synchronize release version
-        id: bump
+      - name: Verify tag, synchronized manifests and changelog
+        id: check
         env:
-          TARGET_VERSION: ${{ inputs.target_version }}
+          TAG: ${{ inputs.tag || github.ref_name }}
         run: |
-          args=(--fetch)
-          if [ -n "$TARGET_VERSION" ]; then args+=(--version "$TARGET_VERSION"); fi
-          node scripts/BumpVersion.mjs "${args[@]}"
-      - name: Generate changelog and exact release body
-        run: |
-          node scripts/UpdateChangelog.mjs
-          git diff --name-only -z -- '*.json' '*.md' | xargs -0 -r pnpm exec prettier --write
-          node scripts/ReleaseNotes.mjs all
-      - name: Commit and atomically push main and annotated tag
-        id: commit
-        env:
-          VERSION: ${{ steps.bump.outputs.version }}
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -u
-          git commit -m "chore(release): v$VERSION [skip ci]"
-          git tag -a "v$VERSION" -m "Daguerre v$VERSION"
-          git push --atomic origin HEAD:refs/heads/main "refs/tags/v$VERSION"
-          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          if [[ ! "$TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "Invalid release tag: $TAG" >&2
+            exit 1
+          fi
+          GITHUB_REF_TYPE=tag GITHUB_REF_NAME="$TAG" node scripts/ReleaseNotes.mjs all
+          {
+            echo "tag=$TAG"
+            echo "version=${TAG#v}"
+            echo "sha=$(git rev-parse HEAD)"
+          } >> "$GITHUB_OUTPUT"
 
   build:
     name: Build and verify both targets
-    needs: prepare
+    needs: verify
     permissions:
       contents: read
       pages: write
       id-token: write
     uses: ./.github/workflows/ci.yml
     with:
-      release_ref: ${{ needs.prepare.outputs.sha }}
+      release_ref: ${{ needs.verify.outputs.sha }}
     secrets: inherit
 
   publish:
     name: Publish desktop and extension assets
-    needs: [prepare, build]
+    needs: [verify, build]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     env:
-      VERSION: ${{ needs.prepare.outputs.version }}
+      VERSION: ${{ needs.verify.outputs.version }}
       CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ needs.prepare.outputs.sha }}
+          ref: ${{ needs.verify.outputs.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
@@ -124,9 +112,9 @@ jobs:
           cd out && sha256sum * > SHA256SUMS.txt
       - uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ needs.prepare.outputs.version }}
-          target_commitish: ${{ needs.prepare.outputs.sha }}
-          name: Daguerre ${{ needs.prepare.outputs.version }}
+          tag_name: ${{ needs.verify.outputs.tag }}
+          target_commitish: ${{ needs.verify.outputs.sha }}
+          name: Daguerre ${{ needs.verify.outputs.version }}
           body_path: .release-notes.md
           files: out/*
           fail_on_unmatched_files: true

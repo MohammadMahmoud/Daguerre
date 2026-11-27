@@ -52,7 +52,8 @@ export function readVersions() {
     JSON.parse(read('src-tauri/tauri.conf.json')).version ?? cargo,
   ];
 }
-export function bumpVersion(override) {
+/** Resolves the next synchronized X.Y.Z release version, validating any override. */
+export function resolveNextVersion(override) {
   const previous = getPreviousTag();
   const current = validateVersion(
     previous?.slice(1) ??
@@ -76,6 +77,10 @@ export function bumpVersion(override) {
     if (index < 0 || target[index] < base[index])
       throw new Error('Override must be newer than the previous release tag');
   }
+  return version;
+}
+export function bumpVersion(override) {
+  const version = resolveNextVersion(override);
   const files = git(
     'ls-files',
     '--cached',

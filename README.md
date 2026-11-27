@@ -96,10 +96,10 @@ Open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** 
 | `pnpm coverage`          | Tests with a coverage report; fails below 80% (report in `coverage/`)                 |
 | `pnpm icons`             | Regenerate `public/icons`                                                             |
 | `pnpm package`           | Build, run tests with coverage, and zip `dist/` into `daguerre.zip` for the Web Store |
-| `pnpm changelog:update`  | CI release preparation: prepend generated notes to CHANGELOG.md                       |
+| `pnpm changelog:update`  | Prepend generated release notes to CHANGELOG.md                                       |
 | `pnpm release-notes all` | Extract a committed release section to ignored `.release-notes.md`                    |
 | `pnpm extension:verify`  | Verify `dist/manifest.json`, entry points, assets and OCR output                      |
-| `pnpm publish:release`   | Dispatch the main-branch release workflow without changing local files                |
+| `pnpm publish:release`   | Bump version & changelog, commit/tag locally as you, and push to trigger Release CI   |
 
 ## 🖥️ Desktop app
 
@@ -197,50 +197,48 @@ The Rust code in `src-tauri/` has its own unit tests (`cargo test`) for coordina
 
 1. **Quality and Extension:** typecheck, lint, formatting and Vitest coverage (80% floor), plus building and verifying `dist/` and `daguerre.crx` when extension code changes.
 2. **Desktop:** affected changes run Rust formatting, Clippy and tests on macOS, Windows and Ubuntu 24.04, plus Linux portal lifecycle tests. Release and manual runs build the platform installers.
-3. **Release:** [.github/workflows/release.yml](.github/workflows/release.yml) prepares one synchronized version on remote `main`, calls CI with that immutable release commit, and attaches desktop installers, `daguerre-extension-dist-vX.Y.Z.zip`, `daguerre-extension-vX.Y.Z.crx` and checksums to one GitHub Release. The extension archive preserves the `dist/` directory. Legacy product tags remain historical references, not publishing triggers.
+3. **Release:** [.github/workflows/release.yml](.github/workflows/release.yml) triggers on `vX.Y.Z` tags pushed by a maintainer, verifies the synchronized version and [CHANGELOG.md](CHANGELOG.md) read-only, calls CI at that immutable commit, and attaches desktop installers, `daguerre-extension-dist-vX.Y.Z.zip`, `daguerre-extension-vX.Y.Z.crx` and checksums to one GitHub Release (plus Chrome Web Store upload when configured). Legacy product tags remain historical references, not publishing triggers.
 4. **Pages:** `main` publishes the showcase, privacy policy and coverage report. Set **Settings → Pages → Source** to **GitHub Actions** once.
 
 ## Publishing a Release
 
 ### Prerequisites
 
-- Merge the desired features into `main` first. Releases always use remote `main`; a `release/**` branch push requests a release but does not publish unmerged branch code. Keep commit messages clear and user-oriented, preferably `feat:`, `fix:` or `docs:`/`chore:`.
-- For the local trigger, install GitHub CLI and authenticate with `gh auth login` using an account allowed to dispatch Actions, or provide an appropriate `GH_TOKEN` outside the repository. No local Rust build is required to request a release. You can also use **Actions → Release → Run workflow** on `main` without the CLI.
-- Enable Actions and allow the preparation job's `contents: write` permission. Branch and tag protections must permit `github-actions[bot]` to push the release metadata and tag; otherwise preparation fails without force-pushing. CI uses the supplied `GITHUB_TOKEN`, not a committed personal token. Reusable CI retains its Pages permissions, but Pages is skipped during releases.
-- [CHANGELOG.md](CHANGELOG.md) is the only source of release history. Release CI generates its new **Added**, **Fixed**, and **Changed** section from commits since the previous unified tag. [AGENT.md](AGENT.md) is maintained deliberately when architecture changes. Local hooks run quality checks only: no post-commit/post-merge amendment or changelog generation on feature branches.
+- Merge the desired features into `main` first and pull `origin/main` so your local `main` branch is clean and up to date. Keep commit messages clear and user-oriented, preferably `feat:`, `fix:` or `docs:`/`chore:`.
+- Ensure your local Git `user.name` and `user.email` are configured and you have push access to `origin`. Release CI never commits or pushes to `main`, so `github-actions[bot]` is never added to Contributors and `graphify-out/` stays synced by `.husky/pre-commit`.
+- [CHANGELOG.md](CHANGELOG.md) is the only source of release history. `pnpm publish:release` turns `## [Unreleased]` (or generates **Added**, **Fixed**, and **Changed** from commits since the previous unified tag) into `## [vX.Y.Z] - YYYY-MM-DD`. [AGENTS.md](AGENTS.md) is maintained deliberately when architecture changes.
 - Optional macOS signing/notarization secrets: `APPLE_CERTIFICATE` (base64 Developer ID `.p12`), `APPLE_CERTIFICATE_PASSWORD`, `APPLE_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_PASSWORD` (app-specific), `APPLE_TEAM_ID`. Without them macOS builds remain ad-hoc signed. See [Tauri's signing guide](https://v2.tauri.app/distribute/sign/macos/).
 - For signed in-app updates, set repository secrets `TAURI_SIGNING_PRIVATE_KEY` and, when needed, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. The private key must match the public key in [src-tauri/tauri.conf.json](src-tauri/tauri.conf.json). CI then publishes signatures and `latest.json`; without the key installers still publish, but the updater manifest is omitted. Never commit signing keys or tokens. Windows installers currently have no signing configuration.
 
 ### Publish
 
 ```sh
-pnpm publish:release --dry-run                # print the dispatch command only
-pnpm publish:release                          # automatically calculate the next version in CI
+pnpm publish:release --dry-run                # print the planned release steps only
+pnpm publish:release                          # bump, commit, tag and push next version
 pnpm publish:release --version 0.1.0           # explicit version override
 # npm equivalent: npm run publish:release -- --version 0.1.0
 ```
 
-`pnpm release` is an alias. The script runs `gh workflow run release.yml --ref main`, optionally with `target_version`. It never rewrites local manifests, changelogs, commits or tags, even when called from a feature branch with uncommitted changes. The workflow must already exist on remote `main` before dispatching it. There is no registry-publishing lifecycle alias.
+`pnpm release` is an alias. On `--dry-run`, it calculates the next version and prints the planned commit/tag/push steps without altering any files, even on a feature branch. On a real run, it requires clean `main` synchronized with `origin/main`, bumps all manifests, updates [CHANGELOG.md](CHANGELOG.md), commits `chore(release): vX.Y.Z` as you (running `.husky/pre-commit`), creates an annotated `vX.Y.Z` tag, and atomically pushes `main` + tag to `origin`.
 
 ### Automatic Versions and Changelog
 
-[scripts/BumpVersion.mjs](scripts/BumpVersion.mjs) fetches tags in CI and uses the nearest reachable unified `vX.Y.Z` tag, falling back to the root package version if none exists. It increments the patch until 9, then increments the minor and resets the patch: `0.0.4 → 0.0.5 → … → 0.0.9 → 0.1.0 → … → 0.1.9 → 0.2.0`. Historical versions with patches above 9 also roll to the next minor. With the current release at `v1.0.2`, the next automatic version is `1.0.3`.
+[scripts/BumpVersion.mjs](scripts/BumpVersion.mjs) uses the nearest reachable unified `vX.Y.Z` tag, falling back to the root package version if none exists. It increments the patch until 9, then increments the minor and resets the patch: `0.0.4 → 0.0.5 → … → 0.0.9 → 0.1.0 → … → 0.1.9 → 0.2.0`. Historical versions with patches above 9 also roll to the next minor.
 
-`--version X.Y.Z` or the workflow's `target_version` input selects that exact numeric version. It must be unused and newer than a previous unified release. Do not choose an override below a previously distributed product version if you expect Chrome Web Store updates or desktop updater upgrades to recognize it.
+`--version X.Y.Z` selects that exact numeric version. It must be unused and newer than a previous unified release. Do not choose an override below a previously distributed product version if you expect Chrome Web Store updates or desktop updater upgrades to recognize it.
 
 All manifests are validated first, then updated as a single transaction with rollback on write failure: root and workspace package files, Tauri config, Cargo manifest/lock and extension manifest. No developer needs to bump them on a feature branch.
 
-[scripts/UpdateChangelog.mjs](scripts/UpdateChangelog.mjs) first looks for a curated `## [Unreleased]` section in CHANGELOG.md. If it has entries, CI renames it to `## [vX.Y.Z] - YYYY-MM-DD` and uses it verbatim. Otherwise it groups commit summaries since the previous unified tag (or, before the first one, the newest legacy tag) into **Added**, **Fixed**, and **Changed**, deduplicates identical entries, and prepends the section above existing history. It writes that exact section to ignored `.release-notes.md`; after formatting, CI extracts it again so the GitHub Release body matches the committed changelog verbatim. Existing historical entries are preserved. Fill the Unreleased section just before releasing, or keep commit subjects clear for the generated fallback.
+[scripts/UpdateChangelog.mjs](scripts/UpdateChangelog.mjs) first looks for a curated `## [Unreleased]` section in CHANGELOG.md. If it has entries, it renames it to `## [vX.Y.Z] - YYYY-MM-DD`. Otherwise it groups commit summaries since the previous unified tag (or, before the first one, the newest legacy tag) into **Added**, **Fixed**, and **Changed**, deduplicates identical entries, and prepends the section above existing history. Existing historical entries are preserved.
 
 ### Pipeline Sequence
 
-1. A manual dispatch, local publish command or `release/**` branch push enters the serialized `release-main` queue. Release runs never cancel one another.
-2. CI checks out fresh `main`, calculates the version, synchronizes manifests and generates the changelog. It runs checks and a production extension build, rejecting missing or invalid `dist/manifest.json` and incomplete assets.
-3. The bot commits `chore(release): vX.Y.Z [skip ci]`, creates an annotated tag and atomically pushes `main` and the tag. A concurrent ordinary push to `main` makes the push fail safely rather than overwrite work.
-4. Reusable CI builds and tests both targets from that exact commit. The publishing job verifies the extension output again, archives the complete `dist/` folder, collects all installers, optional updater signatures and `latest.json`, and writes `SHA256SUMS.txt`.
-5. Once every required build succeeds, GitHub publishes the release with the exact changelog section and all assets. This does not submit the extension to the Chrome Web Store automatically.
+1. `pnpm publish:release` bumps manifests and `CHANGELOG.md` locally, formats changed `.json`/`.md` files, verifies via `scripts/ReleaseNotes.mjs all`, commits `chore(release): vX.Y.Z` (running `.husky/pre-commit`), creates an annotated `vX.Y.Z` tag, and atomically pushes `main` + tag to `origin`.
+2. `ci.yml` skips the duplicate `push` run for `chore(release): ` commits; instead, the pushed `vX.Y.Z` tag triggers `release.yml`.
+3. `release.yml` verifies the tag, synchronized manifests, and changelog read-only, then calls reusable `ci.yml` at that immutable commit SHA to run quality checks, extension packaging, and cross-platform Tauri builds.
+4. Once every required build succeeds, the publishing job archives `dist/`, collects all installers, optional updater signatures and `latest.json`, writes `SHA256SUMS.txt`, creates the GitHub Release, and optionally uploads to the Chrome Web Store.
 
-Follow **Actions → Release** or `gh run list --workflow release.yml`. If preparation fails, fix the reported issue and dispatch again. If a build fails after the tag was pushed, rerun **failed jobs** to reuse the prepared version and commit; rerunning the whole workflow requests another automatic bump. Never silently move a published tag. GitHub concurrency allows one running and one pending run; additional requests may replace the pending run, so check the Actions queue before dispatching repeatedly.
+Follow **Actions → Release** in GitHub. If a build fails after the tag was pushed, rerun **failed jobs** (or re-dispatch **Release** with the existing `tag`) to reuse the exact committed version and tag. Never silently move a published tag.
 
 ## 🛡️ Permissions
 
