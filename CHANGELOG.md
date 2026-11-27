@@ -4,7 +4,7 @@ All notable changes to Daguerre are listed here. The format follows [Keep a Chan
 
 New releases synchronize the desktop app and browser extension under one `vX.Y.Z` tag. `pnpm publish:release` turns the `## [Unreleased]` section below into `## [vX.Y.Z] - YYYY-MM-DD` (or generates Added, Fixed and Changed entries from commit messages), bumps version files locally as you, commits and tags `vX.Y.Z`, and pushes atomically to trigger Release CI, which uses that changelog section verbatim as the GitHub Release body. Earlier product-specific Desktop and Extension sections remain unchanged as historical records.
 
-## [Unreleased]
+## [v1.1.3] - 2026-11-27
 
 ### Fixed
 
