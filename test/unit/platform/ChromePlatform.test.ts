@@ -13,6 +13,7 @@ import {
   SAVED_TOAST,
   SEARCH_PLACEHOLDER,
   SHORTCUT_HINTS,
+  SUPPORTS_UPLOAD,
 } from '../../../src/platform/Chrome';
 
 describe('Chrome Platform Implementation Specification', () => {
@@ -21,6 +22,7 @@ describe('Chrome Platform Implementation Specification', () => {
     vi.useRealTimers();
   });
   it('exposes platform configuration constants', () => {
+    expect(SUPPORTS_UPLOAD).toBe(false);
     expect(CAPTURE_MODES).toEqual(['visible', 'full', 'selection', 'tabs']);
     expect(CAPTURE_HINT).toContain('toolbar');
     expect(SHORTCUT_HINTS.length).toBe(3);

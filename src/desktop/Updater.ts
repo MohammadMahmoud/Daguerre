@@ -1,59 +1,80 @@
+import { invoke } from '@tauri-apps/api/core';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { check, type Update } from '@tauri-apps/plugin-updater';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export type UpdateState =
   | { status: 'idle' | 'checking' | 'latest' | 'unpublished' }
-  | { status: 'available' | 'ready'; version: string }
+  | { status: 'available'; version: string; date?: string; notes?: string }
+  | { status: 'ready'; version: string }
   | { status: 'downloading'; version: string; progress?: number }
-  | { status: 'error'; message: string };
+  | { status: 'error'; message: string; during?: 'check' | 'install' };
 
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
 // The updater's error when the latest GitHub release has no latest.json (an unsigned build).
 const NO_MANIFEST = 'Could not fetch a valid release JSON';
 
-/** Checks GitHub releases for a newer version; with `auto` on, it also installs it at launch and daily. */
+/**
+ * Checks GitHub releases for a newer version; when `auto` is enabled, checks at launch
+ * and once daily and prompts the user before downloading or installing.
+ */
 export function useUpdater() {
   const [auto, setAuto] = useState(
     () => localStorage.getItem('autoUpdate') === 'true',
   );
   const [state, setState] = useState<UpdateState>({ status: 'idle' });
+  const [promptOpen, setPromptOpen] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
   const update = useRef<Update | null>(null);
   const busy = useRef(false);
   // An installed update only applies after a restart, so stop checking until then.
   const installed = useRef(false);
 
-  const run = useCallback(async (task: () => Promise<void>) => {
-    if (busy.current || installed.current) return;
-    busy.current = true;
-    try {
-      await task();
-    } catch (e) {
-      setState({ status: 'error', message: String(e) });
-    } finally {
-      busy.current = false;
-    }
-  }, []);
+  const run = useCallback(
+    async (during: 'check' | 'install', task: () => Promise<void>) => {
+      if (busy.current || installed.current) return;
+      busy.current = true;
+      try {
+        await task();
+      } catch (e) {
+        setState({ status: 'error', message: String(e), during });
+      } finally {
+        busy.current = false;
+      }
+    },
+    [],
+  );
 
   const download = useCallback(async (found: Update) => {
     const { version } = found;
     let total = 0;
     let received = 0;
+    setPromptOpen(false);
     setState({ status: 'downloading', version });
-    await found.downloadAndInstall((e) => {
-      if (e.event === 'Started') total = e.data.contentLength ?? 0;
-      if (e.event !== 'Progress' || !total) return;
-      received += e.data.chunkLength;
-      setState({ status: 'downloading', version, progress: received / total });
-    });
+    await invoke('set_updating', { updating: true }).catch(() => {});
+    try {
+      await found.downloadAndInstall((e) => {
+        if (e.event === 'Started') total = e.data.contentLength ?? 0;
+        if (e.event !== 'Progress' || !total) return;
+        received += e.data.chunkLength;
+        setState({
+          status: 'downloading',
+          version,
+          progress: received / total,
+        });
+      });
+    } catch (e) {
+      await invoke('set_updating', { updating: false }).catch(() => {});
+      throw e;
+    }
     installed.current = true;
     setState({ status: 'ready', version });
   }, []);
 
   const checkNow = useCallback(
-    (install: boolean) =>
-      run(async () => {
+    () =>
+      run('check', async () => {
         setState({ status: 'checking' });
         localStorage.setItem('lastUpdateCheck', String(Date.now()));
         try {
@@ -63,18 +84,24 @@ export function useUpdater() {
           return setState({ status: 'unpublished' });
         }
         if (!update.current) return setState({ status: 'latest' });
-        if (install) return download(update.current);
-        setState({ status: 'available', version: update.current.version });
+        setBannerDismissed(false);
+        setPromptOpen(true);
+        setState({
+          status: 'available',
+          version: update.current.version,
+          date: update.current.date,
+          notes: update.current.body,
+        });
       }),
-    [run, download],
+    [run],
   );
 
   useEffect(() => {
     if (!auto) return;
-    void checkNow(true);
+    void checkNow();
     const timer = setInterval(() => {
       const last = Number(localStorage.getItem('lastUpdateCheck'));
-      if (Date.now() - last >= DAY) void checkNow(true);
+      if (Date.now() - last >= DAY) void checkNow();
     }, HOUR);
     return () => clearInterval(timer);
   }, [auto, checkNow]);
@@ -82,15 +109,20 @@ export function useUpdater() {
   return {
     state,
     auto,
+    promptOpen,
+    bannerDismissed,
     changeAuto(on: boolean) {
       setAuto(on);
       localStorage.setItem('autoUpdate', String(on));
     },
-    check: () => void checkNow(false),
+    check: () => void checkNow(),
     install: () =>
-      void run(async () => {
+      void run('install', async () => {
         if (update.current) await download(update.current);
       }),
+    dismissPrompt: () => setPromptOpen(false),
+    dismissBanner: () => setBannerDismissed(true),
+    dismissError: () => setState({ status: 'idle' }),
     restart: () => void relaunch(),
   };
 }

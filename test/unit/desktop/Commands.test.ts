@@ -57,13 +57,19 @@ test('the main window can only show or hide itself through Rust', () => {
     expect(permissions).not.toContain(`core:window:allow-${raw}`);
 });
 
-// The hidden main window runs captures and shortcuts; WebKit would otherwise suspend it mid-capture.
-test('the main window is never suspended while hidden', () => {
+test('the main window is never suspended while hidden and uses HTML5 drag-and-drop', () => {
   const { app } = JSON.parse(read('src-tauri/tauri.conf.json')) as {
-    app: { windows: { label: string; backgroundThrottling?: string }[] };
+    app: {
+      windows: {
+        label: string;
+        backgroundThrottling?: string;
+        dragDropEnabled?: boolean;
+      }[];
+    };
   };
   const home = app.windows.find((w) => w.label === 'home');
   expect(home?.backgroundThrottling).toBe('disabled');
+  expect(home?.dragDropEnabled).toBe(false);
 });
 
 test('Wayland startup does not initialize the X11 shortcut manager', () => {

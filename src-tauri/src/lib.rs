@@ -3,7 +3,13 @@ mod capture;
 mod portal;
 mod selection;
 
-use std::{collections::HashMap, sync::Mutex};
+use std::{
+    collections::HashMap,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Mutex,
+    },
+};
 
 use capture::{err, Rect};
 use serde::Serialize;
@@ -31,6 +37,10 @@ struct Shortcuts(Mutex<HashMap<u32, String>>);
 /// An action requested on the command line before the home window was listening.
 #[derive(Default)]
 struct Pending(Mutex<Option<String>>);
+
+/// Suppresses binary-replacement auto-exit during and after an in-app update install.
+#[derive(Default)]
+struct Updating(AtomicBool);
 
 /// `--capture <action>`, used by launchers and desktop keyboard settings (e.g. on Wayland).
 fn capture_arg(args: &[String]) -> Option<&str> {
@@ -633,6 +643,19 @@ fn binaries_changed(watched: &[(std::path::PathBuf, Option<BinaryId>)]) -> bool 
         .any(|(path, initial)| BinaryId::of(path) != *initial)
 }
 
+fn should_exit_on_binary_change(
+    watched: &[(std::path::PathBuf, Option<BinaryId>)],
+    updating: &AtomicBool,
+) -> bool {
+    !updating.load(Ordering::SeqCst) && binaries_changed(watched)
+}
+
+/// Pauses auto-exit on binary replacement while an in-app update installs or awaits restart.
+#[tauri::command]
+fn set_updating(state: State<'_, Updating>, updating: bool) {
+    state.0.store(updating, Ordering::SeqCst);
+}
+
 pub fn run() {
     let self_id = std::env::current_exe().ok().and_then(BinaryId::of);
     let mut builder = tauri::Builder::default()
@@ -704,6 +727,7 @@ pub fn run() {
         )
         .manage(Shortcuts::default())
         .manage(Pending::default())
+        .manage(Updating::default())
         .manage(capture::Captured::default())
         .manage(selection::Selection::default())
         .setup(|app| {
@@ -734,7 +758,7 @@ pub fn run() {
             let handle = app.handle().clone();
             std::thread::spawn(move || loop {
                 std::thread::sleep(std::time::Duration::from_secs(2));
-                if binaries_changed(&watched) {
+                if should_exit_on_binary_change(&watched, &handle.state::<Updating>().0) {
                     handle.exit(0);
                     break;
                 }
@@ -789,6 +813,7 @@ pub fn run() {
             set_liquid_glass,
             theme_blend,
             set_theme_blend,
+            set_updating,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Daguerre");
@@ -910,6 +935,19 @@ mod tests {
         assert!(binaries_changed(&watched));
         std::fs::remove_file(&path).unwrap();
         assert!(binaries_changed(&watched));
+    }
+
+    #[test]
+    fn skips_binary_exit_while_updating() {
+        let path = std::env::temp_dir().join(format!("daguerre-upd-{}", std::process::id()));
+        std::fs::write(&path, b"v1").unwrap();
+        let watched = vec![(path.clone(), BinaryId::of(&path))];
+        let updating = AtomicBool::new(true);
+        std::fs::write(&path, b"v2-updated").unwrap();
+        assert!(!should_exit_on_binary_change(&watched, &updating));
+        updating.store(false, Ordering::SeqCst);
+        assert!(should_exit_on_binary_change(&watched, &updating));
+        std::fs::remove_file(&path).unwrap();
     }
 
     #[test]

@@ -102,6 +102,8 @@ beforeEach(async () => {
         case 'set_theme_blend':
           savedBlend = payload.value;
           return;
+        case 'set_updating':
+          return;
         case 'set_liquid_glass':
           return liquid;
         case 'plugin:window|set_effects':
@@ -116,6 +118,8 @@ beforeEach(async () => {
               rid: 1,
               currentVersion: '1.2.3',
               version: latest,
+              date: '2026-11-26T22:11:51.472Z',
+              body: '## [v1.3.0] - 2026-11-26\n\n### Added\n\n- Added update prompt changelog.\n\n### Fixed\n\n- Kept app running until restart.\n',
               rawJson: {},
             }
           );
@@ -866,7 +870,7 @@ test('toggles launch at login and shows the version', async () => {
 const updateStatus = () =>
   within(screen.getByRole('region', { name: 'Updates' })).getByRole('status');
 
-test('checks for updates on request, installs one and restarts', async () => {
+test('checks for updates on request, prompts with changelog and Download & install, and restarts', async () => {
   await openSettings();
   expect(cmds()).not.toContain('plugin:updater|check');
   fireEvent.click(screen.getByRole('button', { name: 'Check now' }));
@@ -875,12 +879,30 @@ test('checks for updates on request, installs one and restarts', async () => {
   );
   latest = '1.3.0';
   fireEvent.click(screen.getByRole('button', { name: 'Check now' }));
-  fireEvent.click(await screen.findByRole('button', { name: 'Install 1.3.0' }));
+  const prompt = await screen.findByRole('dialog', {
+    name: 'Update available',
+  });
+  expect(prompt.textContent).toContain('Daguerre v1.3.0 is available.');
+  expect(prompt.textContent).toContain('Added update prompt changelog.');
+  expect(prompt.textContent).toContain('Kept app running until restart.');
+  expect(prompt.textContent).toContain(
+    'Please save your work. Installing automatically in 60s.',
+  );
+  expect(within(prompt).getByRole('button', { name: 'Skip' })).toBeTruthy();
+  expect(cmds()).not.toContain('plugin:updater|download_and_install');
+  fireEvent.click(
+    within(prompt).getByRole('button', { name: 'Download & install' }),
+  );
   await waitFor(() =>
     expect(updateStatus().textContent).toBe(
       'Daguerre 1.3.0 is installed. Restart to use it.',
     ),
   );
+  expect(calls).toContainEqual({
+    cmd: 'set_updating',
+    payload: { updating: true },
+  });
+  expect(cmds()).not.toContain('plugin:process|restart');
   // The banner and the Settings row both offer the restart.
   fireEvent.click(screen.getAllByRole('button', { name: 'Restart' })[0]);
   await waitFor(() => expect(cmds()).toContain('plugin:process|restart'));
@@ -908,15 +930,29 @@ test('reports a failed update', async () => {
   latest = 'broken';
   await openSettings();
   fireEvent.click(screen.getByRole('button', { name: 'Check now' }));
-  fireEvent.click(
-    await screen.findByRole('button', { name: 'Install broken' }),
-  );
+  const prompt = await screen.findByRole('dialog', {
+    name: 'Update available',
+  });
+  fireEvent.click(within(prompt).getByRole('button', { name: 'Skip' }));
+  fireEvent.click(screen.getAllByRole('button', { name: 'Install broken' })[0]);
   await waitFor(() =>
     expect(updateStatus().textContent).toBe("Couldn't update: bad signature"),
   );
+  expect(calls).toContainEqual({
+    cmd: 'set_updating',
+    payload: { updating: false },
+  });
+
+  fireEvent.click(nav('Capture'));
+  const banner = await screen.findByRole('alert');
+  expect(banner.textContent).toBe("Couldn't update: bad signature");
+  fireEvent.click(
+    within(banner).getByRole('button', { name: 'Dismiss update error' }),
+  );
+  expect(screen.queryByRole('alert')).toBeNull();
 });
 
-test('automatic updates install at launch and once a day', async () => {
+test('automatic updates prompt with Install/Skip and install automatically after 60s countdown', async () => {
   localStorage.setItem('autoUpdate', 'true');
   const intervals = vi.spyOn(globalThis, 'setInterval');
   const clock = vi.spyOn(Date, 'now');
@@ -942,14 +978,67 @@ test('automatic updates install at launch and once a day', async () => {
     hoursLater(23);
     expect(checks()).toBe(1);
     hoursLater(24);
+    const prompt = await screen.findByRole('dialog', {
+      name: 'Update available',
+    });
+    expect(prompt.textContent).toContain('Daguerre v1.3.0 is available.');
+    expect(prompt.textContent).toContain('Added update prompt changelog.');
+    expect(
+      within(prompt).getByRole('button', { name: 'Install' }),
+    ).toBeTruthy();
+    expect(
+      within(prompt).queryByRole('button', { name: 'Download & install' }),
+    ).toBeNull();
+    expect(cmds()).not.toContain('plugin:updater|download_and_install');
+
+    // Skipping cancels the countdown without installing.
+    fireEvent.click(within(prompt).getByRole('button', { name: 'Skip' }));
+    expect(
+      screen.queryByRole('dialog', { name: 'Update available' }),
+    ).toBeNull();
+    expect(cmds()).not.toContain('plugin:updater|download_and_install');
+
+    expect(
+      await screen.findAllByRole('button', { name: 'Install 1.3.0' }),
+    ).toHaveLength(2);
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Dismiss update notice' }),
+    );
+    expect(
+      screen.queryByRole('button', { name: 'Dismiss update notice' }),
+    ).toBeNull();
+
+    // Another scheduled check opens the prompt and 60s countdown installs automatically at 0.
+    hoursLater(24);
+    const countdownPrompt = await screen.findByRole('dialog', {
+      name: 'Update available',
+    });
+    const countdownTick = intervals.mock.calls
+      .filter(([, ms]) => ms === 1000)
+      .at(-1)![0] as () => void;
+    act(() => {
+      countdownTick();
+    });
+    expect(within(countdownPrompt).getByRole('timer').textContent).toContain(
+      'Installing automatically in 59s.',
+    );
+    act(() => {
+      for (let i = 0; i < 59; i++) countdownTick();
+    });
+
     await waitFor(() =>
       expect(
         screen.getAllByText('Daguerre 1.3.0 is installed. Restart to use it.'),
       ).toHaveLength(2),
     );
-    // Installed updates wait for the restart instead of downloading again.
+    expect(calls).toContainEqual({
+      cmd: 'set_updating',
+      payload: { updating: true },
+    });
+    expect(cmds()).not.toContain('plugin:process|restart');
+    // Installed updates wait for the restart instead of checking again.
     hoursLater(24);
-    expect(checks()).toBe(2);
+    expect(checks()).toBe(3);
     const toggle = screen.getByRole('switch', { name: 'Update automatically' });
     fireEvent.click(toggle);
     expect(localStorage.getItem('autoUpdate')).toBe('false');
@@ -957,6 +1046,21 @@ test('automatic updates install at launch and once a day', async () => {
     intervals.mockRestore();
     clock.mockRestore();
   }
+});
+
+test('waits until the onboarding tour closes before showing the update prompt', async () => {
+  localStorage.removeItem('hasCompletedOnboardingTour');
+  localStorage.setItem('autoUpdate', 'true');
+  latest = '1.3.0';
+  await renderHome();
+  await waitFor(() => expect(cmds()).toContain('plugin:updater|check'));
+  await waitFor(() => expect(driver).toHaveBeenCalledOnce());
+  expect(screen.queryByRole('dialog', { name: 'Update available' })).toBeNull();
+  const config = vi.mocked(driver).mock.calls[0][0]!;
+  act(() => (config.onDestroyed as () => void)());
+  expect(
+    await screen.findByRole('dialog', { name: 'Update available' }),
+  ).toBeTruthy();
 });
 
 test('on macOS, uses key symbols and asks for Screen Recording access', async () => {
@@ -1071,4 +1175,143 @@ test('renders Support below Product Tour and opens Buy Me a Coffee externally', 
       payload: { url: 'https://buymeacoffee.com/projectra' },
     }),
   );
+});
+
+test('History supports desktop document upload before Clear all, shows Uploaded filter, and blocks stray file drops', async () => {
+  await addShot(imageBlob(800, 600), {
+    title: 'Existing shot',
+    url: '',
+    mode: 'window',
+  });
+  await renderHome();
+
+  // Dropping a file outside History calls preventDefault so WebView never navigates away.
+  const strayDrop = new Event('drop', { bubbles: true, cancelable: true });
+  Object.defineProperty(strayDrop, 'dataTransfer', {
+    value: { types: ['Files'] },
+  });
+  window.dispatchEvent(strayDrop);
+  expect(strayDrop.defaultPrevented).toBe(true);
+
+  fireEvent.click(nav('History'));
+  expect(
+    await screen.findByRole('heading', { name: 'History', level: 1 }),
+  ).toBeTruthy();
+  await screen.findByRole('button', { name: 'Clear all' });
+
+  const actions = document.querySelector('.history-actions') as HTMLElement;
+  const buttons = within(actions).getAllByRole('button');
+  expect(buttons.map((b) => b.textContent?.trim())).toEqual([
+    'Upload',
+    'Clear all',
+  ]);
+  expect(screen.getByRole('radio', { name: 'Uploaded' })).toBeTruthy();
+
+  const input = document.querySelector(
+    '.history input[type="file"]',
+  ) as HTMLInputElement;
+  const pngFile = new File(['png'], 'Design Brief.png', { type: 'image/png' });
+  await act(async () => {
+    fireEvent.change(input, { target: { files: [pngFile] } });
+  });
+
+  const designCard = (
+    await screen.findByRole('link', { name: 'Edit Design Brief' })
+  ).closest('article')!;
+  expect(within(designCard).getByText('Uploaded')).toBeTruthy();
+
+  // Switching back to Capture reflects the newly uploaded document in Recent.
+  fireEvent.click(nav('Capture'));
+  expect(
+    await screen.findByRole('button', { name: 'Edit Design Brief' }),
+  ).toBeTruthy();
+});
+
+test('supports app-wide drag-and-drop on Capture, Settings, and History with full-page overlay and Escape dismissal', async () => {
+  await renderHome();
+  const app = document.querySelector('.app') as HTMLElement;
+
+  // Dragging over Capture shows the full-page drop overlay and Escape dismisses it.
+  fireEvent.dragEnter(app, { dataTransfer: { types: ['Files'], files: [] } });
+  expect(
+    screen.getByRole('region', { name: 'Drop documents to upload' }),
+  ).toBeTruthy();
+  fireEvent.keyDown(window, { key: 'Escape' });
+  expect(
+    screen.queryByRole('region', { name: 'Drop documents to upload' }),
+  ).toBeNull();
+
+  // Dropping on Capture imports the file, shows Open toast, and refreshes Recent.
+  const captureFile = new File(['png'], 'Capture Drop.png', {
+    type: 'image/png',
+  });
+  await act(async () => {
+    fireEvent.drop(app, {
+      dataTransfer: { types: ['Files'], files: [captureFile] },
+    });
+  });
+  expect(
+    await screen.findByRole('button', { name: 'Edit Capture Drop' }),
+  ).toBeTruthy();
+  const toast = screen.getByRole('status');
+  expect(toast.textContent).toContain('Added "Capture Drop"');
+  fireEvent.click(within(toast).getByRole('button', { name: 'Open' }));
+  await waitFor(() =>
+    expect(calls.some((c) => c.cmd === 'open_editor')).toBe(true),
+  );
+
+  // Dropping on Settings imports cleanly too.
+  fireEvent.click(nav('Settings'));
+  await screen.findByRole('heading', { name: 'Settings', level: 1 });
+  const settingsFile = new File(['png'], 'Settings Drop.png', {
+    type: 'image/png',
+  });
+  await act(async () => {
+    fireEvent.drop(app, {
+      dataTransfer: { types: ['Files'], files: [settingsFile] },
+    });
+  });
+  await waitFor(() =>
+    expect(document.querySelector('.toast')?.textContent).toContain(
+      'Added "Settings Drop"',
+    ),
+  );
+
+  // Dropping while already on History reloads History via refreshKey without duplicate overlay.
+  fireEvent.click(nav('History'));
+  expect(
+    await screen.findByRole('link', { name: 'Edit Settings Drop' }),
+  ).toBeTruthy();
+  fireEvent.dragEnter(app, { dataTransfer: { types: ['Files'], files: [] } });
+  expect(
+    screen.getAllByRole('region', { name: 'Drop documents to upload' }),
+  ).toHaveLength(1);
+  const historyFile = new File(['png'], 'History Drop.png', {
+    type: 'image/png',
+  });
+  await act(async () => {
+    fireEvent.drop(app, {
+      dataTransfer: { types: ['Files'], files: [historyFile] },
+    });
+  });
+  expect(
+    await screen.findByRole('link', { name: 'Edit History Drop' }),
+  ).toBeTruthy();
+});
+
+test('ignores file drops while the Product Tour is open', async () => {
+  localStorage.removeItem('hasCompletedOnboardingTour');
+  await renderHome();
+  await waitFor(() => expect(driver).toHaveBeenCalledOnce());
+  const app = document.querySelector('.app') as HTMLElement;
+  const file = new File(['png'], 'Ignored Tour.png', { type: 'image/png' });
+
+  fireEvent.dragEnter(app, { dataTransfer: { types: ['Files'], files: [] } });
+  expect(
+    screen.queryByRole('region', { name: 'Drop documents to upload' }),
+  ).toBeNull();
+  await act(async () => {
+    fireEvent.drop(app, { dataTransfer: { types: ['Files'], files: [file] } });
+  });
+  expect(await listShots()).toHaveLength(0);
 });

@@ -4,6 +4,20 @@ All notable changes to Daguerre are listed here. The format follows [Keep a Chan
 
 New releases synchronize the desktop app and browser extension under one `vX.Y.Z` tag. Release CI turns the `## [Unreleased]` section below into `## [vX.Y.Z] - YYYY-MM-DD` and uses it verbatim as the GitHub Release body; without one, it generates Added, Fixed and Changed entries from commit messages. Version files are updated on remote main, not by local hooks. Earlier product-specific Desktop and Extension sections remain unchanged as historical records.
 
+## [Unreleased]
+
+### Added
+
+- Desktop: added document upload (**Upload** button aligned right before **Clear all** on the History page) and app-wide full-page drag-and-drop import across the desktop window for images (PNG, JPEG, WebP, GIF, BMP, TIFF, AVIF, SVG, ICO, HEIC/HEIF) and PDFs (offline multi-page rendering up to 25 pages), with an **Uploaded** filter, empty-state dropzone, full-page drop overlay, and one-click editor open toast.
+
+### Fixed
+
+- Desktop: automatic and manual update checks now show a confirmation dialog with the version, release date, changelog, a 60-second save-your-work countdown (installing automatically when the timer expires unless skipped), and `Install`/`Skip` (auto-update enabled) or `Download & install`/`Skip` (auto-update disabled), while keeping the app running until you choose to restart.
+
+### Changed
+
+- Desktop: updated the "Update automatically" description in Settings to clarify that Daguerre asks before installing new versions.
+
 ## [v1.1.1] - 2026-11-26
 
 ### Added

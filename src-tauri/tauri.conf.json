@@ -22,6 +22,7 @@
         "hiddenTitle": true,
         "transparent": true,
         "backgroundThrottling": "disabled",
+        "dragDropEnabled": false,
         "visible": false,
         "center": true
       }

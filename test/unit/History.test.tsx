@@ -262,3 +262,226 @@ test('provides complete accessible names and roles across search, filters, and c
   expect(within(docsCard).getByRole('button', { name: /PNG/ })).toBeTruthy();
   expect(within(docsCard).getByRole('button', { name: 'Delete' })).toBeTruthy();
 });
+
+test('extension mode omits upload button, empty dropzone, and file drop overlay', async () => {
+  const { container } = render(<History />);
+  expect(await screen.findByText('No screenshots yet')).toBeTruthy();
+  expect(screen.queryByRole('button', { name: 'Upload' })).toBeNull();
+  expect(container.querySelector('.upload-empty-drop')).toBeNull();
+  expect(screen.queryByRole('radio', { name: 'Uploaded' })).toBeNull();
+
+  const root = container.querySelector('.history')!;
+  const file = new File(['png'], 'Doc.png', { type: 'image/png' });
+  fireEvent.dragEnter(root, {
+    dataTransfer: { types: ['Files'], files: [file] },
+  });
+  expect(
+    screen.queryByRole('region', { name: 'Drop documents to upload' }),
+  ).toBeNull();
+});
+
+test('desktop upload mode places Upload before Clear all and handles file picker uploads', async () => {
+  const { today } = await seed();
+  const onOpen = vi.fn();
+  const onChange = vi.fn();
+  let resolveUpload!: (v: any) => void;
+  const onUpload = vi.fn(
+    () =>
+      new Promise<any>((resolve) => {
+        resolveUpload = resolve;
+      }),
+  );
+
+  const { container } = render(
+    <History
+      embedded
+      onOpen={onOpen}
+      onChange={onChange}
+      modes={['selection', 'screen', 'window', 'upload']}
+      onUpload={onUpload}
+      uploadAccept='.png,.pdf'
+    />,
+  );
+  await screen.findByText('Today');
+
+  const actions = container.querySelector('.history-actions') as HTMLElement;
+  const buttons = within(actions).getAllByRole('button');
+  expect(buttons.map((b) => b.textContent?.trim())).toEqual([
+    'Upload',
+    'Clear all',
+  ]);
+  expect(screen.getByRole('radio', { name: 'Uploaded' })).toBeTruthy();
+
+  // Filter to Selection so we verify successful upload resets non-matching filter to All.
+  fireEvent.click(screen.getByRole('radio', { name: 'Selection' }));
+  expect(
+    screen
+      .getByRole('radio', { name: 'Selection' })
+      .getAttribute('aria-checked'),
+  ).toBe('true');
+
+  const input = container.querySelector(
+    'input[type="file"]',
+  ) as HTMLInputElement;
+  expect(input.getAttribute('accept')).toBe('.png,.pdf');
+  const clickSpy = vi.spyOn(input, 'click').mockImplementation(() => undefined);
+  fireEvent.click(screen.getByRole('button', { name: 'Upload' }));
+  expect(clickSpy).toHaveBeenCalledOnce();
+
+  const file = new File(['png'], 'Spec.png', { type: 'image/png' });
+  fireEvent.change(input, { target: { files: [file] } });
+  expect(onUpload).toHaveBeenCalledWith([file]);
+  expect(screen.getByRole('button', { name: 'Uploading…' })).toBeTruthy();
+
+  await act(async () => {
+    resolveUpload({
+      ids: [today],
+      titles: ['Spec'],
+      skippedUnsupported: 0,
+      skippedTooLarge: 0,
+      failed: 0,
+      truncatedPdfPages: 0,
+    });
+  });
+
+  await waitFor(() => expect(onChange).toHaveBeenCalledOnce());
+  expect(
+    screen.getByRole('radio', { name: 'All' }).getAttribute('aria-checked'),
+  ).toBe('true');
+  const toast = screen.getByRole('status');
+  expect(toast.textContent).toContain('Added "Spec"');
+  fireEvent.click(within(toast).getByRole('button', { name: 'Open' }));
+  expect(onOpen).toHaveBeenCalledWith(today);
+});
+
+test('desktop upload mode supports empty-state dropzone, nested drag-and-drop, Escape dismissal, and error toasts', async () => {
+  const onOpen = vi.fn();
+  const onUpload = vi
+    .fn()
+    .mockResolvedValueOnce({
+      ids: ['u1', 'u2'],
+      titles: ['Doc (Page 1)', 'Doc (Page 2)'],
+      skippedUnsupported: 1,
+      skippedTooLarge: 0,
+      failed: 0,
+      truncatedPdfPages: 0,
+    })
+    .mockRejectedValueOnce(new Error('Disk full'));
+
+  const { container } = render(
+    <History
+      embedded
+      onOpen={onOpen}
+      modes={['selection', 'screen', 'window', 'upload']}
+      onUpload={onUpload}
+    />,
+  );
+  expect(await screen.findByText('Drop images or PDFs here')).toBeTruthy();
+
+  const root = container.querySelector('.history')!;
+  const file = new File(['pdf'], 'Doc.pdf', { type: 'application/pdf' });
+
+  // Internal non-file drag does not trigger the drop overlay.
+  fireEvent.dragEnter(root, {
+    dataTransfer: { types: ['text/plain'], files: [] },
+  });
+  expect(
+    screen.queryByRole('region', { name: 'Drop documents to upload' }),
+  ).toBeNull();
+
+  // Nested dragEnter / dragLeave avoids flicker, and Escape dismisses overlay.
+  fireEvent.dragEnter(root, { dataTransfer: { types: ['Files'], files: [] } });
+  fireEvent.dragEnter(root, { dataTransfer: { types: ['Files'], files: [] } });
+  expect(
+    screen.getByRole('region', { name: 'Drop documents to upload' }),
+  ).toBeTruthy();
+  fireEvent.dragLeave(root);
+  expect(
+    screen.getByRole('region', { name: 'Drop documents to upload' }),
+  ).toBeTruthy();
+  fireEvent.keyDown(window, { key: 'Escape' });
+  expect(
+    screen.queryByRole('region', { name: 'Drop documents to upload' }),
+  ).toBeNull();
+
+  // DragOver + Drop uploads files and displays multi-item toast with "Open first".
+  fireEvent.dragEnter(root, { dataTransfer: { types: ['Files'], files: [] } });
+  const dataTransfer = {
+    types: ['Files'],
+    files: [file],
+    dropEffect: 'none',
+  };
+  fireEvent.dragOver(root, { dataTransfer });
+  expect(dataTransfer.dropEffect).toBe('copy');
+  await act(async () => {
+    fireEvent.drop(root, { dataTransfer });
+  });
+  expect(onUpload).toHaveBeenCalledWith([file]);
+  await waitFor(() =>
+    expect(screen.getByRole('status').textContent).toContain('Added 2 items'),
+  );
+  fireEvent.click(
+    within(screen.getByRole('status')).getByRole('button', {
+      name: 'Open first',
+    }),
+  );
+  expect(onOpen).toHaveBeenCalledWith('u1');
+
+  // Failed upload shows user-friendly error toast.
+  await act(async () => {
+    fireEvent.drop(root, { dataTransfer });
+  });
+  await waitFor(() =>
+    expect(screen.getByRole('status').textContent).toBe(
+      'Could not import the selected document.',
+    ),
+  );
+});
+
+test('supports handleDrop=false and external refreshKey reloads with filter reset', async () => {
+  await seed();
+  const onUpload = vi.fn();
+  const { container, rerender } = render(
+    <History
+      embedded
+      modes={['selection', 'screen', 'window', 'upload']}
+      onUpload={onUpload}
+      handleDrop={false}
+      refreshKey={0}
+    />,
+  );
+  await screen.findByText('Today');
+  fireEvent.click(screen.getByRole('radio', { name: 'Selection' }));
+
+  const root = container.querySelector('.history')!;
+  const file = new File(['png'], 'Ignored.png', { type: 'image/png' });
+  fireEvent.dragEnter(root, {
+    dataTransfer: { types: ['Files'], files: [file] },
+  });
+  expect(
+    screen.queryByRole('region', { name: 'Drop documents to upload' }),
+  ).toBeNull();
+  fireEvent.drop(root, { dataTransfer: { types: ['Files'], files: [file] } });
+  expect(onUpload).not.toHaveBeenCalled();
+
+  await addShot(imageBlob(800, 600), {
+    title: 'External drop doc',
+    url: '',
+    mode: 'upload',
+  });
+  rerender(
+    <History
+      embedded
+      modes={['selection', 'screen', 'window', 'upload']}
+      onUpload={onUpload}
+      handleDrop={false}
+      refreshKey={1}
+    />,
+  );
+  expect(
+    await screen.findByRole('link', { name: 'Edit External drop doc' }),
+  ).toBeTruthy();
+  expect(
+    screen.getByRole('radio', { name: 'All' }).getAttribute('aria-checked'),
+  ).toBe('true');
+});

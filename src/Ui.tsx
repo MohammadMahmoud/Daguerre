@@ -34,6 +34,7 @@ const ICONS = {
   redo: '<path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/>',
   copy: '<rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',
   download: '<path d="M12 3v12M7 10l5 5 5-5M4 21h16"/>',
+  upload: '<path d="M12 15V3M7 8l5-5 5 5M4 21h16"/>',
   pdf: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>',
   scanText:
     '<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 9h8M8 12h8M8 15h5"/>',
@@ -165,6 +166,7 @@ export const MODE_LABEL: Record<CaptureMode, string> = {
   tabs: 'Tab',
   screen: 'Screen',
   window: 'Window',
+  upload: 'Uploaded',
 };
 
 export function useToast() {
@@ -196,12 +198,16 @@ export function ConfirmDialog({
   title,
   children,
   confirmLabel,
+  cancelLabel = 'Cancel',
+  tone = 'danger',
   onConfirm,
   onCancel,
 }: {
   title: string;
   children: ReactNode;
   confirmLabel: string;
+  cancelLabel?: string;
+  tone?: 'danger' | 'primary';
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -236,18 +242,24 @@ export function ConfirmDialog({
       <div
         ref={dialog}
         className='dialog'
-        role='alertdialog'
+        role={tone === 'danger' ? 'alertdialog' : 'dialog'}
         aria-modal='true'
         aria-labelledby='dialog-title'
         aria-describedby='dialog-body'
       >
         <h2 id='dialog-title'>{title}</h2>
-        <p id='dialog-body'>{children}</p>
+        <div id='dialog-body' className='dialog-body'>
+          {children}
+        </div>
         <div className='dialog-actions'>
           <button type='button' className='btn ghost' onClick={onCancel}>
-            Cancel
+            {cancelLabel}
           </button>
-          <button type='button' className='btn danger' onClick={onConfirm}>
+          <button
+            type='button'
+            className={tone === 'danger' ? 'btn danger' : 'btn primary'}
+            onClick={onConfirm}
+          >
             {confirmLabel}
           </button>
         </div>

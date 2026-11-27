@@ -379,8 +379,8 @@ export function SettingsPage({
             <div>
               <label htmlFor='auto-update'>Update automatically</label>
               <p className='meta'>
-                Checks GitHub when Daguerre opens and once a day, and installs
-                new versions.
+                Checks GitHub when Daguerre opens and once a day, and asks
+                before installing new versions.
               </p>
             </div>
             <input

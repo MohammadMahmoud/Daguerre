@@ -19,7 +19,13 @@ function isEditorWindow() {
   }
 }
 
-export const CAPTURE_MODES: CaptureMode[] = ['selection', 'screen', 'window'];
+export const SUPPORTS_UPLOAD = true;
+export const CAPTURE_MODES: CaptureMode[] = [
+  'selection',
+  'screen',
+  'window',
+  'upload',
+];
 
 export type Action = 'selection' | 'screen' | 'window' | 'copy-selection';
 // Alt is Option on macOS.
